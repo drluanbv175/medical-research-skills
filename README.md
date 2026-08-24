@@ -123,6 +123,51 @@ The operational layer of a medical research lab — from reagent tracking and fi
 - **Document production** — PDF processor for merge, split, extract, and annotation, PDF to PowerPoint literature report converter, PowerPoint deck builder and editor, Word document generator and editor, Markdown file converter, HTML\-to\-PDF renderer, spreadsheet operations for CSV and Excel, academic research poster generator from PDF literature, poster designer with image generation
 - **Research administration** — academic CV generator with bilingual output to Word, journal recommender by topic, abstract, and impact factor, citation style converter for RIS, BibTeX, and CSL\-JSON, manuscript formatting checker for journal templates, chart style unifier across Word tables and figures, literature management with offline deduplication and tagging, bibliography organizer by theme, method, and conclusion, meeting minutes generator from transcripts, meeting assistant for decisions and action items, schedule management with conflict detection, task reminder with exportable MD/CSV outputs, resubmission deadline tracker with phase\-appropriate task breakdown, mind map generator, postdoc fellowship matcher by nationality, years since PhD, and field, conflict of interest checker for peer review assignments
 
+## 🔌 Evidence Sources & Network Access
+
+Skills in this repo reach medical evidence two different ways, and the difference
+matters a lot in sandboxed environments:
+
+| | MCP connector | Direct REST API |
+|---|---|---|
+| Route | Server-side | Through the container's egress proxy |
+| Blocked by egress policy? | **No** | **Yes**, by default on Claude Code on the web |
+
+On Claude Code on the web, direct calls to `eutils.ncbi.nlm.nih.gov`,
+`api.crossref.org`, `clinicaltrials.gov`, `api.fda.gov` and friends fail with
+`Tunnel connection failed: 403` — the request never leaves the infrastructure.
+MCP connectors (PubMed, Clinical Trials, Scite, Consensus, Elicit, Scholar Gateway,
+bioRxiv) keep working.
+
+**Check what is reachable before running a lookup skill:**
+
+```bash
+python3 scripts/check_evidence_sources.py          # status table for every source
+python3 scripts/check_evidence_sources.py pubmed   # one source
+python3 scripts/check_evidence_sources.py --json   # machine-readable
+```
+
+Exit codes: `0` all reachable · `1` blocked by egress policy · `2` other failure.
+
+- **Routing table, allowlist and troubleshooting:** [`references/EVIDENCE-SOURCE-ROUTING.md`](references/EVIDENCE-SOURCE-ROUTING.md)
+- **Shared helper for scripts:** [`scripts/evidence_net.py`](scripts/evidence_net.py) —
+  classifies a failed request as *policy-blocked* / *infrastructure error* /
+  *source responded with an error*, and names the MCP tool to use instead.
+
+### ⚠️ Safety rule: "source unreachable" ≠ "no evidence"
+
+A lookup script that swallows a network error and returns an empty list reads
+downstream as *"searched, found nothing"* — which invites filling the gap with
+generated content. In a medical tool that means fabricated citations.
+
+Every evidence skill here must therefore:
+
+1. **Fail loudly.** Report unreachable sources; never return empty results as if the
+   lookup succeeded.
+2. **Never invent** PMIDs, DOIs, titles or figures to fill a gap.
+3. **Report three distinct states:** `verified` · `could not verify (reason)` · `verified as wrong`.
+4. **Never** disable TLS verification, unset `HTTPS_PROXY`, or route around the policy.
+
 ## 🚀 How to Start?
 
 ### ⚙️ Requirements

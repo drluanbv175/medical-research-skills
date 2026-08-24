@@ -4,6 +4,7 @@ Citation Validation Tool
 Validate BibTeX files for accuracy, completeness, and format compliance.
 """
 
+import os
 import sys
 import re
 import requests
@@ -11,6 +12,38 @@ import argparse
 import json
 from typing import Dict, List, Tuple, Optional
 from collections import defaultdict
+
+
+def _load_evidence_net():
+    """Nạp scripts/evidence_net.py ở gốc kho, nếu có."""
+    d = os.path.dirname(os.path.abspath(__file__))
+    for _ in range(6):
+        cand = os.path.join(d, "scripts", "evidence_net.py")
+        if os.path.isfile(cand):
+            sys.path.insert(0, os.path.join(d, "scripts"))
+            try:
+                import evidence_net
+                return evidence_net
+            except ImportError:
+                return None
+        parent = os.path.dirname(d)
+        if parent == d:
+            break
+        d = parent
+    return None
+
+
+_EN = _load_evidence_net()
+
+
+def _classify_net(exc):
+    """Trả (kind, detail, blocked_by_policy) cho một lỗi mạng."""
+    if _EN is not None:
+        d = _EN.classify(exc)
+        return d.kind, d.detail, d.blocked_by_policy
+    text = f"{exc} | {getattr(exc, 'reason', '')}"
+    blocked = "tunnel connection failed" in text.lower()
+    return ("egress_blocked" if blocked else "network_error"), text, blocked
 
 class CitationValidator:
     """Validate BibTeX entries for errors and inconsistencies."""
@@ -231,10 +264,18 @@ class CitationValidator:
                 else:
                     return True, None  # DOI resolves but no CrossRef metadata
             else:
-                return False, None
-                
-        except Exception:
-            return False, None
+                # Máy chủ CÓ trả lời -> phán định thật: DOI không phân giải được.
+                return False, {'status_code': response.status_code}
+
+        except Exception as e:
+            # Chưa hỏi được máy chủ thì KHÔNG được kết luận DOI sai.
+            kind, detail, blocked = _classify_net(e)
+            return False, {
+                'unverifiable': True,
+                'kind': kind,
+                'blocked_by_policy': blocked,
+                'error': detail,
+            }
     
     def detect_duplicates(self, entries: List[Dict]) -> List[Dict]:
         """
@@ -346,32 +387,75 @@ class CitationValidator:
         
         # Verify DOIs if requested
         doi_errors = []
+        unverifiable = []
+        unverifiable_reason = None
         if check_dois:
             print('Verifying DOIs...', file=sys.stderr)
+            blocked = False
             for i, entry in enumerate(entries):
                 doi = entry['fields'].get('doi', '')
-                if doi:
-                    print(f'Verifying DOI {i+1}: {doi}', file=sys.stderr)
-                    is_valid, metadata = self.verify_doi(doi)
-                    
-                    if not is_valid:
-                        doi_errors.append({
-                            'type': 'invalid_doi',
-                            'entry': entry['key'],
-                            'doi': doi,
-                            'severity': 'high',
-                            'message': f'Entry {entry["key"]}: DOI does not resolve: {doi}'
-                        })
-        
+                if not doi:
+                    continue
+
+                if blocked:
+                    # Đã xác định nguồn bị chặn -> phần còn lại cũng không kiểm được.
+                    unverifiable.append({'entry': entry['key'], 'doi': doi})
+                    continue
+
+                print(f'Verifying DOI {i+1}: {doi}', file=sys.stderr)
+                is_valid, metadata = self.verify_doi(doi)
+                metadata = metadata or {}
+
+                if is_valid:
+                    continue
+
+                if metadata.get('unverifiable'):
+                    # CHƯA kiểm được — đây KHÔNG phải lỗi trích dẫn.
+                    unverifiable.append({'entry': entry['key'], 'doi': doi})
+                    if unverifiable_reason is None:
+                        unverifiable_reason = {
+                            'kind': metadata.get('kind'),
+                            'detail': metadata.get('error'),
+                        }
+                    blocked = bool(metadata.get('blocked_by_policy'))
+                else:
+                    doi_errors.append({
+                        'type': 'invalid_doi',
+                        'entry': entry['key'],
+                        'doi': doi,
+                        'severity': 'high',
+                        'message': f'Entry {entry["key"]}: DOI does not resolve: {doi}'
+                    })
+
         all_errors.extend(doi_errors)
-        
+
+        if unverifiable:
+            print('\n' + '!' * 64, file=sys.stderr)
+            print('  CẢNH BÁO: %d DOI CHƯA XÁC MINH ĐƯỢC (không phải trích dẫn sai)'
+                  % len(unverifiable), file=sys.stderr)
+            print('!' * 64, file=sys.stderr)
+            if unverifiable_reason:
+                print(f"  Nguyên nhân: {unverifiable_reason.get('kind')}", file=sys.stderr)
+                print(f"  Chi tiết   : {str(unverifiable_reason.get('detail'))[:200]}",
+                      file=sys.stderr)
+                if unverifiable_reason.get('kind') == 'egress_blocked':
+                    print('  → doi.org / api.crossref.org chưa được allowlist.',
+                          file=sys.stderr)
+                    print('    claude.ai › Settings › Claude Code › Environments',
+                          file=sys.stderr)
+            print('  Không được coi các DOI này là đã xác minh, cũng không coi là sai.',
+                  file=sys.stderr)
+            print('!' * 64 + '\n', file=sys.stderr)
+
         return {
             'filepath': filepath,
             'total_entries': len(entries),
             'valid_entries': len(entries) - len([e for e in all_errors if e['severity'] == 'high']),
             'errors': all_errors,
             'warnings': all_warnings,
-            'duplicates': duplicates
+            'duplicates': duplicates,
+            'unverifiable_dois': unverifiable,
+            'unverifiable_reason': unverifiable_reason,
         }
     
     def _extract_year_crossref(self, message: Dict) -> str:

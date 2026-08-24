@@ -17,6 +17,31 @@ import urllib.request
 import urllib.error
 
 
+_WARNED_SOURCE = set()
+
+
+def _warn_source_unavailable(kind: str, detail: str, blocked: bool) -> None:
+    """Báo TO khi không truy cập được NCBI — im lặng ở đây dễ bị hiểu nhầm
+    thành 'không có dữ liệu chú giải', dẫn tới kết luận sai về biến thể."""
+    import sys as _sys
+    if kind in _WARNED_SOURCE:
+        return
+    _WARNED_SOURCE.add(kind)
+    print("\n" + "!" * 68, file=_sys.stderr)
+    print("  KHÔNG TRUY CẬP ĐƯỢC NCBI — dữ liệu chú giải sẽ THIẾU, không phải RỖNG",
+          file=_sys.stderr)
+    print("!" * 68, file=_sys.stderr)
+    print(f"  Nguyên nhân: {kind}", file=_sys.stderr)
+    print(f"  Chi tiết   : {detail[:220]}", file=_sys.stderr)
+    if blocked:
+        print("  → www.ncbi.nlm.nih.gov chưa được allowlist trong môi trường này.",
+              file=_sys.stderr)
+        print("    claude.ai › Settings › Claude Code › Environments", file=_sys.stderr)
+    print("  Không suy luận lâm sàng từ kết quả thiếu dữ liệu này.", file=_sys.stderr)
+    print("!" * 68 + "\n", file=_sys.stderr)
+
+
+
 @dataclass
 class ACMGClassification:
     """ACMG classification result for a variant."""
@@ -175,8 +200,13 @@ class VariantAnnotator:
             if e.code == 429:
                 time.sleep(1)
                 return self._ncbi_request(url)
+            _warn_source_unavailable(f"HTTP {e.code}", str(e), blocked=False)
             return None
-        except Exception:
+        except Exception as e:
+            _text = f"{e} | {getattr(e, 'reason', '')}"
+            _blocked = "tunnel connection failed" in _text.lower()
+            _warn_source_unavailable(
+                "egress_blocked" if _blocked else "network_error", _text, _blocked)
             return None
     
     def _parse_variant_input(self, variant: str) -> Dict[str, Any]:

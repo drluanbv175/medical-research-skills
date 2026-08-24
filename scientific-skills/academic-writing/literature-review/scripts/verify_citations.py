@@ -4,12 +4,46 @@ Citation Verification Script
 Verifies DOIs, URLs, and citation metadata for accuracy.
 """
 
+import os
 import re
 import requests
 import json
+import sys
 from typing import Dict, List, Tuple
 from urllib.parse import urlparse
 import time
+
+
+def _load_evidence_net():
+    """Nạp scripts/evidence_net.py ở gốc kho, nếu có."""
+    d = os.path.dirname(os.path.abspath(__file__))
+    for _ in range(6):
+        cand = os.path.join(d, "scripts", "evidence_net.py")
+        if os.path.isfile(cand):
+            sys.path.insert(0, os.path.join(d, "scripts"))
+            try:
+                import evidence_net
+                return evidence_net
+            except ImportError:
+                return None
+        parent = os.path.dirname(d)
+        if parent == d:
+            break
+        d = parent
+    return None
+
+
+_EN = _load_evidence_net()
+
+
+def _classify_net(exc):
+    """Trả (kind, detail, blocked_by_policy) cho một lỗi mạng."""
+    if _EN is not None:
+        d = _EN.classify(exc)
+        return d.kind, d.detail, d.blocked_by_policy
+    text = f"{exc} | {getattr(exc, 'reason', '')}"
+    blocked = "tunnel connection failed" in text.lower()
+    return ("egress_blocked" if blocked else "network_error"), text, blocked
 
 class CitationVerifier:
     def __init__(self):
@@ -37,9 +71,17 @@ class CitationVerifier:
                 metadata = self._get_crossref_metadata(doi)
                 return True, metadata
             else:
-                return False, {}
+                # Máy chủ CÓ trả lời -> đây là phán định thật: DOI không phân giải được.
+                return False, {"status_code": response.status_code}
         except Exception as e:
-            return False, {"error": str(e)}
+            # KHÔNG kết luận DOI sai khi ta còn chưa hỏi được máy chủ.
+            kind, detail, blocked = _classify_net(e)
+            return False, {
+                "unverifiable": True,
+                "kind": kind,
+                "blocked_by_policy": blocked,
+                "error": detail,
+            }
 
     def _get_crossref_metadata(self, doi: str) -> Dict:
         """Get metadata from CrossRef API."""
@@ -117,18 +159,34 @@ class CitationVerifier:
 
         report = {
             'total_dois': len(dois),
-            'verified': [],
-            'failed': [],
+            'verified': [],       # đã kiểm, HỢP LỆ
+            'failed': [],         # đã kiểm, KHÔNG hợp lệ  (phán định thật)
+            'unverifiable': [],   # CHƯA kiểm được (mạng/bị chặn) — không phải phán định
+            'unverifiable_reason': None,
             'metadata': {}
         }
 
+        blocked = False
         for doi in dois:
+            if blocked:
+                # Đã xác định bị chặn: các DOI còn lại cũng không kiểm được.
+                report['unverifiable'].append(doi)
+                continue
+
             print(f"Verifying DOI: {doi}")
             is_valid, metadata = self.verify_doi(doi)
 
             if is_valid:
                 report['verified'].append(doi)
                 report['metadata'][doi] = metadata
+            elif metadata.get('unverifiable'):
+                report['unverifiable'].append(doi)
+                if report['unverifiable_reason'] is None:
+                    report['unverifiable_reason'] = {
+                        'kind': metadata.get('kind'),
+                        'detail': metadata.get('error'),
+                    }
+                blocked = bool(metadata.get('blocked_by_policy'))
             else:
                 report['failed'].append(doi)
 
@@ -197,13 +255,30 @@ def main():
     print("CITATION VERIFICATION REPORT")
     print("="*60)
     print(f"\nTotal DOIs found: {report['total_dois']}")
-    print(f"Verified: {len(report['verified'])}")
-    print(f"Failed: {len(report['failed'])}")
+    print(f"Verified (hợp lệ)          : {len(report['verified'])}")
+    print(f"Failed (kiểm ra là SAI)    : {len(report['failed'])}")
+    print(f"Unverifiable (CHƯA kiểm được): {len(report['unverifiable'])}")
 
     if report['failed']:
-        print("\nFailed DOIs:")
+        print("\nDOI kiểm ra KHÔNG hợp lệ:")
         for doi in report['failed']:
             print(f"  - {doi}")
+
+    if report['unverifiable']:
+        reason = report.get('unverifiable_reason') or {}
+        print("\n" + "!" * 64)
+        print("  CẢNH BÁO: KHÔNG XÁC MINH ĐƯỢC — KHÔNG PHẢI 'TRÍCH DẪN SAI'")
+        print("!" * 64)
+        print(f"  Nguyên nhân: {reason.get('kind', 'không rõ')}")
+        print(f"  Chi tiết   : {str(reason.get('detail', ''))[:200]}")
+        if reason.get('kind') == 'egress_blocked':
+            print("  → api.crossref.org / doi.org chưa được allowlist trong môi trường này.")
+            print("    claude.ai › Settings › Claude Code › Environments")
+        print("\n  Các DOI sau CHƯA được kiểm chứng — không được coi là đã xác minh,")
+        print("  cũng không được coi là sai:")
+        for doi in report['unverifiable']:
+            print(f"    ? {doi}")
+        print("!" * 64)
 
     if report['metadata']:
         print("\n\nVerified Citations (APA format):")
@@ -218,5 +293,15 @@ def main():
 
     print(f"\n\nDetailed report saved to: {output_file}")
 
+    # Mã thoát phản ánh đúng tình trạng:
+    #   0 = kiểm hết, mọi trích dẫn hợp lệ
+    #   1 = có trích dẫn kiểm ra là SAI
+    #   3 = có trích dẫn CHƯA kiểm được (nguồn không truy cập được)
+    if report['unverifiable']:
+        return 3
+    if report['failed']:
+        return 1
+    return 0
+
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

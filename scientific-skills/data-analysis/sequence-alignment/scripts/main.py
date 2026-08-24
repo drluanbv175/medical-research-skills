@@ -116,8 +116,17 @@ def check_blast_status(rid):
             raise RuntimeError("BLAST search failed on server")
         else:
             return False
-    except urllib.error.URLError:
-        return False
+    except urllib.error.URLError as e:
+        # Phân biệt "BLAST chưa xong" với "không gọi được BLAST".
+        _text = f"{e} | {getattr(e, 'reason', '')}"
+        if "tunnel connection failed" in _text.lower():
+            raise RuntimeError(
+                "Không truy cập được NCBI BLAST: host bị chính sách egress chặn "
+                "(403 ở bước CONNECT). Đây KHÔNG phải 'BLAST chưa chạy xong'. "
+                "Thêm blast.ncbi.nlm.nih.gov vào allowlist tại "
+                "claude.ai › Settings › Claude Code › Environments."
+            ) from e
+        raise RuntimeError(f"Lỗi mạng khi hỏi trạng thái BLAST: {_text}") from e
 
 
 def retrieve_blast_results(rid):

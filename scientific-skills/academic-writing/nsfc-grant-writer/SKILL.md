@@ -7,6 +7,41 @@ author: AIPOCH
 > **Source**: [https://github.com/aipoch/medical-research-skills](https://github.com/aipoch/medical-research-skills)
 
 
+<!-- evidence-source-routing -->
+## Nguồn dữ liệu: ưu tiên MCP connector
+
+**Thứ tự bắt buộc: MCP trước, REST API sau.**
+
+1. **Đường chính — MCP connector** (chạy server-side, KHÔNG qua egress của container):
+   `mcp__PubMed__search_articles`, `get_article_metadata`, `get_full_text_article`, `convert_article_ids`, `find_related_articles`
+2. **Dự phòng — REST API trực tiếp**: chỉ dùng khi không có connector phù hợp, hoặc
+   cần tham số mà connector không hỗ trợ.
+
+Host REST mà skill này cần: `eutils.ncbi.nlm.nih.gov`
+
+Trong nhiều môi trường (đặc biệt Claude Code on the web) các host trên **bị chính sách
+egress chặn** — lời gọi thất bại với `Tunnel connection failed: 403` ngay ở bước CONNECT.
+Khi đó MCP connector vẫn hoạt động bình thường.
+
+**Kiểm tra trước khi chạy:**
+```bash
+python3 ../../../scripts/check_evidence_sources.py
+```
+
+### Quy tắc an toàn bắt buộc
+
+> **"Không tra được nguồn" KHÁC "không có bằng chứng".**
+
+- Nguồn không truy cập được thì **báo lỗi rõ ràng**, tuyệt đối không trả kết quả rỗng
+  rồi để người đọc hiểu nhầm là đã tra xong.
+- Không bao giờ tự sinh PMID, DOI, tiêu đề bài báo hay số liệu để lấp chỗ trống.
+- Mọi báo cáo phải phân biệt ba trạng thái:
+  `đã xác minh` · `không xác minh được (nêu lý do)` · `xác minh thấy sai`.
+- Không tắt xác thực TLS, không bỏ `HTTPS_PROXY`, không đi vòng qua mirror.
+
+Chi tiết định tuyến nguồn: [`../../../references/EVIDENCE-SOURCE-ROUTING.md`](../../../references/EVIDENCE-SOURCE-ROUTING.md)
+<!-- evidence-source-routing -->
+
 # NSFC Grant Writer
 
 Generate a complete NSFC General Program grant application from a scientific hypothesis and export it as a Word document.
