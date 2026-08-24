@@ -73,13 +73,26 @@ hoặc khi cần tham số mà connector không hỗ trợ.
 
 | Cần gì | MCP (ưu tiên) | REST dự phòng |
 |---|---|---|
-| Bài đã bị rút / đính chính | `mcp__Scite__search_literature` → trường `editorialNotices` | `api.crossref.org/works/{DOI}` → `update-to` / `relation` |
+| Bài đã bị rút / đính chính | `mcp__Scite__search_literature` → `editorialNotices`, hoặc lọc `has_retraction=true` | `api.crossref.org/works/{DOI}` → `update-to` / `relation` |
 | Ngữ cảnh trích dẫn (ủng hộ/phản bác) | `mcp__Scite__search_literature` | — |
 | Xác minh DOI có thật | `mcp__Scite__search_literature` (theo `dois`) | `api.crossref.org/works/{DOI}` |
 
-**Cảnh báo:** dữ liệu Retraction Watch đầy đủ chỉ có ở Crossref. Khi Crossref bị chặn,
-`editorialNotices` của Scite là phương án tạm, **không tương đương**. Nếu cả hai đều
-không dùng được, phải **ghi rõ là chưa kiểm tra được tình trạng rút bài**, không được
+**Đã đối chứng (2026-08-24):** `editorialNotices` của Scite phát hiện đúng cả ba ca thử —
+Mehra 2020 (Surgisphere/HCQ) `retracted` kèm notice `10.1016/s0140-6736(20)31174-0`
+ngày 22/5/2020; Wakefield 1998 (MMR) `retracted` kèm notice `10.1016/s0140-6736(10)60175-4`
+ngày 6/2/2010; PRISMA 2020 sạch. **Không cần allowlist Crossref chỉ để kiểm bài bị rút.**
+
+Quy trình 3 bước không cần mạng:
+
+```bash
+python3 scripts/retraction_check.py extract manuscript.md      # 1) rút DOI
+# 2) mcp__Scite__search_literature(dois=[...]) -> lưu scite.json
+python3 scripts/retraction_check.py report scite.json --dois-from manuscript.md
+```
+
+Mã thoát: `0` sạch · `1` **có bài bị rút** · `2` quan ngại/đính chính · `3` có DOI chưa kiểm được.
+
+**Vẫn giữ nguyên tắc:** DOI mà Scite không trả về phải xếp `CHƯA KIỂM`, không được
 mặc định coi là sạch.
 
 ### 2.5 Tiền ấn phẩm & thuật ngữ
@@ -97,6 +110,8 @@ mặc định coi là sạch.
 Các nguồn sau **không có** connector, nên khi egress bị khoá thì không có cách nào
 hợp lệ để lấy dữ liệu. Không đi vòng, chỉ báo rõ giới hạn:
 
+- **Crossref (siêu dữ liệu chung, ngoài việc kiểm bài bị rút)** — việc kiểm bài bị rút
+  đã có đường Scite ở mục 2.4; phần siêu dữ liệu/trích dẫn tổng quát thì chưa.
 - **Cochrane Library (CDSR)** — không có API công khai.
   Cách vòng hợp lệ duy nhất: lọc PubMed `"Cochrane Database Syst Rev"[jour]`.
 - **Europe PMC**, **Unpaywall**, **CORE** — toàn văn mở.

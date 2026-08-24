@@ -166,8 +166,9 @@ SOURCES: dict[str, dict[str, str]] = {
         "host": "api.crossref.org",
         "probe": "https://api.crossref.org/works/10.1136/bmj.n71",
         "purpose": "Crossref REST + dữ liệu Retraction Watch (kiểm bài bị rút)",
-        "mcp": "KHÔNG có tương đương MCP đầy đủ. mcp__Scite__search_literature có "
-               "editorialNotices (retraction/correction) — dùng tạm để kiểm bài bị rút.",
+        "mcp": "mcp__Scite__search_literature -> editorialNotices (retracted/concern/"
+               "correction/erratum) + bộ lọc has_retraction. ĐÃ ĐỐI CHỨNG trên Mehra 2020 "
+               "và Wakefield 1998. Quy trình: scripts/retraction_check.py",
     },
     "europepmc": {
         "host": "www.ebi.ac.uk",

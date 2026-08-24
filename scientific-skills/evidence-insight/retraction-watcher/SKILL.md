@@ -45,6 +45,40 @@ Chi tiết định tuyến nguồn: [`../../../references/EVIDENCE-SOURCE-ROUTIN
 
 A specialized skill for identifying retracted, corrected, or questionable papers in academic reference lists before they compromise research integrity.
 
+### Quy trình KHÔNG CẦN MẠNG (dùng khi Crossref bị chặn)
+
+Dữ liệu Retraction Watch đầy đủ nằm ở `api.crossref.org` — host này thường bị
+chính sách egress chặn. Connector **Scite** chạy server-side và trả cùng thông tin
+đó trong trường `editorialNotices`. Đã đối chứng: Mehra 2020 (Surgisphere/HCQ) và
+Wakefield 1998 (MMR) đều được nhận diện `retracted` kèm DOI thông báo và ngày rút;
+PRISMA 2020 sạch.
+
+Ba bước — script lo hai đầu, bạn gọi Scite ở giữa:
+
+```bash
+# 1) Rút DOI từ bản thảo / .bib
+python3 ../../../scripts/retraction_check.py extract manuscript.md
+```
+
+```
+# 2) Gọi connector với danh sách DOI vừa nhận:
+     mcp__Scite__search_literature(dois=[...], limit=<số DOI>)
+     Lưu nguyên JSON trả về vào scite.json
+```
+
+```bash
+# 3) Dựng bảng phán định
+python3 ../../../scripts/retraction_check.py report scite.json --dois-from manuscript.md
+```
+
+Mã thoát: `0` sạch · `1` **có bài bị rút** · `2` có quan ngại/đính chính · `3` có DOI chưa kiểm được.
+
+**Quy tắc bắt buộc:** DOI mà Scite không trả về được xếp `CHƯA KIỂM`, **không**
+được coi là sạch. Báo cáo phải ghi rõ "chưa xác minh được tình trạng rút bài".
+
+Mẹo: có thể lọc thẳng bằng `mcp__Scite__search_literature(has_retraction=true, ...)`
+khi muốn quét một chủ đề thay vì một danh sách DOI cụ thể.
+
 ## Quick Check
 
 Use this command to verify that the packaged script entry point can be parsed before deeper execution.

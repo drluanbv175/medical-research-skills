@@ -153,6 +153,10 @@ Exit codes: `0` all reachable · `1` blocked by egress policy · `2` other failu
 - **Shared helper for scripts:** [`scripts/evidence_net.py`](scripts/evidence_net.py) —
   classifies a failed request as *policy-blocked* / *infrastructure error* /
   *source responded with an error*, and names the MCP tool to use instead.
+- **Retraction checking without network:** [`scripts/retraction_check.py`](scripts/retraction_check.py) —
+  extracts DOIs, then turns a Scite `editorialNotices` response into a verdict table
+  (retracted / concern / correction / clean / **not checked**). Verified against
+  Mehra 2020 and Wakefield 1998. Removes the need to allowlist Crossref for this.
 
 ### ⚠️ Safety rule: "source unreachable" ≠ "no evidence"
 
