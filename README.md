@@ -149,6 +149,21 @@ python3 scripts/check_evidence_sources.py --json   # machine-readable
 
 Exit codes: `0` all reachable · `1` blocked by egress policy · `2` other failure.
 
+**Full health check (works in both environments):**
+
+```bash
+python3 scripts/doctor.py        # environment, deps, sources, live tests, safety behaviour
+python3 tests/test_evidence_stack.py   # 22 unit tests, no network required
+```
+
+**Running locally is the simplest full unlock.** A personal machine has no egress
+proxy, so every REST source works with no configuration and no security trade-off:
+
+```bash
+bash scripts/setup-local.sh      # pull, deps, tests, health check, next steps
+```
+
+
 - **Routing table, allowlist and troubleshooting:** [`references/EVIDENCE-SOURCE-ROUTING.md`](references/EVIDENCE-SOURCE-ROUTING.md)
 - **Shared helper for scripts:** [`scripts/evidence_net.py`](scripts/evidence_net.py) —
   classifies a failed request as *policy-blocked* / *infrastructure error* /

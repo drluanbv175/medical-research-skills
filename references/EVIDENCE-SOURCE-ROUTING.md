@@ -149,10 +149,26 @@ Tài liệu môi trường: <https://code.claude.com/docs/en/claude-code-on-the-
 ## 5. Chẩn đoán khi gọi mạng thất bại
 
 ```bash
-python3 scripts/check_evidence_sources.py          # bảng trạng thái toàn bộ nguồn
-python3 scripts/check_evidence_sources.py pubmed   # kiểm một nguồn
-python3 scripts/check_evidence_sources.py --json   # cho máy đọc
+python3 scripts/check_evidence_sources.py   # bảng trạng thái toàn bộ nguồn
+python3 scripts/doctor.py                   # kiểm tra sức khoẻ đầy đủ
+python3 tests/test_evidence_stack.py        # 22 ca kiểm thử, không cần mạng
+bash    scripts/setup-local.sh              # dựng + kiểm tra trên máy cá nhân
 ```
+
+### Ba nơi chạy, ba mức truy cập
+
+| Nơi chạy | REST tới NCBI/Crossref/openFDA | Cần cấu hình |
+|---|---|---|
+| Claude Code on the web (policy *trusted*) | ❌ chặn | Phải đổi network policy trên claude.ai |
+| **Máy cá nhân** | ✅ **đầy đủ** | **Không cần gì** |
+| MCP connector (mọi nơi) | ✅ | Không |
+
+Allowlist của preset *trusted network access* chỉ gồm GitHub và registry gói —
+đã đo: `github.com`, `api.github.com`, `raw.githubusercontent.com`, `pypi.org`,
+`files.pythonhosted.org`, `registry.npmjs.org` cho phép; **mọi** tên miền y khoa
+bị chặn, kể cả các tên miền thay thế (`europepmc.org`, `doi.org`, `who.int`,
+`nice.org.uk`). Đây là danh sách cho phép hạ tầng lập trình, nên **không tồn tại
+tên miền thay thế nào đi vòng được** — và cũng không được tìm cách đi vòng.
 
 Mã thoát: `0` tất cả thông · `1` có nguồn bị chính sách chặn · `2` lỗi khác.
 
