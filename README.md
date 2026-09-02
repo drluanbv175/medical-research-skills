@@ -163,6 +163,15 @@ proxy, so every REST source works with no configuration and no security trade-of
 bash scripts/setup-local.sh      # pull, deps, tests, health check, next steps
 ```
 
+**Already installed as a Claude Code plugin?** `git pull` does NOT update the
+running skills. The plugin cache stays pinned to the commit it was installed at,
+so fixes only take effect after you refresh the plugin (`/plugin` in Claude Code).
+Check which version is actually loaded:
+
+```bash
+python3 tools/kiem_tra_plugin.py   # 0 = up to date, 1 = cache stale
+```
+
 
 - **Routing table, allowlist and troubleshooting:** [`references/EVIDENCE-SOURCE-ROUTING.md`](references/EVIDENCE-SOURCE-ROUTING.md)
 - **Shared helper for scripts:** [`scripts/evidence_net.py`](scripts/evidence_net.py) —
