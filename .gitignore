@@ -54,3 +54,12 @@ __pycache__/
 
 # 日志文件
 *.log
+
+# --- Bộ kiểm thử của kho này PHẢI được theo dõi ---
+# Quy tắc `test_*` ở trên vô tình nuốt luôn tests/test_*.py.
+!tests/
+!tests/**
+
+# --- Dữ liệu Retraction Watch tải về (hàng chục MB) — KHÔNG commit ---
+/data/retractionwatch/
+*.retractionwatch.csv

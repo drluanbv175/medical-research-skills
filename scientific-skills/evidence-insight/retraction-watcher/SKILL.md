@@ -79,6 +79,21 @@ Mã thoát: `0` sạch · `1` **có bài bị rút** · `2` có quan ngại/đí
 Mẹo: có thể lọc thẳng bằng `mcp__Scite__search_literature(has_retraction=true, ...)`
 khi muốn quét một chủ đề thay vì một danh sách DOI cụ thể.
 
+### Bản đầy đủ — tra offline bằng Retraction Watch
+
+Chỉ mục Scite không phủ 100%. Muốn kết luận chắc chắn, tải bộ dữ liệu
+Retraction Watch về máy (chỉ làm được nơi có mạng tới Crossref):
+
+```bash
+python3 ../../../tools/tai_retraction_watch.py tai --email ban@vidu.com
+python3 ../../../scripts/retraction_check.py local ban-thao.md
+```
+
+Ở chế độ này, DOI không có trong bộ dữ liệu được kết luận **SẠCH** (vì đây là sổ
+đăng ký đầy đủ), khác với chế độ Scite phải xếp `CHƯA KIỂM`. Tuổi dữ liệu luôn
+được in ra; quá 30 ngày sẽ bị cảnh báo là CŨ.
+
+
 ## Quick Check
 
 Use this command to verify that the packaged script entry point can be parsed before deeper execution.

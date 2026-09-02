@@ -168,6 +168,10 @@ bash scripts/setup-local.sh      # pull, deps, tests, health check, next steps
 - **Shared helper for scripts:** [`scripts/evidence_net.py`](scripts/evidence_net.py) —
   classifies a failed request as *policy-blocked* / *infrastructure error* /
   *source responded with an error*, and names the MCP tool to use instead.
+- **Retraction checking, full offline dataset:** [`tools/tai_retraction_watch.py`](tools/tai_retraction_watch.py) —
+  downloads the Crossref-hosted Retraction Watch registry and indexes it locally, so
+  `retraction_check.py local <file>` gives a complete verdict with no network and no
+  index gaps. Requires reaching Crossref, so run it on a personal machine.
 - **Retraction checking without network:** [`scripts/retraction_check.py`](scripts/retraction_check.py) —
   extracts DOIs, then turns a Scite `editorialNotices` response into a verdict table
   (retracted / concern / correction / clean / **not checked**). Verified against

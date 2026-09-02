@@ -95,6 +95,43 @@ Mã thoát: `0` sạch · `1` **có bài bị rút** · `2` quan ngại/đính c
 **Vẫn giữ nguyên tắc:** DOI mà Scite không trả về phải xếp `CHƯA KIỂM`, không được
 mặc định coi là sạch.
 
+### Bản ĐẦY ĐỦ: tải Retraction Watch về máy
+
+Chỉ mục Scite không phủ 100% — một DOI có thật vẫn có thể vắng mặt, và khi đó
+công cụ buộc phải xếp `CHƯA KIỂM`. Bộ dữ liệu Retraction Watch (Crossref mua lại
+năm 2023, phát hành miễn phí) là **sổ đăng ký đầy đủ**, nên tải về máy thì
+"không có trong bộ dữ liệu" mới thực sự nghĩa là "không có retraction nào được
+ghi nhận".
+
+```bash
+# 1) Tải + dựng chỉ mục (một lần; Crossref yêu cầu email liên hệ)
+python3 tools/tai_retraction_watch.py tai --email ban@vidu.com
+
+# 2) Tra — offline, không cần mạng, không cần MCP
+python3 scripts/retraction_check.py local ban-thao.md
+
+# Tiện ích
+python3 tools/tai_retraction_watch.py trangthai
+python3 tools/tai_retraction_watch.py tra 10.1016/S0140-6736(97)11096-0
+```
+
+Dữ liệu nằm ở `~/.cache/medical-research-skills/retractionwatch/`, **không** commit
+vào kho. Cache quá 30 ngày sẽ bị đánh dấu CŨ và tuổi dữ liệu luôn được in trong
+báo cáo — bản cũ có thể bỏ sót bài vừa bị rút.
+
+**Chỉ chạy được nơi có mạng tới Crossref.** Trong Claude Code on the web,
+`api.labs.crossref.org` bị chặn; hãy chạy trên máy cá nhân.
+
+Trường hợp đặc biệt đã xử lý: bài **bị rút rồi được phục hồi** (`Reinstatement`)
+không tự động hạ xuống "sạch" — nó bị xếp `QUAN NGẠI` kèm yêu cầu kiểm tra thủ
+công tình trạng hiện hành.
+
+| Chế độ | Nguồn | Phủ | Cần mạng |
+|---|---|---|---|
+| `report` | Scite MCP | không đầy đủ → có ca `CHƯA KIỂM` | Không (MCP server-side) |
+| `local` | Retraction Watch tải về | **đầy đủ** | Chỉ khi tải; sau đó offline |
+
+
 ### 2.5 Tiền ấn phẩm & thuật ngữ
 
 | Cần gì | MCP (ưu tiên) | REST dự phòng |
