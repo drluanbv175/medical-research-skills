@@ -296,3 +296,27 @@ except en.SourceUnavailable as e:
 
 **Nên bổ sung:** SNOMED CT Terminology (có trong thư mục connector, authless) —
 ghép với ICD-10 thành bộ thuật ngữ lâm sàng đầy đủ.
+
+---
+
+## 8. Cập nhật vào Claude Code (bẫy hay gặp)
+
+Kho khai báo `source: "./"`, nên khi cài, Claude Code **sao chép** toàn bộ kho vào
+`~/.claude/plugins/cache/<marketplace>/<plugin>/<commit>/`.
+
+> **`git pull` KHÔNG cập nhật skill đang chạy.** Bản sao trong cache vẫn ghim ở
+> commit cũ cho tới khi bạn làm mới plugin. Bạn có thể ở commit mới nhất trong
+> Terminal mà Claude Code vẫn nạp ảnh chụp cũ hàng tháng.
+
+Kiểm tra:
+
+```bash
+python3 tools/kiem_tra_plugin.py
+```
+
+Nó đọc `known_marketplaces.json` + `installed_plugins.json`, so commit đang ghim với
+`HEAD` của kho, và đếm số SKILL.md thực sự có khối định tuyến trong cache.
+Chỉ đọc, không sửa gì. Mã thoát: `0` đã mới · `1` cache còn cũ · `2` chưa cài plugin.
+
+Khi báo cache cũ: mở Claude Code, gõ `/plugin`, cập nhật marketplace rồi cập nhật
+plugin bên trong. Chạy lại script để xác nhận đủ 34/34.
