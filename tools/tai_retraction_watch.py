@@ -19,13 +19,14 @@ CHỈ CHẠY ĐƯỢC Ở NƠI CÓ MẠNG TỚI CROSSREF. Trong Claude Code on t
 api.crossref.org bị chính sách egress chặn — hãy chạy trên máy cá nhân.
 
 CÁCH DÙNG
-    python3 tools/tai_retraction_watch.py tai --email ban@vidu.com
+    python3 tools/tai_retraction_watch.py tai
+    python3 tools/tai_retraction_watch.py tai --via-git     # bền hơn cho file lớn
     python3 tools/tai_retraction_watch.py trangthai
     python3 tools/tai_retraction_watch.py tra 10.1016/S0140-6736(97)11096-0
 
-Crossref yêu cầu nêu email liên hệ (quy ước "polite pool") để họ liên lạc được
-khi truy vấn gây tải bất thường. Có thể đặt sẵn qua biến môi trường:
-    export CROSSREF_MAILTO=ban@vidu.com
+Nguồn: https://gitlab.com/crossref/retraction-watch-data (cập nhật mỗi ngày làm
+việc). Không cần khoá API, không cần đăng ký. Tuỳ chọn --email chỉ được đưa vào
+User-Agent cho lịch sự.
 
 MÃ THOÁT
     0 thành công · 1 không tải được · 2 lỗi tham số/dữ liệu · 3 chưa có cache
@@ -65,9 +66,13 @@ CSV_PATH = os.path.join(CACHE, "retractionwatch.csv")
 DB_PATH = os.path.join(CACHE, "index.sqlite3")
 META_PATH = os.path.join(CACHE, "meta.json")
 
-# Điểm tải chính thức của Crossref Labs. Bộ dữ liệu do Crossref phát hành
-# công khai; tham số mailto là quy ước lịch sự, không phải khoá API.
-BASE_URL = "https://api.labs.crossref.org/data/retractionwatch"
+# Điểm tải chính thức. LƯU Ý LỊCH SỬ: endpoint cũ
+# https://api.labs.crossref.org/data/retractionwatch đã NGỪNG hoạt động —
+# Crossref ghi rõ nó trả về dữ liệu lỗi thời. Bộ dữ liệu hiện phát hành qua
+# GitLab, cập nhật mỗi ngày làm việc.
+BASE_URL = "https://gitlab.com/crossref/retraction-watch-data/-/raw/main/retraction_watch.csv"
+REPO_URL = "https://gitlab.com/crossref/retraction-watch-data.git"
+CSV_NAME = "retraction_watch.csv"
 
 # Số ngày sau đó coi bộ dữ liệu là CŨ. Retraction mới xuất hiện liên tục,
 # nên một bản cache cũ có thể BỎ SÓT bài vừa bị rút.
@@ -124,9 +129,9 @@ def _map_columns(header: list[str]) -> dict[str, int]:
 
 
 # --------------------------------------------------------------------------
-def tai(email: str, url: str | None = None, force: bool = False) -> int:
+def tai(email: str = "", url: str | None = None, force: bool = False) -> int:
     os.makedirs(CACHE, exist_ok=True)
-    src = url or f"{BASE_URL}?{urllib.parse.urlencode({'mailto': email})}"
+    src = url or BASE_URL
 
     if os.path.isfile(CSV_PATH) and not force:
         age = (time.time() - os.path.getmtime(CSV_PATH)) / 86400
@@ -135,12 +140,14 @@ def tai(email: str, url: str | None = None, force: bool = False) -> int:
                   f"Dùng --force để tải lại.")
             return dung_chi_muc()
 
-    print(f"Tải từ : {BASE_URL}")
-    print(f"Liên hệ: {email}")
+    print(f"Tải từ : {src}")
+    if email:
+        print(f"Liên hệ: {email}")
     print("(Bộ dữ liệu vài chục MB — có thể mất một lúc)\n")
 
+    ua = f"medical-research-skills/1.0" + (f" (mailto:{email})" if email else "")
     req = urllib.request.Request(src, headers={
-        "User-Agent": f"medical-research-skills/1.0 (mailto:{email})",
+        "User-Agent": ua,
         "Accept": "text/csv, application/csv, */*",
     })
     tmp = CSV_PATH + ".part"
@@ -148,7 +155,7 @@ def tai(email: str, url: str | None = None, force: bool = False) -> int:
     try:
         with urllib.request.urlopen(req, timeout=180) as resp, open(tmp, "wb") as fh:
             total = int(resp.headers.get("Content-Length") or 0)
-            got = 0
+            got = moc = 0
             while True:
                 chunk = resp.read(1 << 16)
                 if not chunk:
@@ -156,12 +163,19 @@ def tai(email: str, url: str | None = None, force: bool = False) -> int:
                 fh.write(chunk)
                 sha.update(chunk)
                 got += len(chunk)
-                if total:
-                    pct = got * 100 // total
-                    print(f"\r  {_human(got)} / {_human(total)}  ({pct}%)", end="", flush=True)
-                else:
-                    print(f"\r  {_human(got)}", end="", flush=True)
-        print()
+                # Chỉ vẽ thanh tiến độ khi xuất ra terminal. Khi bị chuyển hướng
+                # (log, pipe), ký tự \r không xoá dòng nên sẽ sinh hàng nghìn dòng rác.
+                if sys.stdout.isatty():
+                    if total:
+                        print(f"\r  {_human(got)} / {_human(total)}  "
+                              f"({got * 100 // total}%)", end="", flush=True)
+                    else:
+                        print(f"\r  {_human(got)}", end="", flush=True)
+                elif total and got * 10 // total > moc:
+                    moc = got * 10 // total
+                    print(f"  {moc * 10}% ({_human(got)})", flush=True)
+        if sys.stdout.isatty():
+            print()
     except Exception as exc:  # noqa: BLE001
         if os.path.exists(tmp):
             os.remove(tmp)
@@ -169,7 +183,7 @@ def tai(email: str, url: str | None = None, force: bool = False) -> int:
             diag = en.classify(exc, src)
             print(diag.report(), file=sys.stderr)
             if diag.blocked_by_policy:
-                print("  api.labs.crossref.org bị chặn trong môi trường này.", file=sys.stderr)
+                print("  gitlab.com bị chặn trong môi trường này.", file=sys.stderr)
                 print("  → Chạy lệnh này trên MÁY CÁ NHÂN, nơi không có egress proxy.",
                       file=sys.stderr)
         else:
@@ -199,6 +213,59 @@ def tai(email: str, url: str | None = None, force: bool = False) -> int:
             "sha256": sha.hexdigest(),
         }, fh, ensure_ascii=False, indent=2)
     print(f"✓ Đã tải {_human(os.path.getsize(CSV_PATH))}\n")
+    return dung_chi_muc()
+
+
+def tai_bang_git(force: bool = False) -> int:
+    """Tải bằng `git clone/pull` thay vì HTTP.
+
+    Bền hơn cho file lớn, và các lần sau chỉ kéo phần thay đổi thay vì tải lại
+    toàn bộ. Cần có `git` trên máy.
+    """
+    import shutil
+    import subprocess
+
+    if shutil.which("git") is None:
+        print("Không tìm thấy `git`. Dùng cách tải HTTP (bỏ --via-git).", file=sys.stderr)
+        return 2
+
+    os.makedirs(CACHE, exist_ok=True)
+    repo = os.path.join(CACHE, "repo")
+    try:
+        if os.path.isdir(os.path.join(repo, ".git")) and not force:
+            print(f"Cập nhật kho sẵn có: {repo}")
+            r = subprocess.run(["git", "-C", repo, "pull", "--ff-only"],
+                               capture_output=True, text=True, timeout=600)
+        else:
+            if os.path.isdir(repo):
+                shutil.rmtree(repo)
+            print(f"Clone {REPO_URL}\n(bộ dữ liệu vài chục MB — có thể mất một lúc)")
+            r = subprocess.run(["git", "clone", "--depth", "1", REPO_URL, repo],
+                               capture_output=True, text=True, timeout=1800)
+        if r.returncode != 0:
+            print(f"git thất bại:\n{(r.stderr or r.stdout)[:800]}", file=sys.stderr)
+            return 1
+    except subprocess.TimeoutExpired:
+        print("git quá thời gian chờ.", file=sys.stderr)
+        return 1
+
+    src_csv = os.path.join(repo, CSV_NAME)
+    if not os.path.isfile(src_csv):
+        found = [f for f in os.listdir(repo) if f.lower().endswith(".csv")]
+        if not found:
+            print(f"Không thấy CSV nào trong {repo}", file=sys.stderr)
+            return 2
+        src_csv = os.path.join(repo, found[0])
+        print(f"Dùng {found[0]} (tên file khác mặc định).")
+
+    import shutil as _sh
+    _sh.copyfile(src_csv, CSV_PATH)
+    with open(META_PATH, "w", encoding="utf-8") as fh:
+        json.dump({"source": REPO_URL,
+                   "downloaded_at": datetime.now(timezone.utc).isoformat(),
+                   "bytes": os.path.getsize(CSV_PATH), "sha256": None,
+                   "via": "git"}, fh, ensure_ascii=False, indent=2)
+    print(f"✓ Đã lấy {_human(os.path.getsize(CSV_PATH))}\n")
     return dung_chi_muc()
 
 
@@ -328,7 +395,9 @@ def main() -> int:
 
     d = sub.add_parser("tai", help="Tải bộ dữ liệu và dựng chỉ mục.")
     d.add_argument("--email", default=os.environ.get("CROSSREF_MAILTO", ""),
-                   help="Email liên hệ (Crossref yêu cầu). Hoặc đặt CROSSREF_MAILTO.")
+                   help="Email liên hệ (TUỲ CHỌN, chỉ đưa vào User-Agent).")
+    d.add_argument("--via-git", action="store_true",
+                   help="Tải bằng git clone/pull thay vì HTTP (bền hơn, cập nhật tăng dần).")
     d.add_argument("--url", help="Ghi đè URL nguồn (dùng khi Crossref đổi điểm tải).")
     d.add_argument("--force", action="store_true", help="Tải lại dù đã có bản hôm nay.")
 
@@ -341,9 +410,10 @@ def main() -> int:
     a = ap.parse_args()
 
     if a.cmd == "tai":
-        if not a.email or "@" not in a.email:
-            print("Cần email liên hệ: --email ban@vidu.com "
-                  "(hoặc export CROSSREF_MAILTO=...)", file=sys.stderr)
+        if a.via_git:
+            return tai_bang_git(a.force)
+        if a.email and "@" not in a.email:
+            print("Email không hợp lệ. Bỏ --email hoặc nhập đúng dạng.", file=sys.stderr)
             return 2
         return tai(a.email, a.url, a.force)
     if a.cmd == "chimuc":

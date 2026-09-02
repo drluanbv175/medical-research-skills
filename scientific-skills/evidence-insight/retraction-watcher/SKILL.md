@@ -85,7 +85,7 @@ Chỉ mục Scite không phủ 100%. Muốn kết luận chắc chắn, tải b�
 Retraction Watch về máy (chỉ làm được nơi có mạng tới Crossref):
 
 ```bash
-python3 ../../../tools/tai_retraction_watch.py tai --email ban@vidu.com
+python3 ../../../tools/tai_retraction_watch.py tai
 python3 ../../../scripts/retraction_check.py local ban-thao.md
 ```
 

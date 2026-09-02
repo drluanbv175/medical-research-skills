@@ -105,7 +105,7 @@ ghi nhận".
 
 ```bash
 # 1) Tải + dựng chỉ mục (một lần; Crossref yêu cầu email liên hệ)
-python3 tools/tai_retraction_watch.py tai --email ban@vidu.com
+python3 tools/tai_retraction_watch.py tai
 
 # 2) Tra — offline, không cần mạng, không cần MCP
 python3 scripts/retraction_check.py local ban-thao.md
@@ -119,8 +119,16 @@ Dữ liệu nằm ở `~/.cache/medical-research-skills/retractionwatch/`, **kh�
 vào kho. Cache quá 30 ngày sẽ bị đánh dấu CŨ và tuổi dữ liệu luôn được in trong
 báo cáo — bản cũ có thể bỏ sót bài vừa bị rút.
 
-**Chỉ chạy được nơi có mạng tới Crossref.** Trong Claude Code on the web,
-`api.labs.crossref.org` bị chặn; hãy chạy trên máy cá nhân.
+**Nguồn:** <https://gitlab.com/crossref/retraction-watch-data> — cập nhật mỗi ngày
+làm việc, không cần khoá API. Endpoint cũ `api.labs.crossref.org/data/retractionwatch`
+đã NGỪNG hoạt động (Crossref cảnh báo nó trả dữ liệu lỗi thời).
+
+**Đã kiểm chứng thật (2026-08-24):** tải 63,2 MB, lập chỉ mục 69.453 bản ghi,
+tra đúng — kể cả DOI `10.61882/zwq4sh57` mà chỉ mục Scite không có nên phải xếp
+`CHƯA KIỂM`, bản cục bộ kết luận dứt khoát là SẠCH.
+
+`gitlab.com` truy cập được cả trong Claude Code on the web lẫn trên máy cá nhân.
+Dùng `--via-git` để tải bằng git clone/pull (cập nhật tăng dần cho các lần sau).
 
 Trường hợp đặc biệt đã xử lý: bài **bị rút rồi được phục hồi** (`Reinstatement`)
 không tự động hạ xuống "sạch" — nó bị xếp `QUAN NGẠI` kèm yêu cầu kiểm tra thủ
