@@ -81,32 +81,46 @@ Workflow ở Việc 1 chốt luôn việc này — lần sau lệch sẽ báo đ
 
 ---
 
-## Việc 3 — BẢNG QUYẾT, chờ bác sĩ
+## Việc 3 — ĐÃ THU HẸP: không phải 48 quyết định, mà là MỘT
 
-`de-xuat/lech-hai-repo.md` liệt kê đủ **68 tệp trùng tên đã lệch** giữa hai repo,
-xếp theo mức lệch giảm dần.
+> **Đính chính.** Bảng đầu tiên tôi gửi ghép tệp theo **tên**, nên 12/68 dòng so hai
+> tệp chẳng liên quan (`app/chatgpt_app/knowledge.py` bị đem so với
+> `tools/orchestrator/knowledge.py`). Ghép lại theo **đường dẫn**: 92 tệp cùng đường
+> dẫn, **59 lệch** — không phải 68.
 
-Nặng nhất: **`CLAUDE.md`** — 6.456 bytes ở `medical-ebm-automation` so với
-**221.847 bytes** ở `ebm-drluanbv175`, khác **2.169 dòng**. Đây là quyển luật Claude
-đọc để biết phải làm gì. Còn hai quyển thì "luôn cập nhật" không có nghĩa.
+**86% lệch nằm ở đúng một chỗ:** `.claude/agents/` — 51 trong 59 tệp.
 
-Phân loại theo bằng chứng kích thước:
+| | A (`medical-ebm-automation`) | E (`ebm-drluanbv175`) |
+|---|---|---|
+| Số agent | 84 | **179** (chứa đủ 84 của A) |
+| Tệp lớn hơn, trên 51 tệp lệch | **0** | **51** |
+| Dòng chỉ có ở bên này | 23 | 870 |
 
-| Đề xuất chủ | Số tệp |
-|---|---|
-| `ebm-drluanbv175` giữ | 13 |
-| `medical-ebm-automation` giữ | 7 |
-| **Cần bác sĩ quyết** | **48** |
+23 dòng "chỉ có ở A" đã soi từng dòng: 5 dòng `description:` **cùng chữ**, chỉ khác
+kiểu nháy; phần còn lại ở `_VONG-LAP-KHEP-KIN.md` — bản A (75 dòng) chỉ có tuyến
+nghiên cứu, bản E (177 dòng) viết lại cho **cả hai tuyến**, đủ 5 bất biến, chỉ đổi
+tên mục. **Không nội dung nào của A vắng mặt ở E.**
 
-48 tệp kia hai bên xấp xỉ nhau — máy không có căn cứ để chọn, và chọn sai thì mất
-nội dung thật. Bác quyết xong, chốt CI báo đỏ khi lệch là việc nhỏ.
+→ **E là nguồn chân lý; bản agent trong A là gương cũ.** Đúng với chính khai báo của
+`check_claude_codex_sync_health.py`: *"Source of truth is `.claude/agents`"* — vấn đề
+là đang tồn tại HAI bản. Cách xử lý: A sinh agent từ E, hoặc bỏ hẳn bản sao trong A.
+Không phải ngồi quyết từng tệp.
 
-**Sau khi cắt ranh giới xong** mới nên xoá 15 script trùng trong `sync/`
-(`link-skills`, `copy-claude-md`, `fix-medsci-root`, `copy-commands-vi`,
-`link-memory` — mỗi cái ba bản `.sh`/`.cmd`/`.ps1`). Xoá trước khi chốt ranh giới
-là tự tháo lưới an toàn.
+**Còn 8 tệp cần bác sĩ nhìn** — chi tiết trong `lech-hai-repo.md`. Trong đó 5 tệp
+nghiêng về E (`AGENTS.md`, `.gitignore`, `.gitattributes`, `.githooks/pre-commit`,
+`tools/generate_agent.py`), 1 nghiêng về A (`tools/scaffold_research_project.py`), và
+2 tệp **không phải lệch**: `CLAUDE.md` và `README.md` là hai tài liệu **khác phạm vi**.
 
----
+### Đính chính về `CLAUDE.md`
+
+Tôi đã nói đây là "hai quyển luật lệch 2.169 dòng". **Sai.** `A/CLAUDE.md` mở đầu bằng
+`_harness_template: "CLAUDE.md.template"`, `_harness_version: "4.3.3"` — bản **sinh từ
+khuôn**, phạm vi dự án con. `E/CLAUDE.md` là học thuyết "EBM Copilot" viết tay cho toàn
+hệ. Và vì A nằm **lồng trong** E trên máy thật, dự án con có `CLAUDE.md` riêng là
+**đúng cách** — Claude Code đọc bản gần nhất cộng bản cha. **Không phải việc cần sửa.**
+
+Vậy nên: **đừng gộp hai repo.** Việc 3 rút lại còn một câu hỏi — A có cần bản sao agent
+riêng không, và nếu có thì sinh từ E chứ đừng sửa tay hai nơi.
 
 ## Còn tồn
 
