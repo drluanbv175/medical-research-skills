@@ -38,6 +38,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # KHÔNG có bước `pip install` — đã đo, không phải đoán. Chạy lại toàn bộ 11
+      # verifier và bước gương bằng `python3 -S` (bỏ site-packages, mô phỏng máy
+      # GitHub trần): 11/11 + gương đều xanh, 0 lỗi ModuleNotFound. Chúng chỉ dùng
+      # thư viện chuẩn cộng module anh em cùng thư mục tools/.
+      # sync_agents_to_codex.py:24 thử `tomllib` (chuẩn từ 3.11) trước rồi mới lùi về
+      # `tomli`; vì ghim 3.11 ở đây nên nhánh cần `tomli` không bao giờ chạy.
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"      # SÀN KHAI BÁO trong CLAUDE.md
