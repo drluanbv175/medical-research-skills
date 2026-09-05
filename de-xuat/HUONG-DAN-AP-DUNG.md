@@ -16,6 +16,29 @@ Hai Routine chạy trên cloud, **không phụ thuộc máy bác sĩ thức hay 
 Cả hai chỉ sinh **THẺ ỨNG VIÊN (CANDIDATE)**, dừng đúng ở Cổng A/B. Có báo về điện
 thoại và email khi chạy xong.
 
+### Đã bắn thử — và đã chốt cửa fail-closed
+
+Bắn thử Routine tuần lúc 11:56 ngày 05/09: **SUCCEEDED**, chạy 3 phút 37, sinh 28.563
+token đầu ra — tức có làm việc thật, không thoát sớm. Nhưng tôi **không đọc được nội
+dung phiên đó** từ phiên thiết lập; báo cáo nằm trong email và thông báo đẩy của bác sĩ.
+
+Vì chưa xác nhận được phiên do Routine sinh ra có gọi được skill hay không, tôi đã siết
+lời nhắc của **cả hai** Routine thay vì để may rủi. Mỗi lượt chạy nay phải mở đầu bằng
+ba dòng tự khai năng lực, và có **cửa fail-closed**:
+
+- Không có công cụ tra cứu nào → **DỪNG NGAY**, viết đúng một câu, không dựng báo cáo.
+- Thiếu skill nhưng còn tra cứu được → chạy tiếp, nhưng phải ghi rõ là đang chạy
+  không có skill.
+- Mọi khẳng định phải truy được về nguồn **mở trong chính lượt đó** — không dựng lại
+  từ trí nhớ, kể cả khi thấy chắc chắn.
+
+Lý do viết thẳng vào lời nhắc: trong y khoa, một trích dẫn bịa nguy hiểm hơn hẳn một
+tuần không có báo cáo. Trước bản vá này, nếu skill vắng mặt thì phiên có thể lặng lẽ
+soạn báo cáo từ trí nhớ mà không ai biết.
+
+**Model:** hai Routine đang chạy **Sonnet 5** (trigger không ghim model nên lấy mặc
+định). Với thẩm định chứng cứ y khoa bác có thể muốn Opus — nói một câu là đổi được.
+
 > **Hạn chế phải biết:** Routine tạo qua đường này **không mang theo connector**
 > (PubMed, ClinicalTrials, Amass, Consensus…). Phiên sẽ tra bằng tìm kiếm web, kém
 > chính xác hơn. Muốn có connector: mở **claude.ai → Routines**, sửa hai Routine
