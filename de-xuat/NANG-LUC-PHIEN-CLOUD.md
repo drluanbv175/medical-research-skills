@@ -153,3 +153,65 @@ tra đăng ký thử nghiệm (ClinicalTrials 81 hit, có NCT), lấy **nguyên 
 - Chặn mạng đo trên **6 tên miền**; không phải toàn bộ danh sách chặn. Có thể còn tên miền khác mở.
 - Chưa đo: hạn ngạch (rate limit) của từng connector, độ trễ, kích thước toàn văn PMC trả về,
   và chức năng của Scholar Gateway / ICD-10 / ChEMBL.
+
+---
+
+# Phụ lục — Đối chiếu với phiên ROUTINE (đo 2026-09-05, 12:52–13:18 UTC)
+
+Đã tạo một Routine (`create_new_session_on_fire`) và kích hoạt **2 lần** để đối chiếu.
+
+## Kết quả: KHÔNG lấy được số đo từ phiên Routine
+
+| Lần | Phiên | Thời lượng | Trạng thái nền tảng | Nhánh `claude/do-nang-luc-routine` |
+|---|---|---|---|---|
+| 1 | `session_01G8tmQdGhk93MUqmvxVWYcy` | ~6 phút, 142 577 token, $1,20 | IDLE (chạy hết) | **không xuất hiện** |
+| 2 | `cse_0171oxk8Rusx4APqH5YusXZ3` | 1 phút 51 giây (13:07:32→13:09:23) | `ROUTINE_RUN_STATUS_SUCCEEDED` | **không xuất hiện** |
+
+Lần 2 đã được cấp thêm đường ghi không cần gắn repo (công cụ GitHub của harness) nhưng vẫn không có nhánh.
+
+**Không đọc được lý do từ phiên gọi.** Phiên Routine chạy ở container khác, `ListAgents` không thấy nó,
+và phiên này không có công cụ đọc transcript phiên khác. Số đo Bước 1–5 nhiều khả năng nằm trong
+tin nhắn cuối của phiên Routine — đọc trực tiếp trên claude.ai hoặc qua email thông báo đã bật.
+**Không suy đoán nội dung.**
+
+## Bốn khác biệt ĐÃ ĐO CHẮC CHẮN (từ metadata cấu hình Routine, không phải suy diễn)
+
+| Hạng mục | Phiên cloud có repo | Phiên Routine |
+|---|---|---|
+| Nguồn repo | có | `"sources":[]` · nhãn `config:routine-lineage-none` |
+| Connector MCP | đủ bộ EBM (PubMed, Clinical Trials, Amass, Consensus, Scite…) | `"mcp_servers":[]` — **không có cái nào** |
+| Skill tài khoản | 44 SKILL.md nạp được | `"account_skills":[]` trong cấu hình — **[CẦN KIỂM CHỨNG]** liệu phiên thực tế có nạp không |
+| Model phục vụ | `claude-opus-5` | `claude-sonnet-5` |
+| Nhánh được phép push | — | `"allowed_push_branches":[]` |
+
+## Nguyên nhân đã xác định cho khoản connector
+
+Không phải bản chất của Routine, mà là **giới hạn của đường tạo Routine**. Khi thử tạo Routine
+có kèm connector, hệ thống từ chối nguyên văn:
+
+> `create_trigger: the connectors parameter is not available for this organization. Omit the connectors parameter.`
+
+Và khi tạo không kèm connector, hệ thống cảnh báo:
+
+> `this trigger stores no MCP connectors, so the sessions it fires will run without connector (mcp__<server>__*) tools`
+
+**Hệ quả:** Routine tạo bằng công cụ MCP **chắc chắn không có** connector tra cứu y văn →
+không thể chạy giám sát chứng cứ. **[CẦN KIỂM CHỨNG]** Routine tạo từ **giao diện Routines trên
+claude.ai** có mang connector hay không — chưa đo được, và không đo được từ phiên này.
+
+## Bằng chứng bổ sung cho kết luận "không ghi cứng tên công cụ"
+
+Trong cùng phiên đo này, tên công cụ đã đổi **ba lần**:
+1. `mcp__290a5fde-…__search_articles` → `mcp__PubMed__search_articles` (UUID → tên thật)
+2. `mcp__Claude_Code_Remote__get_session` → `mcp__bf7c680d-…__get_session`
+3. `mcp__bf7c680d-…__get_session` → biến mất, rồi `mcp__Claude_Code_Remote__delete_trigger` trở lại
+
+Prompt Routine ghi cứng tên công cụ sẽ hỏng bất kỳ lúc nào. Bắt buộc dùng `ToolSearch` theo chức năng.
+
+## Việc còn lại trước khi bật Routine giám sát EBM
+1. **[CẦN XÁC NHẬN TẠI ĐƠN VỊ]** Tạo Routine từ giao diện claude.ai và đo lại — nếu vẫn không có
+   connector thì Routine không dùng được cho giám sát chứng cứ trong tổ chức này.
+2. Nếu Routine có connector: vẫn giữ nguyên các cảnh báo ở phần chính (không mở được guideline gốc,
+   Elicit hỏng, không ghi cứng tên công cụ).
+3. Nếu Routine không có connector: chuyển sang chạy giám sát bằng **phiên cloud có repo** (như phiên
+   đã đo ở phần chính), không dùng Routine.
