@@ -1,73 +1,155 @@
-# Năng lực phiên cloud — đo 2026-09-05 12:25 UTC
+# Năng lực phiên cloud — đo 2026-09-05, 12:25–12:45 UTC
 
-> Toàn bộ số liệu dưới đây là kết quả chạy lệnh thật trong chính phiên này, không suy đoán.
-> Phạm vi hiệu lực: PHIÊN CLOUD CÓ NGUỒN REPO ĐÍNH KÈM. Xem mục "Giới hạn của phép đo".
+> Mọi số liệu dưới đây là kết quả **gọi thật** trong chính phiên này. Nơi nào chỉ nạp được
+> schema mà chưa gọi, đã ghi rõ. Không suy đoán, không tô hồng.
+> Phạm vi hiệu lực: **phiên cloud CÓ nguồn repo đính kèm**. Xem "Giới hạn của phép đo".
 
-- **Phiên này**: có nguồn repo đính kèm (`drluanbv175/medical-research-skills`, nhánh `claude/do-nang-luc-phien-cloud`) — khác Routine ở chỗ Routine sinh phiên mới không có nguồn nào.
+- **Phiên này**: có nguồn repo đính kèm (`drluanbv175/medical-research-skills`, nhánh
+  `claude/do-nang-luc-phien-cloud`) — khác Routine ở chỗ Routine sinh phiên mới không có nguồn nào.
 
-- **Skill đồng bộ từ tài khoản**: **44 SKILL.md**
+---
+
+## 1. Skill
+
+- **Skill đồng bộ từ tài khoản: 44 SKILL.md**
   - 43 skill tại `/root/.claude/skills/synced/663e40d7-aa1d-4124-9a79-2c3563badb4c_1f8efc2f-396b-4507-8f3f-05e10bf3c606/`
   - 1 skill hệ thống tại `/root/.claude/skills/session-start-hook/`
-  - Skill đồng bộ được nạp thật vào danh sách khả dụng của phiên (không chỉ nằm trên đĩa).
+  - Skill đồng bộ được nạp thật vào danh sách gọi được bằng công cụ `Skill`.
 
-- **`cap-nhat-chung-cu-y-khoa`**: **CÓ**
-  - Đường dẫn: `/root/.claude/skills/synced/663e40d7-aa1d-4124-9a79-2c3563badb4c_1f8efc2f-396b-4507-8f3f-05e10bf3c606/cap-nhat-chung-cu-y-khoa/SKILL.md`
-  - Có mặt trong danh sách skill gọi được bằng công cụ `Skill`.
+- **`cap-nhat-chung-cu-y-khoa`: CÓ** (v1.12.0)
+  - Đường dẫn: `.../synced/663e40d7…/cap-nhat-chung-cu-y-khoa/SKILL.md`
+  - Cấu trúc đầy đủ, không phải vỏ rỗng: `references/` (11 tệp, gồm `10-giam-sat-dinh-ky.md`
+    và `11-guideline-bo-y-te-vn.md`), `templates/` (4 mẫu + `web-dashboard-evidence-workbench.html`
+    + `web-dashboard-record-schema.csv`), `quality/` (2 checklist nghiệm thu), `tools/`,
+    `data/drug_flags.json`.
 
-- **Skill EBM tiếng Việt thấy được** (trong danh sách khả dụng của phiên, 10 tên):
-  1. `cap-nhat-chung-cu-y-khoa`
-  2. `quan-ly-cap-nhat-ebm`
-  3. `tham-dinh-chung-cu-grade-nnt`
-  4. `kham-ngoai-tru-ebm`
-  5. `nghien-cuu-ebm-tong-hop`
-  6. `dashboard-master-ebm-ngoai-tru`
-  7. `antifacts`
-  8. `clinical-evidence-rag`
-  9. `nghien-cuu-y-khoa-chuan-quoc-te`
-  10. `ebm-master`
-  (Ngoài ra còn: `literature-review`, `paper-lookup`, `research-lookup`, `citation-management`, `peer-review`, `scientific-writing`, `statistical-analysis`, `ke-don-an-toan-benh-man`, `tiep-can-chan-doan-co-do-chuyen-tuyen`, `nguoi-cao-tuoi-da-benh-da-thuoc`, `tuan-thu-dieu-tri`, `giao-tiep-quyet-dinh-soap`, `dao-tao-slide-tai-lieu-y-khoa`, `ehospital-mini`, `dark-analyst`.)
+- **Skill EBM tiếng Việt thấy được** (10 tên đầu): `cap-nhat-chung-cu-y-khoa`,
+  `quan-ly-cap-nhat-ebm`, `tham-dinh-chung-cu-grade-nnt`, `kham-ngoai-tru-ebm`,
+  `nghien-cuu-ebm-tong-hop`, `dashboard-master-ebm-ngoai-tru`, `antifacts`,
+  `clinical-evidence-rag`, `nghien-cuu-y-khoa-chuan-quoc-te`, `ebm-master`.
+  (Còn: `literature-review`, `paper-lookup`, `research-lookup`, `citation-management`,
+  `peer-review`, `scientific-writing`, `statistical-analysis`, `ke-don-an-toan-benh-man`,
+  `tiep-can-chan-doan-co-do-chuyen-tuyen`, `nguoi-cao-tuoi-da-benh-da-thuoc`,
+  `tuan-thu-dieu-tri`, `giao-tiep-quyet-dinh-soap`, `dao-tao-slide-tai-lieu-y-khoa`,
+  `ehospital-mini`, `dark-analyst`.)
 
-- **WebSearch: CÓ** · **WebFetch: CÓ**
-  - Cả hai là công cụ hoãn nạp (deferred): phải gọi `ToolSearch` với `select:WebSearch,WebFetch` trước khi dùng. Đã nạp schema thành công trong phiên này để xác nhận, chứ không chỉ đọc danh sách tên.
-  - WebSearch ghi rõ giới hạn: **chỉ kết quả US**.
+---
 
-- **Công cụ connector**:
-  - **KHÔNG có tên nào đúng dạng `mcp__PubMed__*`, `mcp__Amass_Connector__*`, `mcp__Consensus__*`, `mcp__Clinical_Trials__*`.** Trong môi trường này mọi MCP server được đặt tên bằng **UUID**, không phải tên hãng.
-  - Các server tra cứu y văn/thử nghiệm **thật sự có** (tên chính xác như trong danh sách công cụ):
+## 2. Công cụ web
 
-    | Prefix công cụ (chính xác) | Nội dung — căn cứ | Trạng thái |
-    |---|---|---|
-    | `mcp__290a5fde-2a63-41d1-b1d0-733b6cd943be__*` | **PubMed** (`search_articles`, `get_full_text_article`, `find_related_articles`, `convert_article_ids`, `lookup_article_by_citation`, `get_article_metadata`, `get_copyright_status`) — mô tả công cụ ghi rõ "Search PubMed" | Đã nạp schema, sẵn dùng |
-    | `mcp__22dee40c-8c1f-43b6-8258-fc81d367cf2d__*` | **ClinicalTrials.gov API v2** (`search_trials`, `get_trial_details`, `analyze_endpoints`, `search_by_eligibility`, `search_by_sponsor`, `search_investigators`) — hướng dẫn server ghi rõ | Sẵn dùng |
-    | `mcp__7ab88be3-4cca-4ee9-a484-d48b8a924bb3__*` | **Amass** (BiomedCore 40M+ bài, TrialCore 1.2M+ thử nghiệm, DrugCore, GeneCore, RegulatoryCore FDA+EMA, PatentCore) — tên công cụ chứa `amass` | Sẵn dùng |
-    | `mcp__5346c7ae-d7d4-4878-946f-5ebe7aea0bfd__*` | **Elicit** (`search_papers`, `search_trials`, `create_systematic_review`, `create_report`) — mô tả ghi "Elicit's academic paper corpus" | Đã nạp schema, sẵn dùng |
-    | `mcp__7e5ade36-f545-464d-bf7a-bfd8ebcbacc0__*` | **scite** (`search_literature`, `read_fulltext`, `citation_graph`, `bibliography`, cảnh báo retraction qua `editorialNotices`) — hướng dẫn server ghi rõ | Sẵn dùng |
-    | `mcp__20bc00dd-8dac-4995-a37a-7b0b5fcb3897__search` | Tìm 220 triệu bài (Semantic Scholar + PubMed + Scopus + arXiv), có `medical_mode`, lọc `study_types` RCT/SR/MA, quartile SJR | Đã nạp schema, sẵn dùng. Tên hãng không được server công bố — **[CẦN KIỂM CHỨNG]** nếu muốn gọi đích danh "Consensus" |
-    | `mcp__eb6674e9-2c4e-454f-a7ff-554b1da37f32__*` | **bioRxiv / medRxiv** preprint | Sẵn dùng |
-    | `mcp__185aad4c-f557-46bc-8e66-7d5656dbd885__semanticSearch` | Tìm ngữ nghĩa (không rõ nguồn) | **[CẦN KIỂM CHỨNG]** |
-    | `mcp__bb740761-1dc3-44f5-a43c-4e9429d9ddc0__*` | ICD-10-CM/PCS FY2026 | Sẵn dùng |
-    | `mcp__3ad0de59-bdd9-473c-8da5-2f9cbcf20de2__*` | ChEMBL v34 (dược chất, cơ chế, ADMET) | Sẵn dùng |
+| Công cụ | Tồn tại | Gọi thật | Kết quả đo |
+|---|---|---|---|
+| **WebSearch** | CÓ | ✅ Chạy được | Truy vấn "KDIGO 2024 CKD guideline SGLT2i" trả 8 nguồn + tóm tắt. **Chỉ kết quả US.** Nội dung là tóm tắt từ snippet, **không phải trích nguyên văn tài liệu gốc**. |
+| **WebFetch** | CÓ | ❌ **BỊ CHẶN** | 3/3 tên miền y khoa thử đều trả `EGRESS_BLOCKED`: `kdigo.org`, `www.ncbi.nlm.nih.gov`, `academic.oup.com`. |
 
-  - **3 MCP server đang CHỜ XÁC THỰC**, chưa dùng được và **không thể** xác thực trong phiên không tương tác:
-    `2e366b39-cf09-4ff5-917a-659de628ef5f`, `a55ba7b7-4ecb-4a17-801c-e4889bf98d51`, `c9f0f68f-fd28-41db-ad40-0b6ea93da618`.
-    Muốn dùng phải cấp quyền ở cài đặt connector claude.ai hoặc `/mcp` trong phiên tương tác. **[CẦN XÁC NHẬN TẠI ĐƠN VỊ]** — chưa xác định được đây có phải connector y khoa hay không.
+Cả hai là công cụ hoãn nạp — phải `ToolSearch` với `select:WebSearch,WebFetch` trước khi dùng.
 
-## KẾT LUẬN cho Routine giám sát chứng cứ
+---
 
-**ĐỦ về năng lực kỹ thuật, nhưng THIẾU về tính ổn định định danh công cụ và chưa chứng minh cho phiên Routine.**
+## 3. Mạng trực tiếp (curl/python) — **CHẶN TOÀN BỘ NGUỒN Y KHOA**
 
-Cụ thể:
+Đo bằng `curl` thật, mỗi tên miền một lần:
 
-1. **Đủ**: có `cap-nhat-chung-cu-y-khoa` + 9 skill EBM tiếng Việt khác; có WebSearch + WebFetch; có PubMed, ClinicalTrials.gov, Amass, Elicit, scite, bioRxiv/medRxiv. Đây là đủ hạ tầng để chạy một chu trình giám sát chứng cứ có trích dẫn kiểm chứng được.
+| Tên miền | Kết quả |
+|---|---|
+| `eutils.ncbi.nlm.nih.gov` (PubMed E-utilities) | **CHẶN** |
+| `pubmed.ncbi.nlm.nih.gov` | **CHẶN** |
+| `clinicaltrials.gov/api/v2` | **CHẶN** |
+| `api.crossref.org` | **CHẶN** |
+| `www.who.int` | **CHẶN** |
+| `kdigo.org` | **CHẶN** |
+| `pypi.org` (pip) | ✅ Chạy được (nằm trong `noProxy`) |
 
-2. **Thiếu — định danh công cụ không ổn định**: mọi connector mang tên UUID, **không** phải `mcp__PubMed__*`. Bất kỳ prompt Routine nào ghi cứng tên dạng `mcp__PubMed__*` sẽ **gọi hụt công cụ**. Routine phải mô tả công cụ theo *chức năng* và dùng `ToolSearch` (ví dụ `ToolSearch("pubmed search articles")`) thay vì ghi cứng tên. **[CẦN KIỂM CHỨNG]**: UUID có giữ nguyên giữa các phiên hay không — chưa đo được trong một phiên đơn lẻ.
+Trạng thái proxy xác nhận đây là **chặn theo chính sách**, không phải lỗi cấu hình:
+`{"kind":"connect_rejected","detail":"gateway answered 403 to CONNECT (policy denial or upstream failure)","host":"eutils.ncbi.nlm.nih.gov:443"}`
 
-3. **Thiếu — chưa đo được phiên Routine thật**: phép đo này thực hiện trong phiên **có nguồn repo**. Phiên do Routine sinh ra không có nguồn nào. Chưa có bằng chứng phiên Routine cũng nạp đủ 44 skill đồng bộ và cùng bộ connector. **[CẦN KIỂM CHỨNG]** — cách kiểm: cho Routine chạy đúng kịch bản đo này một lần và ghi kết quả ra tệp riêng để đối chiếu.
+**Hệ quả trực tiếp:** mọi skill mô tả cách làm việc là "dùng API MIỄN PHÍ PubMed E-utilities /
+Crossref / Europe PMC" qua curl hoặc python — gồm `paper-lookup`, `nghien-cuu-ebm-tong-hop`,
+`citation-management`, `research-lookup`, `literature-review` — **KHÔNG chạy được theo đường đó**
+trong môi trường này. Chúng chỉ chạy được nếu chuyển sang gọi connector MCP.
 
-4. **Thiếu — WebSearch chỉ trả kết quả US**: guideline của hội chuyên ngành châu Âu/khu vực và tài liệu Bộ Y tế Việt Nam có thể không xuất hiện. Bù bằng WebFetch trực tiếp vào URL nguồn chính thức đã biết.
+---
 
-5. **Thiếu — 3 connector chưa xác thực**: không thể mở khoá tự động; phiên Routine sẽ gặp đúng rào cản này.
+## 4. Connector — tên chính xác và kết quả GỌI THẬT
 
-### Giới hạn của phép đo
-- Đo tại **một thời điểm**, trong **một loại phiên** (cloud + repo). Không suy rộng cho phiên Routine, phiên tương tác trên máy, hay thời điểm khác.
-- Chỉ xác nhận công cụ **tồn tại và nạp được schema**; **chưa** chạy truy vấn thật để đo hạn ngạch, độ trễ hay quyền truy cập nội dung toàn văn.
+**Cảnh báo về định danh:** lúc 12:25 UTC mọi server mang tên **UUID**
+(`mcp__290a5fde-…__search_articles`). Lúc ~12:44 UTC các server kết nối lại và đổi sang **tên thật**
+(`mcp__PubMed__search_articles`). **Tên công cụ thay đổi ngay trong cùng một phiên.**
+
+| Connector | Prefix hiện tại | Gọi thật | Kết quả |
+|---|---|---|---|
+| **PubMed** | `mcp__PubMed__*` | ✅ | `search_articles("SGLT2 inhibitors chronic kidney disease", ≥2025)` → **2 870 kết quả**, có `query_translation` MeSH. `convert_article_ids(PMID 39453837)` → `PMC7616743` + DOI → **đường lấy toàn văn PMC thông suốt**. |
+| **Clinical Trials** | `mcp__Clinical_Trials__*` | ✅ | `search_trials(CKD + dapagliflozin)` → **81 thử nghiệm**, trả NCT ID, phase, status, enrollment. |
+| **Amass Connector** | `mcp__Amass_Connector__*` | ✅ | BiomedCore → 10 bản ghi kèm **abstract đầy đủ**, `journalQualityJufo`, `isRetracted`, `citationCount`. RegulatoryCore (FDA) → **nguyên văn nhãn thuốc FDA** kèm `sourceUrl` accessdata.fda.gov. |
+| **Consensus** | `mcp__Consensus__*` | ✅ | 10 bài kèm abstract + URL. **Gói miễn phí: tối đa 10 kết quả, chỉ trang 0.** |
+| **Scite** | `mcp__Scite__*` | ✅ | Tra theo DOI → metadata + `tally` (41 citation) + Smart Citations nguyên văn + trường `editorialNotices` (**kiểm retraction**) + `isOa`/`license`. |
+| **bioRxiv / medRxiv** | `mcp__bioRxiv__*` | ✅ | `search_preprints(medrxiv, 14 ngày)` → trả kết quả. **Hạn chế của chính công cụ: KHÔNG tìm được theo từ khoá**, chỉ lọc theo ngày + chuyên mục. |
+| **Elicit** | `mcp__Elicit__*` | ❌ **HỎNG** | `api_access_denied` — "This Elicit account's plan doesn't include API access". **Nạp được schema nhưng không chạy được.** Cần nâng gói Pro. |
+| Scholar Gateway | `mcp__Scholar_Gateway__semanticSearch` | ⬜ Chưa gọi | Tồn tại, chưa đo chức năng. |
+| ICD-10 / ChEMBL | `mcp__ICD-10_Codes__*`, `mcp__ChEMBL__*` | ⬜ Chưa gọi | Tồn tại, chưa đo chức năng. |
+
+**Connector cần kết nối lại** (`ListConnectors`, `installState: needs_reconnect`): **Canva**,
+**HyperFrames by HeyGen**, **Synapse.org**. Không có cái nào là connector EBM cốt lõi → không
+ảnh hưởng Routine giám sát chứng cứ. Phiên không tương tác **không** tự xác thực được; phải cấp
+quyền ở cài đặt connector claude.ai.
+
+---
+
+## 5. Môi trường thực thi
+
+- Python **3.11.15**; `pip install` chạy được (pypi nằm trong `noProxy`) — đã cài thử `beautifulsoup4` thành công.
+- Ghi tệp vào repo: OK.
+- `bs4` **không** có sẵn, phải cài.
+
+---
+
+## 6. KẾT LUẬN cho Routine giám sát chứng cứ
+
+**THIẾU — và thiếu đúng một thứ then chốt: không đọc được văn bản guideline gốc.**
+
+### Đủ để làm
+Phát hiện bài mới (PubMed 2 870 hit, Amass 40M bản ghi), lọc theo ngày/chất lượng tạp chí,
+đọc abstract đầy đủ, **kiểm retraction** (Scite `editorialNotices`, Amass `isRetracted`),
+tra đăng ký thử nghiệm (ClinicalTrials 81 hit, có NCT), lấy **nguyên văn nhãn FDA/EMA**
+(Amass RegulatoryCore), lần được PMID → PMCID để lấy toàn văn OA.
+
+### Thiếu chính xác cái gì
+
+1. **Không mở được tài liệu guideline gốc.** `kdigo.org`, `academic.oup.com`, `ncbi.nlm.nih.gov`
+   đều bị chặn với cả WebFetch lẫn curl. Routine **không thể trích nguyên văn** khuyến cáo,
+   số hiệu recommendation, hay mức 1A/2B từ tài liệu của hội chuyên ngành.
+   WebSearch có trả về chuỗi "1A"/"2B", nhưng đó là **snippet tìm kiếm, không phải văn bản gốc**.
+   Chiếu theo nguyên tắc làm việc đã đặt ra — *nêu nguồn chính và năm/phiên bản*, *không tự gán
+   mức chứng cứ khi nguồn không cung cấp hoặc chưa kiểm chứng* — **Routine không được phép kết luận
+   mức khuyến cáo dựa trên WebSearch**. Phải đánh dấu `[CẦN KIỂM CHỨNG]` và để bác sĩ mở tài liệu gốc.
+   Guideline Bộ Y tế Việt Nam cũng nằm ngoài tầm với vì lý do này *và* vì WebSearch chỉ trả kết quả US.
+
+2. **Elicit hỏng ở tầng tài khoản**, không phải tầng kỹ thuật. Routine nào gọi Elicit sẽ lỗi.
+
+3. **Định danh công cụ không ổn định** — đã đổi tên **ngay trong phiên này** (UUID → tên thật).
+   Prompt Routine **tuyệt đối không được ghi cứng** tên công cụ; phải mô tả theo chức năng và
+   dùng `ToolSearch` (ví dụ `ToolSearch("pubmed search articles")`).
+
+4. **Chưa đo được phiên Routine thật.** Phép đo này chạy trong phiên **có repo**. Phiên Routine
+   không có nguồn nào. Chưa có bằng chứng nó nạp đủ 44 skill và cùng bộ connector.
+   **[CẦN KIỂM CHỨNG]** — cách kiểm: cho Routine chạy đúng kịch bản này một lần, ghi ra tệp riêng
+   để đối chiếu.
+
+### Việc phải làm trước khi bật Routine
+1. Viết prompt Routine **không ghi cứng tên connector**.
+2. Buộc Routine **đánh dấu `[CẦN KIỂM CHỨNG]` cho mọi mức khuyến cáo (GRADE/1A/2B)** không lấy
+   được từ tài liệu gốc — chỉ ghi mức khi trích được từ nguồn chính.
+3. Không đưa Elicit vào chu trình cho tới khi nâng gói.
+4. Chạy chính kịch bản đo này **từ trong một Routine** để xác nhận điểm 4 ở trên.
+5. [CẦN XÁC NHẬN TẠI ĐƠN VỊ] Nếu cần đọc guideline gốc (KDIGO/ESC/ADA/Bộ Y tế), phải xin mở
+   allowlist tên miền cho môi trường, hoặc bác sĩ tải tài liệu về repo để phiên đọc tại chỗ.
+
+---
+
+## Giới hạn của phép đo
+- Đo trong **một loại phiên** (cloud + repo), trong **một cửa sổ 20 phút**. Không suy rộng cho
+  phiên Routine, phiên tương tác trên máy, hay thời điểm khác — tên công cụ đã chứng minh là
+  có thể đổi trong vòng vài phút.
+- Chặn mạng đo trên **6 tên miền**; không phải toàn bộ danh sách chặn. Có thể còn tên miền khác mở.
+- Chưa đo: hạn ngạch (rate limit) của từng connector, độ trễ, kích thước toàn văn PMC trả về,
+  và chức năng của Scholar Gateway / ICD-10 / ChEMBL.
