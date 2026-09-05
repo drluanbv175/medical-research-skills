@@ -195,3 +195,35 @@ git commit -m "chore: ngừng track hàng đợi knowledge pack (tệp sinh tự
 ```
 
 Cần bác sĩ kiểm chứng.
+
+---
+
+## Skill: repo 52 / tài khoản 26 — công cụ đã sẵn
+
+`tools/tao_marketplace.py` (trong `medical-research-skills`, đã đẩy) sinh
+`.claude-plugin/marketplace.json` cho một repo skill bất kỳ, để cài bằng một lệnh
+thay vì tải tay từng skill lên tài khoản. Repo thành nguồn chân lý, `git pull` là
+cập nhật.
+
+```
+python3 tools/tao_marketplace.py ~/Documents/GitHub/EBM-drluanbv175          # xem trước
+python3 tools/tao_marketplace.py ~/Documents/GitHub/EBM-drluanbv175 --ghi    # ghi file
+```
+
+Đã chạy trên cả hai repo: `EBM-drluanbv175` **52/52 skill**, `medical-research-skills`
+**605/605**. Không mất skill nào.
+
+> **Đính chính.** Tôi từng nói phải sửa `sync/skills/ebm-master` trước, vì nó khai
+> `name: EBM-MASTER` chữ hoa và "đường plugin sẽ bỏ qua im lặng". **Sai — suy đoán,
+> không có phép đo nào chống lưng.** Bằng chứng ngược lại: skill đó **đang nạp và
+> chạy** ngay trong phiên này với đúng cái tên chữ hoa ấy; Claude Code định danh
+> skill theo **tên thư mục**, không theo trường `name`.
+>
+> Công cụ của tôi lúc đầu **loại** nó khỏi bản kê. Nghĩa là nếu bác chạy `--ghi`
+> sớm hơn, bác đã nhận bản kê 51/52 — thiếu đúng skill cửa chính của hệ — mà không
+> hay biết. Nay nó chỉ **cảnh báo** và vẫn đưa vào. **Không cần sửa gì trong repo.**
+
+Sau khi `--ghi`, cài bằng `/plugin marketplace add drluanbv175/EBM-drluanbv175`
+trong Claude Code, thay cho việc tải tay lên tài khoản.
+
+Cần bác sĩ kiểm chứng.
