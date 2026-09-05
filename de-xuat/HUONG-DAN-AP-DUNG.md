@@ -61,25 +61,42 @@ ngay ngày đầu, không cần cấu hình gì.
 
 ---
 
-## LỖI THẬT ĐANG TỒN TẠI — sửa được trong 1 phút
+## ĐÍNH CHÍNH: "lỗi `.codex`" tôi báo trước đó KHÔNG phải lỗi
 
-`.claude/agents` có **88** tệp. `.codex/agents` có **0** — thư mục đích không tồn
-tại. Gương Codex chưa từng được sinh, và không lịch nào chạy `check_claude_codex_
-sync_health.py` nên nó **hỏng trong im lặng**.
+Tôi đã viết: *".claude/agents có 88 tệp, .codex/agents có 0 — gương chưa từng được
+sinh, hỏng trong im lặng"*, kèm lệnh `git add .codex && git commit`. **Cả hai đều sai.**
 
-Đã thử trên bản sao: chạy `python3 tools/sync_agents_to_codex.py` sinh **84 tệp**
-và `check_claude_codex_sync_health.py` chuyển **XANH** ngay.
+Đo lại:
 
 ```
-cd ~/Documents/GitHub/EBM-drluanbv175
-python3 tools/sync_agents_to_codex.py
-python3 tools/check_claude_codex_sync_health.py
-git add .codex && git commit -m "fix: sinh lại gương .codex khớp 88 agent"
+$ git check-ignore -v .codex/agents/binh-duyet.md
+.gitignore:13:/*    .codex/agents/binh-duyet.md
 ```
 
-Workflow ở Việc 1 chốt luôn việc này — lần sau lệch sẽ báo đỏ, không im lặng nữa.
+`.codex/` **bị .gitignore cố ý** — nó là **sản phẩm sinh**, không phải nội dung. Và nó
+được tái tạo tự động ở hai nơi:
 
----
+- `.claude/hooks/session-start.sh:114` → chạy `sync_agents_to_codex.py` **mỗi phiên**
+- `.github/workflows/kiem-tinh-da-nen.yml:76` → chạy lại **mỗi lần CI**
+
+Nên **bản sao git trần có 0 tệp là ĐÚNG TRẠNG THÁI**, không phải hỏng. Trên máy bác sĩ
+gương vẫn được sinh đều. Lệnh `git add .codex` tôi đưa sẽ ép thêm tệp đang bị ignore
+vào git — **đừng chạy nó**.
+
+Đây là cùng một lớp sai lầm mà chính `tools/kiem_cay_lam_viec.py` của bác sĩ sinh ra để
+cảnh báo: đo trên bản sao trần rồi đọc "thiếu sản phẩm sinh" thành "cơ chế đã hỏng".
+Docstring của nó ghi rõ một cuộc kiểm toán 11 agent từng báo động NGHIÊM TRỌNG vì đúng
+lỗi này. Tôi đã mắc lại.
+
+### Hệ quả: một lỗi thật trong workflow tôi giao
+
+Bản đầu của `giam-sat-dinh-ky.yml` kiểm gương bằng `git diff --quiet -- .codex`. Trên
+đường dẫn bị ignore, lệnh đó **luôn** báo "không lệch" — cổng sẽ xanh giả vĩnh viễn.
+Đã thay bằng thứ kiểm được thật: bộ sinh có chạy nổi không, gương có qua cổng sức khoẻ
+không, và có sinh ra tệp nào không.
+
+**Đã chạy thử toàn bộ workflow trên bản sao thật:** 11/11 verifier xanh, gương sinh 84
+tệp và qua cổng. Workflow không đỏ ngày đầu.
 
 ## Việc 3 — ĐÃ THU HẸP: không phải 48 quyết định, mà là MỘT
 

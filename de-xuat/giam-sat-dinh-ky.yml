@@ -77,19 +77,19 @@ jobs:
           done
           [ "$do_" -eq 0 ]
 
-      # Đo 05/09/2026: .claude/agents có 88 tệp, .codex/agents có 0 — gương chưa
-      # từng được sinh, và không lịch nào chạy check nên nó hỏng trong im lặng.
-      # Chạy tay sync_agents_to_codex.py sinh 84 tệp và check chuyển XANH ngay.
-      - name: Gương .codex phải khớp .claude/agents
+      # `.codex/` bị .gitignore (dòng 13) — đây là SẢN PHẨM SINH, cố ý không track,
+      # được tái tạo ở session-start.sh:114 và trong kiem-tinh-da-nen.yml:76. Bản sao
+      # trần có 0 tệp là ĐÚNG TRẠNG THÁI, không phải lỗi. Nên KHÔNG kiểm bằng
+      # `git diff -- .codex`: trên đường dẫn bị ignore, lệnh đó luôn báo "không lệch"
+      # và cổng này sẽ xanh giả mãi mãi. Thứ đáng kiểm là bộ sinh có chạy nổi không
+      # và gương sinh ra có qua được cổng sức khoẻ không.
+      - name: Gương .codex sinh được và qua cổng sức khoẻ
         run: |
           python3 tools/sync_agents_to_codex.py
           python3 tools/check_claude_codex_sync_health.py
-          if ! git diff --quiet -- .codex; then
-            echo "🔴 Gương .codex LỆCH khỏi .claude/agents — chạy tools/sync_agents_to_codex.py rồi commit."
-            git diff --stat -- .codex
-            exit 1
-          fi
-          echo "✅ Gương .codex khớp"
+          n=$(ls .codex/agents 2>/dev/null | wc -l)
+          [ "$n" -gt 0 ] || { echo "🔴 Bộ sinh chạy xong nhưng .codex/agents rỗng"; exit 1; }
+          echo "✅ Gương .codex: $n tệp, qua cổng sức khoẻ"
 
       - name: Báo động khi đỏ
         if: failure()
