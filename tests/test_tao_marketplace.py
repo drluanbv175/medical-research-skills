@@ -68,11 +68,11 @@ def test_doc_frontmatter():
 
 
 def test_ten_hop_le():
-    print("\n### Quy ước tên skill ###")
+    print("\n### Quy ước tên skill (chỉ để CẢNH BÁO, không để loại) ###")
     for ten in ("ebm-master", "paper-lookup", "a", "x1-y2"):
         t(f"nhận '{ten}'", bool(tm.HOP_LE.match(ten)))
     for ten in ("EBM-MASTER", "Ebm-Master", "ebm_master", "-ebm", "ebm-", "ebm--master", "ebm master"):
-        t(f"loại '{ten}'", not tm.HOP_LE.match(ten))
+        t(f"nhận diện '{ten}' lệch quy ước", not tm.HOP_LE.match(ten))
 
 
 def test_tim_skill():
@@ -107,10 +107,13 @@ def test_sinh_ban_ke():
 
         d = json.load(open(dich, encoding="utf-8"))
         ky_nang = d["plugins"][0]["skills"]
-        t("chỉ nhận 2 skill hợp lệ", len(ky_nang) == 2)
+        t("nhận 3 skill có đủ name+description", len(ky_nang) == 3)
         t("giữ tra-cuu-bai-bao", "./sync/skills/tra-cuu-bai-bao" in ky_nang)
         t("giữ tham-dinh-grade", "./sync/skills/tham-dinh-grade" in ky_nang)
-        t("loại tên viết hoa", not any("ten-viet-hoa" in s for s in ky_nang))
+        # Đo thật 05/09/2026: skill khai `name: EBM-MASTER` vẫn nạp và chạy trên máy
+        # này — Claude Code định danh theo tên thư mục. Loại nó khỏi bản kê là làm
+        # người dùng mất một skill đang hoạt động mà không hay biết.
+        t("GIỮ tên viết hoa (chỉ cảnh báo)", any("ten-viet-hoa" in s for s in ky_nang))
         t("loại thiếu mô tả", not any("thieu-mo-ta" in s for s in ky_nang))
         t("loại thiếu tên", not any("thieu-ten" in s for s in ky_nang))
         t("loại không frontmatter", not any("khong-frontmatter" in s for s in ky_nang))

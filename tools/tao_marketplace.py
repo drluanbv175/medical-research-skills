@@ -19,7 +19,11 @@ import os
 import re
 import sys
 
-# Claude Code yêu cầu tên skill dạng chữ-thường-gạch-nối; tên hoa/gạch dưới bị loại.
+# Quy ước tên skill là chữ-thường-gạch-nối. NHƯNG đây chỉ là quy ước, KHÔNG phải
+# điều kiện nạp: đo 05/09/2026 trên chính máy này, skill khai `name: EBM-MASTER`
+# (chữ hoa) vẫn nạp và chạy bình thường — Claude Code định danh theo TÊN THƯ MỤC.
+# Nên tên lệch quy ước chỉ được CẢNH BÁO, không được loại: loại đi thì bản kê thiếu
+# skill đang hoạt động mà người dùng không hề biết.
 HOP_LE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 BO_QUA = {".git", "node_modules", "__pycache__", ".venv", "venv", ".tox"}
 
@@ -69,7 +73,7 @@ def main() -> int:
         print(f"LỖI: không tìm thấy SKILL.md nào trong {goc}", file=sys.stderr)
         return 2
 
-    hop_le, van_de = [], []
+    hop_le, van_de, canh_bao = [], [], []
     for tuong_doi in thu_muc_skill:
         fm = doc_frontmatter(os.path.join(goc, tuong_doi, "SKILL.md"))
         ten = fm.get("name", "")
@@ -77,9 +81,9 @@ def main() -> int:
             van_de.append((tuong_doi, "thiếu 'name' trong frontmatter"))
         elif not fm.get("description"):
             van_de.append((tuong_doi, "thiếu 'description' trong frontmatter"))
-        elif not HOP_LE.match(ten):
-            van_de.append((tuong_doi, f"tên '{ten}' không hợp lệ — cần chữ thường, gạch nối"))
         else:
+            if not HOP_LE.match(ten):
+                canh_bao.append((tuong_doi, f"tên '{ten}' lệch quy ước chữ-thường-gạch-nối"))
             hop_le.append("./" + tuong_doi.replace(os.sep, "/"))
 
     ten_plugin = tham_so.ten or os.path.basename(goc).lower()
@@ -105,6 +109,8 @@ def main() -> int:
     print(f"Bỏ qua    : {len(van_de)}")
     for tuong_doi, ly_do in van_de:
         print(f"   ✗ {tuong_doi} — {ly_do}")
+    for tuong_doi, ly_do in canh_bao:
+        print(f"   ⚠ {tuong_doi} — {ly_do} (vẫn đưa vào bản kê)")
 
     dich = os.path.join(goc, ".claude-plugin", "marketplace.json")
     if not tham_so.ghi:
