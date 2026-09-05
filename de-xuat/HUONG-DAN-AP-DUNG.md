@@ -13,6 +13,8 @@ Hai Routine chạy trên cloud, **không phụ thuộc máy bác sĩ thức hay 
 | Giám sát an toàn thuốc | thứ Hai hàng tuần, 08:02 VN | 07/09/2026 | `trig_018yTTQBgUigYhboVUk2gmXK` |
 | Cập nhật guideline | mùng 1 hàng tháng, 08:00 VN | 01/10/2026 | `trig_01YAUrB48io5z6sy25nMPLgB` |
 
+Cả hai chạy **Opus 5**.
+
 Cả hai chỉ sinh **THẺ ỨNG VIÊN (CANDIDATE)**, dừng đúng ở Cổng A/B. Có báo về điện
 thoại và email khi chạy xong.
 
@@ -36,8 +38,9 @@ Lý do viết thẳng vào lời nhắc: trong y khoa, một trích dẫn bịa 
 tuần không có báo cáo. Trước bản vá này, nếu skill vắng mặt thì phiên có thể lặng lẽ
 soạn báo cáo từ trí nhớ mà không ai biết.
 
-**Model:** hai Routine đang chạy **Sonnet 5** (trigger không ghim model nên lấy mặc
-định). Với thẩm định chứng cứ y khoa bác có thể muốn Opus — nói một câu là đổi được.
+**Model: đã đổi sang Opus 5** (05/09, theo yêu cầu của bác sĩ). Lượt chạy thử ngày
+05/09 chạy Sonnet 5 vì trigger chưa ghim model; từ lượt thứ Hai 07/09 trở đi cả hai
+Routine chạy `claude-opus-5`. Lời nhắc và lịch giữ nguyên, lịch sử chạy không mất.
 
 > **Hạn chế phải biết:** Routine tạo qua đường này **không mang theo connector**
 > (PubMed, ClinicalTrials, Amass, Consensus…). Phiên sẽ tra bằng tìm kiếm web, kém
