@@ -122,15 +122,59 @@ hệ. Và vì A nằm **lồng trong** E trên máy thật, dự án con có `CL
 Vậy nên: **đừng gộp hai repo.** Việc 3 rút lại còn một câu hỏi — A có cần bản sao agent
 riêng không, và nếu có thì sinh từ E chứ đừng sửa tay hai nơi.
 
-## Còn tồn
+## Ba khoản "còn tồn" — tôi đã nêu sai cả ba, theo ba kiểu
 
-- **Skill: repo 52 / tài khoản 26.** `tools/tao_marketplace.py` (đã đẩy ở
-  `medical-research-skills`) sinh được `.claude-plugin/marketplace.json` để cài một
-  lệnh thay vì tải tay. Cần sửa trước: `sync/skills/ebm-master` khai
-  `name: EBM-MASTER` viết hoa — đường plugin sẽ **bỏ qua im lặng**.
-- **63 tệp `.bak`** đang được track trong `ebm-drluanbv175`.
-- **18 tệp `V4_*`** nằm ở thư mục gốc `medical-ebm-automation`.
-- 4 commit liên tiếp `chore: cap nhat timestamp hang doi knowledge pack` chỉ đổi
-  timestamp của tệp sinh tự động — nên đưa vào `.gitignore`.
+Rà từng khoản thì chỉ **một** là việc thật, và nó nhỏ.
+
+| Khoản | Tôi đã nói | Đo thật |
+|---|---|---|
+| Tệp `.bak` tracked | 63 | **21** |
+| `V4_*` ở gốc | "rác cần dọn" | **hồ sơ kiểm toán — không được xoá** |
+| Tệp sinh tự động bị commit lặp | có | **đúng** — và sửa được trong 2 dòng |
+
+### `.bak`: 21 chứ không phải 63 — và không phải việc cần làm
+
+Con số 63 của tôi đến từ một lệnh `grep` đếm **dòng khớp chuỗi**, không đếm **tệp**;
+đường dẫn chứa thư mục `_bak_20260613/` bị đếm nhiều lần. Đếm đúng theo đuôi tệp:
+
+- **21** tệp, trong đó **20 nằm trong `.claude/agents/_archive/_bak_20260613/` và
+  `_bak2_20260613/`** — kho lưu có chủ ý, đặt tên theo ngày. Không phải rác.
+- **1** tệp lẻ: `.claude/agents/_SO-TRANG-THAI-CHECKPOINT.md.bak` — bản mẫu cũ
+  (43 dòng) đã bị bản sống (59 dòng) thay thế; 10 dòng riêng của nó là phiên bản cũ
+  của chính các dòng đó, không có nội dung độc lập.
+- **0** tệp `.bak` nào được mã nguồn tham chiếu.
+
+**Không có việc phải làm.** Cùng lắm xoá 1 tệp lẻ, và cũng không cấp thiết.
+
+### `V4_*`: hồ sơ phát hành, xoá là mất chứng cứ
+
+18 tệp ở gốc `medical-ebm-automation` mang tên `ARCHIVE_RECEIPT`, `FREEZE_SUMMARY`,
+`CLEANUP_EXECUTION_LOG`, `RETENTION_POLICY`, `GIT_BASELINE_VERIFICATION`,
+`TEST_REPORT`… Đây là **bằng chứng đóng băng phiên bản** V4_3_3 và V4_3_3_2.
+
+Repo đã có chỗ đúng cho chúng: `release_evidence/` với 192 tệp tracked, chia theo
+`PROGRAM`, `R0`…`R6_0`, `R_GOV_1/2`, `V4_3_3_2`, `V4_3_4`, `V4_3_5`. Nhưng:
+
+- **17/18 tệp ở gốc KHÔNG có bản nào trong `release_evidence/`** — chúng là bản duy nhất.
+- 1 tệp (`V4_3_3_2_FREEZE_SUMMARY.md`) có ở cả hai nơi và **khác nhau 133 dòng**.
+
+Nên việc đúng là **`git mv` vào `release_evidence/`** (giữ lịch sử), tạo thêm thư mục
+`V4_3_3/` cho nhóm V4_3_3, và đối chiếu tệp khác 133 dòng kia trước — **không phải xoá**.
+Với một hệ y khoa có cổng ký duyệt, xoá hồ sơ phát hành là mất dấu vết kiểm toán.
+
+Vì đây là quyết định về hồ sơ kiểm toán, tôi để bác quyết, không tự làm.
+
+### Tệp sinh tự động: việc thật, sửa 2 dòng
+
+`results/knowledge_pack_update_queue.json` đang được track, và `.gitignore` đã loại
+`results/daily_*`, `results/weekly_*` nhưng **sót đúng tệp này** — nên nó sinh ra chuỗi
+commit `chore: cap nhat timestamp hang doi knowledge pack` chỉ đổi timestamp.
+
+```
+cd ~/Documents/GitHub/medical-ebm-automation
+echo 'results/knowledge_pack_update_queue.json' >> .gitignore
+git rm --cached results/knowledge_pack_update_queue.json
+git commit -m "chore: ngừng track hàng đợi knowledge pack (tệp sinh tự động)"
+```
 
 Cần bác sĩ kiểm chứng.
