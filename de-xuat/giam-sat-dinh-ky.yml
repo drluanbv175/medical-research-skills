@@ -97,7 +97,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          CU=$(gh issue list --label giam-sat --state open --limit 1 --json number --jq '.[0].number' || echo "")
+          # Nhãn `giam-sat` KHÔNG tồn tại sẵn trong repo (đã kiểm 05/09/2026 qua API).
+          # `gh issue create --label` với nhãn chưa có sẽ LỖI — tức là đúng lúc giám sát
+          # đỏ thì chính bước báo động cũng chết, và bác sĩ không nhận được gì. `--force`
+          # làm lệnh này chạy được cả lần đầu lẫn các lần sau.
+          gh label create giam-sat --force \
+            --description "Nhịp giám sát định kỳ" --color B60205
+          CU=$(gh issue list --label giam-sat --state open --limit 1 \
+                 --json number --jq '.[0].number' 2>/dev/null || echo "")
           if [ -n "$CU" ]; then
             gh issue comment "$CU" --body "Lượt chạy $(date +%d/%m/%Y) vẫn đỏ. Nhật ký: $URL"
             exit 0
