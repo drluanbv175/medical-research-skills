@@ -313,11 +313,18 @@ Phân tích đầy đủ, bốn bước xử lý và đề xuất làn ⑨ cho `
 `launchd runs = 0` đã đo từ trước, kết quả là sáu việc định kỳ đang trống, và trống
 **im lặng**: chưa từng nổ nên cũng chưa từng báo lỗi.
 
-Ba trong sáu việc đó **chạy được ngay trên cloud** vì chỉ cần nguồn công khai:
-`ebm-uptodate-tuan` · `ebm-tong-hop-chung-cu-tuan` · `ebm-antifacts-weekly` (phần
-digest). Lời nhắc cho cả ba đã viết sẵn, đúng khuôn hai Routine đang chạy —
-**chưa tạo cái nào**, vì mỗi Routine là một cam kết định kỳ tốn hạn mức và gửi thông
-báo mỗi kỳ; đó là quyết định của bác sĩ.
+Ba trong sáu việc đó **chạy được ngay trên cloud** vì chỉ cần nguồn công khai —
+và bác sĩ đã duyệt, **đã tạo xong ngày 06/09**:
+
+| Thứ | Giờ VN | Routine |
+|---|---|---|
+| Hai | 07:00 | Digest EBM 13 chuyên khoa *(mới)* |
+| Hai | 08:00 | Giám sát an toàn thuốc |
+| Bảy | 08:00 | Cập nhật chứng cứ 1 vấn đề lâm sàng *(mới)* |
+| Chủ nhật | 20:00 | Ứng viên chứng cứ 8 bệnh mạn *(mới)* |
+| Mùng 1 | 08:00 | Cập nhật guideline tháng |
+
+Cả ba dùng `claude-opus-5` khớp hai Routine cũ. Còn **ba việc** vẫn không ai chạy.
 
 Ba việc còn lại (`ebm-giam-sat-chung-cu`, `goi-duyet-tuan-ebm`, và hai việc chạy
 shell script) **không cloud nào gánh được** — chỉ có hai lối: sửa lịch trên máy cho

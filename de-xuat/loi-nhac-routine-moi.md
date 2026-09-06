@@ -1,7 +1,15 @@
-# Lời nhắc sẵn cho ba Routine cloud còn thiếu
+# Lời nhắc ba Routine cloud — ĐÃ TẠO 06/09/2026
 
-Viết theo đúng khuôn hai Routine đang chạy. Ba khối dưới đây dán thẳng vào
-`create_trigger` là dùng được — **chưa tạo cái nào**, chờ bác sĩ quyết.
+Bác sĩ đã duyệt cả ba. Đã tạo, đang bật, model `claude-opus-5` khớp hai Routine cũ.
+
+| | Routine | ID | Cron (UTC) | Giờ VN |
+|---|---|---|---|---|
+| A | Cập nhật chứng cứ tuần — 1 vấn đề lâm sàng | `trig_01CKTjwPjGiFXDgVbNf5Vohd` | `0 1 * * 6` | thứ Bảy 08:00 |
+| B | Ứng viên chứng cứ — 8 bệnh mạn | `trig_012iTUkzrXb8Rv7psy7o2767` | `0 13 * * 0` | Chủ nhật 20:00 |
+| C | Digest EBM 13 chuyên khoa | `trig_01UUGYwkhcSBvBTYsTtT7XR9` | `0 0 * * 1` | thứ Hai 07:00 |
+
+Văn bản lời nhắc bên dưới là bản đã nạp vào từng Routine — giữ lại để đối chiếu và
+sửa về sau.
 
 Khuôn chung, giữ nguyên ở cả ba: dò công cụ theo **chức năng** (không theo tên hãng,
 vì connector ở môi trường này mang tên UUID) · ba dòng tự khai năng lực · fail-closed
@@ -155,18 +163,36 @@ KHÔNG được viết bất cứ câu nào ngụ ý Antifacts đã được d�
 
 ---
 
-## Nếu bác sĩ đồng ý tạo cả ba
+## Lịch sau khi thêm — 5 Routine, không lượt nào chồng nhau
 
-Lịch sau khi thêm, giờ Việt Nam — đã dàn để không hai lượt nào chồng nhau:
+| Thứ | Giờ VN | Routine | Trạng thái |
+|---|---|---|---|
+| Hai | 07:00 | Digest 13 chuyên khoa | mới |
+| Hai | 08:00 | Giám sát an toàn thuốc | đang chạy |
+| Bảy | 08:00 | Cập nhật chứng cứ 1 vấn đề | mới |
+| Chủ nhật | 20:00 | Ứng viên chứng cứ 8 bệnh mạn | mới |
+| Mùng 1 | 08:00 | Cập nhật guideline tháng | đang chạy |
 
-| Thứ | Giờ | Routine |
-|---|---|---|
-| Hai | 07:00 | Digest 13 chuyên khoa *(mới)* |
-| Hai | 08:00 | Giám sát an toàn thuốc *(đang chạy)* |
-| Bảy | 08:00 | Cập nhật chứng cứ 1 vấn đề lâm sàng *(mới)* |
-| Chủ nhật | 20:00 | Ứng viên chứng cứ 8 bệnh mạn *(mới)* |
-| Mùng 1 | 08:00 | Cập nhật guideline tháng *(đang chạy)* |
+Khoảng 4 lượt/tuần. Mỗi lượt gửi một thông báo đẩy và một email.
 
-Thành 5 Routine, khoảng 4 lượt/tuần. Mỗi lượt gửi một thông báo đẩy và một email.
-Muốn ít hơn thì bỏ mục C (digest 13 chuyên khoa là mục nặng nhất và trùng phần nào
-với mục B).
+---
+
+## ⚠️ Hạn chế phải biết: các Routine chạy KHÔNG có connector
+
+Đo trên cả **năm** Routine: trường `mcp_connections` đều **rỗng**. Nghĩa là phiên do
+Routine sinh ra **không có công cụ connector** — không có PubMed connector, không có
+Scite, không có ClinicalTrials.
+
+Đây **không phải lỗi mới**: hai Routine cũ cũng vậy, và lượt chạy thử 05/09 vẫn
+SUCCEEDED trong điều kiện đó. Nhưng nó có hệ quả thật:
+
+- Báo cáo sẽ dựa vào **WebSearch/WebFetch**, không phải PubMed connector. Lấy PMID
+  khó hơn và có thể sót nguồn ngoài Mỹ.
+- Dòng **NĂNG LỰC-2** trong mỗi báo cáo sẽ phơi ra đúng điều này — bác sĩ đọc dòng
+  đó là biết lượt chạy có gì trong tay.
+- Cửa fail-closed đã tính sẵn tình huống này: chỉ WebSearch cũng đủ để chạy tiếp,
+  nên không có lượt nào bị dừng oan.
+
+**Muốn Routine có connector** thì phải tạo từ giao diện Routines trên claude.ai —
+Routine tạo qua công cụ chỉ mang được connector mà chính phiên gọi đang giữ, và
+phiên này không giữ cái nào để truyền sang.

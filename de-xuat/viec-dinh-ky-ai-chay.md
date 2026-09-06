@@ -63,9 +63,13 @@ Lời nhắc cho cả ba, viết theo đúng khuôn hai Routine đang chạy (d�
 chức năng · ba dòng tự khai năng lực · fail-closed cửa hẹp · đầu ra là THẺ ỨNG VIÊN
 dừng ở Cổng A/B · kết bằng "Cần bác sĩ kiểm chứng"): xem `loi-nhac-routine-moi.md`.
 
-> **Chưa tạo Routine nào cho ba việc này.** Mỗi Routine là một cam kết định kỳ: tốn
-> hạn mức và gửi email/thông báo mỗi kỳ. Việc đó là quyết định của bác sĩ, không
-> phải thứ nên tự bật thay bác sĩ. Nói một câu là tôi tạo.
+> **ĐÃ TẠO cả ba ngày 06/09/2026** sau khi bác sĩ duyệt. Đang bật, model
+> `claude-opus-5` khớp hai Routine cũ. Chi tiết ID và lịch: `loi-nhac-routine-moi.md`.
+>
+> Hạn chế đã đo: cả năm Routine đều có `mcp_connections` rỗng — phiên do Routine sinh
+> ra chạy **không có connector**, phải dựa vào WebSearch/WebFetch. Không phải lỗi mới
+> (hai Routine cũ cũng vậy và vẫn chạy được), nhưng làm việc lấy PMID khó hơn. Muốn có
+> connector thì phải tạo Routine từ giao diện trên claude.ai.
 
 ---
 
