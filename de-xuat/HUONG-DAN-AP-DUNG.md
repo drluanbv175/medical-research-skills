@@ -252,4 +252,23 @@ python3 tools/tao_marketplace.py ~/Documents/GitHub/EBM-drluanbv175 --ghi    # g
 Sau khi `--ghi`, cài bằng `/plugin marketplace add drluanbv175/EBM-drluanbv175`
 trong Claude Code, thay cho việc tải tay lên tài khoản.
 
+---
+
+## Việc 4 — Cấu trúc bài báo IMRAD: đã kiểm, có 4 lỗ hổng, bản vá đã viết sẵn
+
+Đối chiếu đường viết bản thảo với 9 mục chuẩn (Tiêu đề · Tóm tắt · Từ khóa · Giới thiệu ·
+Phương pháp · Kết quả · Thảo luận · Kết luận · Tài liệu tham khảo).
+
+**Kết quả: 5/9 đạt hoặc vượt · 4/9 thiếu** — và cả 4 chỗ thiếu đều nằm ở phần "vỏ"
+bài báo: tiêu đề, tóm tắt, từ khóa, kết luận. Phần "ruột" (Methods/Results/Discussion/
+References) mạnh hơn hẳn chuẩn phổ thông. Cổng bình duyệt nội bộ (`peer-review`) cũng
+không soát ba mục đầu, nên bản thảo tiêu đề mơ hồ vẫn lọt.
+
+Bảng đối chiếu từng mục, bản vá dán-là-xong cho ba file, và checklist tự soát 9 mục:
+[`cau-truc-bai-bao-IMRAD.md`](cau-truc-bai-bao-IMRAD.md).
+
+Ba file cần dán (đều ở repo `EBM-drluanbv175`, phiên cloud không có quyền push):
+`sync/skills/scientific-writing/SKILL.md` · `sync/skills/nghien-cuu-y-khoa-chuan-quoc-te/
+workflows/06_bao_cao_cong_bo_ung_dung.md` · `sync/skills/peer-review/SKILL.md`.
+
 Cần bác sĩ kiểm chứng.
