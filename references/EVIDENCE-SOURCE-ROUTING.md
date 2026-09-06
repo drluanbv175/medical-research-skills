@@ -95,6 +95,51 @@ Mã thoát: `0` sạch · `1` **có bài bị rút** · `2` quan ngại/đính c
 **Vẫn giữ nguyên tắc:** DOI mà Scite không trả về phải xếp `CHƯA KIỂM`, không được
 mặc định coi là sạch.
 
+### Bản ĐẦY ĐỦ: tải Retraction Watch về máy
+
+Chỉ mục Scite không phủ 100% — một DOI có thật vẫn có thể vắng mặt, và khi đó
+công cụ buộc phải xếp `CHƯA KIỂM`. Bộ dữ liệu Retraction Watch (Crossref mua lại
+năm 2023, phát hành miễn phí) là **sổ đăng ký đầy đủ**, nên tải về máy thì
+"không có trong bộ dữ liệu" mới thực sự nghĩa là "không có retraction nào được
+ghi nhận".
+
+```bash
+# 1) Tải + dựng chỉ mục (một lần; Crossref yêu cầu email liên hệ)
+python3 tools/tai_retraction_watch.py tai
+
+# 2) Tra — offline, không cần mạng, không cần MCP
+python3 scripts/retraction_check.py local ban-thao.md
+
+# Tiện ích
+python3 tools/tai_retraction_watch.py trangthai
+python3 tools/tai_retraction_watch.py tra 10.1016/S0140-6736(97)11096-0
+```
+
+Dữ liệu nằm ở `~/.cache/medical-research-skills/retractionwatch/`, **không** commit
+vào kho. Cache quá 30 ngày sẽ bị đánh dấu CŨ và tuổi dữ liệu luôn được in trong
+báo cáo — bản cũ có thể bỏ sót bài vừa bị rút.
+
+**Nguồn:** <https://gitlab.com/crossref/retraction-watch-data> — cập nhật mỗi ngày
+làm việc, không cần khoá API. Endpoint cũ `api.labs.crossref.org/data/retractionwatch`
+đã NGỪNG hoạt động (Crossref cảnh báo nó trả dữ liệu lỗi thời).
+
+**Đã kiểm chứng thật (2026-08-24):** tải 63,2 MB, lập chỉ mục 69.453 bản ghi,
+tra đúng — kể cả DOI `10.61882/zwq4sh57` mà chỉ mục Scite không có nên phải xếp
+`CHƯA KIỂM`, bản cục bộ kết luận dứt khoát là SẠCH.
+
+`gitlab.com` truy cập được cả trong Claude Code on the web lẫn trên máy cá nhân.
+Dùng `--via-git` để tải bằng git clone/pull (cập nhật tăng dần cho các lần sau).
+
+Trường hợp đặc biệt đã xử lý: bài **bị rút rồi được phục hồi** (`Reinstatement`)
+không tự động hạ xuống "sạch" — nó bị xếp `QUAN NGẠI` kèm yêu cầu kiểm tra thủ
+công tình trạng hiện hành.
+
+| Chế độ | Nguồn | Phủ | Cần mạng |
+|---|---|---|---|
+| `report` | Scite MCP | không đầy đủ → có ca `CHƯA KIỂM` | Không (MCP server-side) |
+| `local` | Retraction Watch tải về | **đầy đủ** | Chỉ khi tải; sau đó offline |
+
+
 ### 2.5 Tiền ấn phẩm & thuật ngữ
 
 | Cần gì | MCP (ưu tiên) | REST dự phòng |
@@ -251,3 +296,27 @@ except en.SourceUnavailable as e:
 
 **Nên bổ sung:** SNOMED CT Terminology (có trong thư mục connector, authless) —
 ghép với ICD-10 thành bộ thuật ngữ lâm sàng đầy đủ.
+
+---
+
+## 8. Cập nhật vào Claude Code (bẫy hay gặp)
+
+Kho khai báo `source: "./"`, nên khi cài, Claude Code **sao chép** toàn bộ kho vào
+`~/.claude/plugins/cache/<marketplace>/<plugin>/<commit>/`.
+
+> **`git pull` KHÔNG cập nhật skill đang chạy.** Bản sao trong cache vẫn ghim ở
+> commit cũ cho tới khi bạn làm mới plugin. Bạn có thể ở commit mới nhất trong
+> Terminal mà Claude Code vẫn nạp ảnh chụp cũ hàng tháng.
+
+Kiểm tra:
+
+```bash
+python3 tools/kiem_tra_plugin.py
+```
+
+Nó đọc `known_marketplaces.json` + `installed_plugins.json`, so commit đang ghim với
+`HEAD` của kho, và đếm số SKILL.md thực sự có khối định tuyến trong cache.
+Chỉ đọc, không sửa gì. Mã thoát: `0` đã mới · `1` cache còn cũ · `2` chưa cài plugin.
+
+Khi báo cache cũ: mở Claude Code, gõ `/plugin`, cập nhật marketplace rồi cập nhật
+plugin bên trong. Chạy lại script để xác nhận đủ 34/34.

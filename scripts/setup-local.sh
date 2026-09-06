@@ -86,6 +86,10 @@ cat <<'TXT'
   Cập nhật manifest plugin sau khi pull (nếu dùng Claude Code cục bộ):
       python3 adapt-for-claude-code.py
 
+  Bộ dữ liệu Retraction Watch đầy đủ (tải một lần, sau đó tra offline):
+      python3 tools/tai_retraction_watch.py tai --email ban@vidu.com
+      python3 scripts/retraction_check.py local ban-thao.md
+
   Tra cứu nhanh:
       python3 scripts/check_evidence_sources.py
       python3 scripts/retraction_check.py extract ban-thao.md

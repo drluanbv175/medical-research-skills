@@ -207,6 +207,13 @@ SOURCES: dict[str, dict[str, str]] = {
         "purpose": "DailyMed — nhãn thuốc FDA nguyên văn",
         "mcp": "mcp__Scite__search_drugs (một phần).",
     },
+    "retractionwatch": {
+        "host": "gitlab.com",
+        "probe": "https://gitlab.com/crossref/retraction-watch-data",
+        "purpose": "Bộ dữ liệu Retraction Watch (Crossref phát hành qua GitLab)",
+        "mcp": "mcp__Scite__search_literature -> editorialNotices (phủ KHÔNG đầy đủ). "
+               "Bản đầy đủ: tools/tai_retraction_watch.py tai",
+    },
     "semanticscholar": {
         "host": "api.semanticscholar.org",
         "probe": "https://api.semanticscholar.org/graph/v1/paper/search?query=covid&limit=1",

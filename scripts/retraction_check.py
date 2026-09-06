@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 from typing import Iterable
@@ -84,6 +85,15 @@ _STATUS = {
 }
 
 SEVERITY = {RETRACTED: 4, UNCHECKED: 3, CONCERN: 2, CORRECTED: 1, CLEAN: 0}
+
+# Giá trị cột RetractionNature trong bộ dữ liệu Retraction Watch.
+_RW_NATURE = {
+    "retraction": RETRACTED,
+    "expression of concern": CONCERN,
+    "correction": CORRECTED,
+    "erratum": CORRECTED,
+    # "reinstatement" xử lý riêng bên dưới: bài từng bị rút rồi được phục hồi.
+}
 
 
 def norm(doi: str) -> str:
@@ -145,11 +155,71 @@ def build_report(scite: dict, expected: list[str]) -> dict:
     return {"tong": len(rows), "thong_ke": tally, "chi_tiet": rows}
 
 
+def build_report_local(expected: list[str], found: dict, dataset_age=None) -> dict:
+    """Dựng báo cáo từ bộ dữ liệu Retraction Watch TẢI VỀ MÁY.
+
+    Khác biệt then chốt so với chế độ Scite: Retraction Watch là sổ đăng ký
+    ĐẦY ĐỦ, nên một DOI không có trong đó thực sự nghĩa là "không có retraction
+    nào được ghi nhận" — kết luận SACH, chứ không phải CHUA_KIEM.
+
+    Điều đó chỉ đúng khi bộ dữ liệu còn mới. Bản cache cũ có thể bỏ sót bài vừa
+    bị rút, nên tuổi dữ liệu luôn được ghi vào báo cáo.
+    """
+    rows = []
+    for doi in expected:
+        recs = found.get(norm(doi), [])
+        if not recs:
+            rows.append({"doi": doi, "phan_dinh": CLEAN, "tieu_de": None,
+                         "notices": [], "ghi_chu": "Không có retraction nào được ghi nhận."})
+            continue
+
+        verdict, notices, reinstated = CLEAN, [], False
+        title = None
+        for r in recs:
+            nature = (r.get("nature") or "").strip()
+            title = title or (r.get("title") or None)
+            if nature.lower().startswith("reinstatement"):
+                reinstated = True
+            kind = _RW_NATURE.get(nature.lower())
+            if not kind:
+                continue
+            notices.append({"loai": kind, "status": nature,
+                            "noticeDoi": r.get("retraction_doi"),
+                            "date": r.get("retraction_date"),
+                            "reason": (r.get("reason") or "")[:160]})
+            if SEVERITY[kind] > SEVERITY[verdict]:
+                verdict = kind
+
+        note = None
+        if reinstated and verdict == RETRACTED:
+            # Bài từng bị rút rồi được phục hồi -> KHÔNG tự hạ xuống "sạch",
+            # bắt buộc người đọc tự kiểm tra.
+            verdict = CONCERN
+            note = ("Có bản ghi REINSTATEMENT (phục hồi) bên cạnh retraction — "
+                    "phải kiểm tra thủ công tình trạng hiện hành.")
+        elif reinstated:
+            note = "Có bản ghi REINSTATEMENT (phục hồi)."
+
+        rows.append({"doi": doi, "phan_dinh": verdict, "tieu_de": title,
+                     "notices": notices, "ghi_chu": note})
+
+    tally = {k: sum(1 for r in rows if r["phan_dinh"] == k)
+             for k in (RETRACTED, CONCERN, CORRECTED, CLEAN, UNCHECKED)}
+    return {"tong": len(rows), "thong_ke": tally, "chi_tiet": rows,
+            "nguon": "Retraction Watch (bộ dữ liệu cục bộ)",
+            "tuoi_du_lieu_ngay": dataset_age}
+
+
 def render(rep: dict) -> str:
     t, lines = rep["thong_ke"], []
     lines.append("")
     lines.append("=" * 72)
-    lines.append("  KIỂM TRA TRÍCH DẪN BỊ RÚT / ĐÍNH CHÍNH  (nguồn: Scite MCP)")
+    lines.append(f"  KIỂM TRA TRÍCH DẪN BỊ RÚT / ĐÍNH CHÍNH")
+    lines.append(f"  Nguồn: {rep.get('nguon', 'Scite MCP')}")
+    age = rep.get("tuoi_du_lieu_ngay")
+    if age is not None:
+        warn = "  ← CŨ, nên tải lại" if age > 30 else ""
+        lines.append(f"  Tuổi dữ liệu: {age:.0f} ngày{warn}")
     lines.append("=" * 72)
     lines.append(f"  Tổng số DOI      : {rep['tong']}")
     lines.append(f"  BỊ RÚT           : {t[RETRACTED]}")
@@ -194,6 +264,11 @@ def main() -> int:
     e.add_argument("file")
     e.add_argument("--json", action="store_true", help="Xuất mảng JSON.")
 
+    l = sub.add_parser("local", help="Tra bằng bộ dữ liệu Retraction Watch TẢI VỀ MÁY "
+                                     "(đầy đủ, không cần mạng).")
+    l.add_argument("file", help="Bản thảo / .bib chứa DOI.")
+    l.add_argument("--json", action="store_true", help="Xuất JSON.")
+
     r = sub.add_parser("report", help="Đọc JSON Scite trả về, in bảng phán định.")
     r.add_argument("scite_json", help="Đường dẫn file JSON, hoặc '-' để đọc stdin.")
     r.add_argument("--dois-from", help="File gốc, để phát hiện DOI mà Scite bỏ sót.")
@@ -211,6 +286,34 @@ def main() -> int:
                 return 0
             print(f"# {len(dois)} DOI — dán vào tham số `dois` của mcp__Scite__search_literature")
             print(json.dumps(dois, ensure_ascii=False))
+        return 0
+
+    if a.cmd == "local":
+        sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                        "..", "tools"))
+        try:
+            import tai_retraction_watch as rw
+        except ImportError:
+            print("Không nạp được tools/tai_retraction_watch.py", file=sys.stderr)
+            return 2
+
+        dois = extract_dois(open(a.file, encoding="utf-8", errors="replace").read())
+        if not dois:
+            print("Không tìm thấy DOI nào trong file.", file=sys.stderr)
+            return 0
+        try:
+            found = rw.tra_cuu(dois)
+        except FileNotFoundError as exc:
+            print(f"\n{exc}\n", file=sys.stderr)
+            return 3
+
+        rep = build_report_local(dois, found, rw.tuoi_cache())
+        print(json.dumps(rep, ensure_ascii=False, indent=2) if a.json else render(rep))
+        t = rep["thong_ke"]
+        if t[RETRACTED]:
+            return 1
+        if t[CONCERN] or t[CORRECTED]:
+            return 2
         return 0
 
     raw = sys.stdin.read() if a.scite_json == "-" else \
