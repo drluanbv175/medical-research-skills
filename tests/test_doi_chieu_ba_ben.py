@@ -234,6 +234,16 @@ with tempfile.TemporaryDirectory() as tmp:
 kiem("đường dẫn tương đối không bị tính là neo máy",
      bool(M.NEO_MAY.search("đọc sync/skills/abc/SKILL.md rồi chạy tools/x.py")), False)
 
+# ------------------------------------------------- tham số repo bỏ trống
+print("\n### Bỏ trống tham số repo (dùng cho làn trong dong_bo_tat_ca.py) ###")
+import subprocess  # noqa: E402
+CONG_CU = Path(__file__).resolve().parents[1] / "tools" / "doi_chieu_ba_ben.py"
+r = subprocess.run([sys.executable, str(CONG_CU), "--cloud", "/khong/co/that", "--json"],
+                   capture_output=True, text=True, timeout=60)
+kiem("bỏ trống repo -> KHÔNG lỗi argparse (mã 2 của argparse)", r.returncode != 2, True)
+kiem("thiếu cloud -> mã 3, không phải 0", r.returncode, 3)
+kiem("và nói rõ KHÔNG phải 'đã khớp'", "KHÔNG phải kết luận" in r.stderr, True)
+
 print("\n" + "=" * 50)
 print(f"  PASS={PASS}  FAIL={FAIL}")
 print("=" * 50)

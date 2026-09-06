@@ -369,8 +369,10 @@ def main(argv=None) -> int:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )
-    ap.add_argument("repo", help="thư mục hub skill của repo (vd .../sync/skills), "
-                                 "hoặc gốc repo — công cụ tự tìm sync/skills")
+    ap.add_argument("repo", nargs="?", default=None,
+                    help="thư mục hub skill của repo (vd .../sync/skills), hoặc gốc repo "
+                         "— công cụ tự tìm sync/skills. Bỏ trống thì lấy repo chứa chính "
+                         "công cụ này (để chạy được như một làn trong dong_bo_tat_ca.py)")
     ap.add_argument("--cloud", help="bundle tài khoản; bỏ trống thì tự dò "
                                     "~/.claude/skills/synced/<uuid>")
     ap.add_argument("--tat-ca", action="store_true",
@@ -379,7 +381,9 @@ def main(argv=None) -> int:
     a = ap.parse_args(argv)
 
     try:
-        goc_repo = Path(a.repo).expanduser().resolve()
+        # Bỏ trống -> repo chứa chính file này (tools/<file> -> gốc repo là parents[1]).
+        goc_repo = (Path(a.repo).expanduser().resolve() if a.repo
+                    else Path(__file__).resolve().parents[1])
         hub = goc_repo / "sync" / "skills" if (goc_repo / "sync" / "skills").is_dir() else goc_repo
         repo = quet_thu_muc(hub)
         bundle = tim_bundle_cloud(a.cloud)

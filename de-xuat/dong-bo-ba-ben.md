@@ -94,54 +94,46 @@ tuần trước, nó sẽ im lặng chạy tiếp mà không báo.
 
 ---
 
-## 4. Đề xuất — làm theo thứ tự này
+## 4. Đã thực hiện — nhánh `claude/dong-bo-ba-ben` của `ebm-drluanbv175`
 
-**Bước 1 — ĐÃ LÀM XONG trong phiên này.**
-Bảy skill họ A đã được sao lưu vào git, chép nguyên văn từng byte từ bundle tài
-khoản (`cmp` xác nhận 7/7 khớp): xem `sao-luu-skill-cloud/` trong repo
-`medical-research-skills`, kèm bảng SHA-256 để đối chiếu về sau.
+Bốn bước đề xuất, **ba đã làm xong trong repo**, một còn lại phải làm trên giao diện
+tài khoản.
 
-Mất tài khoản không còn đồng nghĩa mất skill. Việc còn lại là dời chúng về **nhà
-đúng** — repo `ebm-drluanbv175`, dưới tên có hậu tố `-vn` để không đè lên họ
-K-Dense đang giữ tên gốc (phiên cloud không có quyền ghi vào repo đó):
+**✅ Bước 1 — bảy skill bản cloud vào git.** Chép nguyên văn từng byte (`cmp` 7/7),
+sao lưu ở `sao-luu-skill-cloud/` của repo này và cài chính thức vào
+`ebm-drluanbv175/sync/skills/`.
 
-```bash
-cd ~/Documents/GitHub/EBM-drluanbv175
-SAO=~/Documents/GitHub/medical-research-skills/sao-luu-skill-cloud
-for s in citation-management literature-review paper-lookup peer-review \
-         research-lookup scientific-writing statistical-analysis; do
-  cp -R "$SAO/$s" "sync/skills/$s-vn"
-done
-git add sync/skills/*-vn
-git commit -m "chore: đưa 7 skill EBM bản cloud vào git"
-```
+**✅ Bước 2 — tách bảy tên trùng.** Họ K-Dense chuyển sang `<tên>-kdense`, họ bản tài
+khoản giữ tên gốc. 55 file `references/scripts/assets` đi nguyên vẹn. Kèm theo phải
+sửa `_vietnamize.py`: `process()` chỉ xử lý thư mục có tên trong `DESCRIPTIONS`, để
+nguyên khoá cũ thì lần chạy kế tiếp sẽ **ghi đè và chèn `EBM-VN-GUARD` lên bảy skill
+mang cổng liêm chính**. Đã đổi bảy khoá và kiểm bằng cách nạp module thật.
 
-**Bước 2 — chọn một họ cho mỗi tên, đổi tên họ còn lại.**
-Khuyến nghị: **giữ họ A ở tên gốc**, đổi họ B thành `<tên>-kdense`. Lý do: các lệnh
-Việt và bảng định tuyến trong `CLAUDE.md` (dòng 226, 229) cùng
-`plugin-router-chatgpt` đang trỏ vào tên gốc; đổi tên họ A sẽ phải sửa
-83 file có chuỗi `viet-ban-thao` và 45 file có `thu-thu-tai-lieu`, còn đổi tên họ B
-thì không file nào đang trỏ tới. Đổi cái ít ràng buộc hơn.
+**⏳ Bước 3 — CHỈ BÁC SĨ LÀM ĐƯỢC.** Tải lên tài khoản **23 skill cloud đang thiếu**
+(7 bản `-kdense` + 16 skill trước nay chỉ có trong repo), và tải bản
+`scientific-writing` + `peer-review` **vừa vá IMRAD**. Đây là thao tác trên giao diện
+tài khoản, không đi qua git nên phiên cloud không làm thay được.
 
-Sau khi đổi tên, cả hai họ cùng sống được, và cloud có thể nhận đủ cả hai.
+> ⚠️ Hai skill đó nay **repo đi TRƯỚC cloud** — làn ⑨ sẽ báo 🟡 cho tới khi tải lên.
+> Nghĩa là **bản vá IMRAD chưa có hiệu lực trong Routine**, mới chỉ có trên máy.
 
-**Bước 3 — nạp lên cloud những gì cloud đang thiếu.**
-16 skill chỉ-có-ở-repo cộng họ B đã đổi tên, tải lên tài khoản. Sau đó cloud, cục bộ
-và repo mới thật sự cùng một tập.
+**✅ Bước 4 — làn ⑨.** `tools/doi_chieu_ba_ben.py` đã cài vào `ebm-drluanbv175/tools/`
+và `dong_bo_tat_ca.py` nay phủ **9 làn**. Dùng `lan_ba_ben()` riêng thay vì `cong_cu()`
+chung, để mã thoát 3 (không đo được) hiện `◌ bỏ qua` thay vì 🔴 — đúng luật "thiếu
+nguyên liệu thì ghi bỏ qua" của chính lệnh đó, mà vẫn không bị đọc nhầm thành 🟢.
 
-**Bước 4 — chốt cửa để không trôi lại.**
-Thêm **làn ⑨** vào `tools/dong_bo_tat_ca.py`:
+### Trạng thái sau khi làm
 
-```python
-# ⑨ Cloud ↔ repo — làn duy nhất chạm bundle tài khoản.
-#    Mã thoát 2 = có skill trùng tên khác nội dung -> CHẶN, không chép gì.
-("Cloud ↔ repo", ["python3", "tools/doi_chieu_ba_ben.py", "."]),
-```
+| | Trước | Sau |
+|---|---:|---:|
+| KHÁC HẲN (trùng tên, khác skill) | **7** | **0** |
+| Giống hệt cloud | 6 | 11 |
+| Lệch phiên bản | 13 | 15 |
+| Chỉ có ở repo | 16 | 23 |
 
-Làn này chỉ đọc, nên đặt ở đâu trong thứ tự cũng an toàn; nhưng để **trước** làn ③
-thì tốt hơn: biết có xung đột tên trước khi ③ chép skill sang hai runtime.
-
----
+Hai con số tăng là **có chủ ý**: "chỉ có ở repo" tăng 7 vì bảy bản `-kdense` chưa
+được tải lên tài khoản; "lệch phiên bản" tăng 2 vì `scientific-writing` và
+`peer-review` vừa được vá IMRAD nên repo đi trước cloud.
 
 ## 5. Dùng công cụ ở cả ba nơi
 

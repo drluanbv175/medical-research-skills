@@ -302,11 +302,28 @@ kiểm**. Kết quả đo: **20/26 skill dùng chung tên đang lệch nhau**.
 "6 lăng kính" ra 0 file trong toàn repo). Nay đã sao lưu nguyên văn từng byte vào
 `sao-luu-skill-cloud/`, kèm SHA-256.
 
-Công cụ: `python3 tools/doi_chieu_ba_ben.py <đường-dẫn-repo>` — chỉ đọc, không ghi
-gì. Mã thoát `2` = có trùng tên khác nội dung, **đừng chạy lệnh chép nào**.
+**ĐÃ THỰC HIỆN 06/09** — nhánh `claude/dong-bo-ba-ben` của `ebm-drluanbv175`:
 
-Phân tích đầy đủ, bốn bước xử lý và đề xuất làn ⑨ cho `dong_bo_tat_ca.py`:
-[`dong-bo-ba-ben.md`](dong-bo-ba-ben.md).
+| | Trước | Sau |
+|---|---:|---:|
+| **KHÁC HẲN** (trùng tên, khác skill) | **7** | **0** |
+| Giống hệt cloud | 6 | 11 |
+
+- Bảy skill K-Dense chuyển sang `<tên>-kdense`, bảy skill bản tài khoản vào đúng tên
+  gốc. 55 file `references/scripts/assets` nguyên vẹn.
+- `_vietnamize.py` đã sửa khoá — nếu không, lần chạy kế tiếp sẽ **ghi đè và chèn
+  `EBM-VN-GUARD` lên bảy skill mang cổng liêm chính**.
+- `dong_bo_tat_ca.py` nay phủ **9 làn**; làn ⑨ dùng hàm riêng để mã thoát 3 hiện
+  `◌ bỏ qua` chứ không phải 🔴, mà cũng không phải 🟢.
+- Bốn file skill đã vá theo chuẩn IMRAD, gồm **sửa lỗi quy tắc Abstract** của bản
+  K-Dense.
+
+**Việc còn lại — chỉ bác sĩ làm được** (giao diện tài khoản, không qua git): tải lên
+tài khoản **23 skill cloud đang thiếu** và **bản `scientific-writing` + `peer-review`
+vừa vá**. Cho tới lúc đó, bản vá IMRAD mới chỉ có hiệu lực trên máy, **chưa có trong
+Routine**.
+
+Phân tích đầy đủ: [`dong-bo-ba-ben.md`](dong-bo-ba-ben.md).
 
 ---
 
