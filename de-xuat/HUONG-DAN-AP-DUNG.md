@@ -259,10 +259,22 @@ trong Claude Code, thay cho việc tải tay lên tài khoản.
 Đối chiếu đường viết bản thảo với 9 mục chuẩn (Tiêu đề · Tóm tắt · Từ khóa · Giới thiệu ·
 Phương pháp · Kết quả · Thảo luận · Kết luận · Tài liệu tham khảo).
 
-**Kết quả: 5/9 đạt hoặc vượt · 4/9 thiếu** — và cả 4 chỗ thiếu đều nằm ở phần "vỏ"
-bài báo: tiêu đề, tóm tắt, từ khóa, kết luận. Phần "ruột" (Methods/Results/Discussion/
-References) mạnh hơn hẳn chuẩn phổ thông. Cổng bình duyệt nội bộ (`peer-review`) cũng
-không soát ba mục đầu, nên bản thảo tiêu đề mơ hồ vẫn lọt.
+**Kết quả trên bản CLOUD: 5/9 đạt hoặc vượt · 4/9 thiếu** — cả 4 chỗ thiếu nằm ở
+phần "vỏ" bài báo: tiêu đề, tóm tắt, từ khóa, kết luận. Phần "ruột"
+(Methods/Results/Discussion/References) mạnh hơn hẳn chuẩn phổ thông. Cổng bình duyệt
+nội bộ (`peer-review`) cũng không soát ba mục đầu.
+
+**Bổ sung 06/09 — có HAI bản `scientific-writing` khác hẳn nhau** (độ trùng 6,2%):
+bản Việt 3,8 KB chạy trên cloud, bản K-Dense 31,9 KB chạy trên máy bác sĩ. Nên kết
+quả **phụ thuộc chỗ ngồi**: tiêu đề và tóm tắt có ở máy nhưng không có ở cloud.
+
+Hai điều mới, nghiêm trọng hơn:
+- **Từ khóa thiếu ở CẢ HAI** — grep toàn bộ 31.898 byte bản K-Dense: 0 dòng chứa
+  "keyword". Đây là lỗ hổng toàn hệ thống, không phải chuyện chọn bản nào.
+- 🔴 **Quy tắc Abstract của bản K-Dense SAI cho y khoa.** Dòng 282 viết
+  "❌ NEVER use labeled sections" trong khi dòng 603 của chính file đó nói tạp chí
+  y khoa dùng tóm tắt CÓ cấu trúc. Nhờ Claude trên máy viết tóm tắt sẽ nhận một
+  đoạn văn xuôi không nhãn mục — phần lớn tạp chí y khoa trả lại.
 
 Bảng đối chiếu từng mục, bản vá dán-là-xong cho ba file, và checklist tự soát 9 mục:
 [`cau-truc-bai-bao-IMRAD.md`](cau-truc-bai-bao-IMRAD.md).

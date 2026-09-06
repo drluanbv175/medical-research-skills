@@ -37,6 +37,78 @@ Hệ quả: bản thảo có tiêu đề mơ hồ hoặc tóm tắt thiếu ph�
 
 ---
 
+---
+
+## 1B. BỔ SUNG 06/09 — có HAI bản `scientific-writing`, và kết quả khác nhau
+
+Bản audit ở mục 1 làm trên **bản CLOUD** — thứ chạy trong Routine và mọi phiên web.
+Sau đó, đối chiếu ba bên (`tools/doi_chieu_ba_ben.py`) phát hiện repo giữ một skill
+**khác hẳn** dưới cùng cái tên `scientific-writing`: bản K-Dense tiếng Anh, 31.898 B
+so với 3.790 B, độ trùng chỉ **6,2%**. Đó là bản chạy trên **máy bác sĩ** qua
+`link-skills.sh`.
+
+Nên câu trả lời "đã đạt chuẩn chưa" **phụ thuộc bác sĩ đang làm việc ở đâu**:
+
+| # | Mục | CLOUD (Việt, 3,8 KB) | MÁY (K-Dense, 31,9 KB) |
+|---|---|---|---|
+| 1 | Tiêu đề | ❌ không nhắc | 🟡 có — "Create Title (concise and descriptive)"; **thiếu** yêu cầu nêu thiết kế nghiên cứu trong tiêu đề |
+| 2 | Tóm tắt | ❌ không có ở đường bản thảo | 🟡 có, 100–250 từ, "standalone", nhưng **4/5 phần** (thiếu bối cảnh) — và xem lỗi bên dưới |
+| 3 | **Từ khóa** | ❌ | ❌ **grep toàn bộ 31.898 B: 0 dòng chứa "keyword"** |
+| 4 | Giới thiệu | ✅ | ✅ 5 ý, có "Identify knowledge gaps" |
+| 5 | Phương pháp | ✅ vượt | ✅ đủ Sample · Procedure · Statistics + justification · Ethics/consent |
+| 6 | Kết quả | ✅ vượt (bắt buộc 95% CI) | ✅ "Objective reporting **without interpretation**" |
+| 7 | Thảo luận | ✅ | ✅ có "limitations honestly" + "future research" |
+| 8 | Kết luận | ⚠️ vắng ở `scientific-writing` | ⚠️ không có mục riêng, không có bước viết ở quy trình |
+| 9 | Tham khảo | ✅ vượt (cổng cứng PMID/DOI) | ✅ AMA/Vancouver/APA + "verify against original sources" |
+
+**Hai kết luận rút ra:**
+
+1. **Mục 3 (Từ khóa) thiếu ở CẢ HAI nơi.** Đây là lỗ hổng toàn hệ thống, không phải
+   chuyện chọn bản nào.
+2. Mục 1 và 2 **có ở máy nhưng không có ở cloud**. Cùng một yêu cầu "viết bản thảo",
+   bác sĩ sẽ nhận kết quả khác nhau tuỳ chỗ ngồi — mà không có gì báo.
+
+### 🔴 Lỗi phải sửa: quy tắc Abstract mặc định của bản K-Dense SAI cho y khoa
+
+Cùng một file, ba chỗ nói ba kiểu về cùng một việc:
+
+| Dòng | Nội dung |
+|---|---|
+| 76 | "Support **both** structured abstracts (with labeled sections) and unstructured…" |
+| **282** | "❌ **NEVER** use labeled sections (Background:, Methods:, Results:, Conclusions:)" |
+| 603 | "**Medical journals (NEJM, Lancet): Structured abstracts**, evidence language" |
+
+Dòng 282 nằm trong khối **"Abstract Format Rule"**, viết đậm, có ❌ và chữ NEVER —
+đó là dòng một mô hình đọc file này sẽ tuân theo. Và nó **sai với toàn bộ lĩnh vực
+của bác sĩ**: hầu hết tạp chí y khoa yêu cầu tóm tắt có cấu trúc, đúng như chính
+dòng 603 của file thừa nhận.
+
+Hệ quả cụ thể: nhờ Claude trên máy viết tóm tắt → nhận một đoạn văn xuôi không nhãn
+mục → phần lớn tạp chí y khoa trả lại.
+
+**Bản vá cho `sync/skills/scientific-writing/SKILL.md` dòng 281–284 — thay nguyên khối:**
+
+```markdown
+**Abstract Format Rule:**
+- **Y khoa là mặc định CÓ CẤU TRÚC.** Dùng nhãn mục (Background/Objective ·
+  Methods · Results · Conclusions) trừ khi hướng dẫn tác giả của tạp chí đích nói
+  ngược lại. Kiểm hướng dẫn tác giả TRƯỚC khi viết, đừng đoán.
+- Chỉ viết văn xuôi liền mạch không nhãn khi tạp chí yêu cầu như vậy (một số tạp chí
+  khoa học cơ bản), hoặc khi đó là abstract hội nghị có quy định riêng.
+- Đủ 5 phần dù có nhãn hay không: bối cảnh · mục tiêu · phương pháp · kết quả (kèm
+  ước lượng và 95% CI) · kết luận.
+- Mọi con số trong tóm tắt phải có mặt y hệt trong Results.
+```
+
+**Và thêm mục Từ khóa vào §2 `Section-Specific Writing Guidance` (thiếu ở CẢ HAI bản):**
+
+```markdown
+**Keywords Selection**: Choose 3–6 terms. Prioritise terms that do **not** already
+appear in the title — repeating title words adds no discoverability. Check each
+against the MeSH Browser for medical papers; mark unverified terms rather than
+guessing.
+```
+
 ## 2. Bản vá — dán nguyên khối vào repo `EBM-drluanbv175`
 
 Ba file cần sửa. Nội dung dưới đây đã viết sẵn, chỉ việc thay/chèn.
