@@ -271,4 +271,29 @@ Ba file cần dán (đều ở repo `EBM-drluanbv175`, phiên cloud không có q
 `sync/skills/scientific-writing/SKILL.md` · `sync/skills/nghien-cuu-y-khoa-chuan-quoc-te/
 workflows/06_bao_cao_cong_bo_ung_dung.md` · `sync/skills/peer-review/SKILL.md`.
 
+---
+
+## Việc 5 — Đồng bộ ba bên: đã đo, đã có công cụ, đã cứu 7 skill khỏi mất trắng
+
+Hệ có ba nơi giữ skill. Trước hôm nay chỉ hai cặp được kiểm; cặp **repo ↔ bundle
+tài khoản (cloud)** — nơi Routine và mọi phiên web thực sự nạp skill — **không ai
+kiểm**. Kết quả đo: **20/26 skill dùng chung tên đang lệch nhau**.
+
+| Nhóm | Số | |
+|---|---:|---|
+| Giống hệt | 6 | |
+| Lệch phiên bản | 13 | trùng 53–99% |
+| **Trùng tên nhưng KHÁC SKILL** | **7** | trùng 6–19% — chép đè là phá hoại |
+| Chỉ có ở repo | 16 | cloud và Routine không nạp được |
+
+**Đã cứu ngay:** bảy skill EBM bản cloud trước đó **không có bản git nào** (dò cụm
+"6 lăng kính" ra 0 file trong toàn repo). Nay đã sao lưu nguyên văn từng byte vào
+`sao-luu-skill-cloud/`, kèm SHA-256.
+
+Công cụ: `python3 tools/doi_chieu_ba_ben.py <đường-dẫn-repo>` — chỉ đọc, không ghi
+gì. Mã thoát `2` = có trùng tên khác nội dung, **đừng chạy lệnh chép nào**.
+
+Phân tích đầy đủ, bốn bước xử lý và đề xuất làn ⑨ cho `dong_bo_tat_ca.py`:
+[`dong-bo-ba-ben.md`](dong-bo-ba-ben.md).
+
 Cần bác sĩ kiểm chứng.

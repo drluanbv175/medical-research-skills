@@ -186,6 +186,13 @@ python3 tools/kiem_tra_plugin.py   # 0 = up to date, 1 = cache stale
   extracts DOIs, then turns a Scite `editorialNotices` response into a verdict table
   (retracted / concern / correction / clean / **not checked**). Verified against
   Mehra 2020 and Wakefield 1998. Removes the need to allowlist Crossref for this.
+- **Three-way skill sync check:** [`tools/doi_chieu_ba_ben.py`](tools/doi_chieu_ba_ben.py) —
+  compares the account-synced skill bundle (what cloud sessions and Routines load)
+  against a repo's `sync/skills/` and the local `~/.claude/skills`. Read-only.
+  Separates *same skill, different version* from **same name, different skill** —
+  the second case makes any copy-over destructive, so it exits `2` to stop the
+  caller. Word-level similarity, not line-level: a reflowed copy is not a
+  different skill. Exit `3` when a side is missing, never a silent "in sync".
 
 ### ⚠️ Safety rule: "source unreachable" ≠ "no evidence"
 
