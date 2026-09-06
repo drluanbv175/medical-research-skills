@@ -200,6 +200,40 @@ with tempfile.TemporaryDirectory() as tmp:
     kiem("khi --tat-ca thì có tính", kq2["chi_cloud"], ["cua-anthropic"])
 
 
+# ------------------------------------------------------- tác vụ định kỳ
+print("\n### Tác vụ định kỳ: nhận diện neo máy ###")
+with tempfile.TemporaryDirectory() as tmp:
+    g = Path(tmp)
+    tv = g / "sync" / "scheduled-tasks"
+    viet_skill(tv, "neo-mac",
+               FM.format(t="neo-mac", d="chạy trên máy")
+               + "Thư mục: /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/x\n")
+    viet_skill(tv, "neo-linux",
+               FM.format(t="neo-linux", d="neo home linux")
+               + "Đọc /home/bacsi/du-lieu/a.md\n")
+    viet_skill(tv, "khong-neo",
+               FM.format(t="khong-neo", d="chạy đâu cũng được")
+               + "Tra PubMed 7 ngày qua rồi báo cáo.\n")
+
+    ds = {t["ten"]: t for t in M.kiem_tac_vu(g, {})}
+    kiem("bắt được neo /Users + OneDrive", ds["neo-mac"]["neo_may"], True)
+    kiem("bắt được neo /home/<user>/", ds["neo-linux"]["neo_may"], True)
+    kiem("tác vụ không neo -> không báo nhầm", ds["khong-neo"]["neo_may"], False)
+    kiem("lấy được mô tả", ds["khong-neo"]["mo_ta"], "chạy đâu cũng được")
+    kiem("không có trên cloud -> False", ds["neo-mac"]["co_tren_cloud"], False)
+
+    # cùng tên tồn tại trên cloud thì phải nhận ra
+    ds2 = {t["ten"]: t for t in M.kiem_tac_vu(g, {"neo-mac": None})}
+    kiem("có trên cloud -> True", ds2["neo-mac"]["co_tren_cloud"], True)
+
+with tempfile.TemporaryDirectory() as tmp:
+    kiem("repo không có scheduled-tasks -> trả danh sách rỗng, KHÔNG lỗi",
+         M.kiem_tac_vu(Path(tmp), {}), [])
+
+# Bẫy: đường dẫn TƯƠNG ĐỐI không được tính là neo máy.
+kiem("đường dẫn tương đối không bị tính là neo máy",
+     bool(M.NEO_MAY.search("đọc sync/skills/abc/SKILL.md rồi chạy tools/x.py")), False)
+
 print("\n" + "=" * 50)
 print(f"  PASS={PASS}  FAIL={FAIL}")
 print("=" * 50)

@@ -296,4 +296,36 @@ gì. Mã thoát `2` = có trùng tên khác nội dung, **đừng chạy lệnh 
 Phân tích đầy đủ, bốn bước xử lý và đề xuất làn ⑨ cho `dong_bo_tat_ca.py`:
 [`dong-bo-ba-ben.md`](dong-bo-ba-ben.md).
 
+---
+
+## Việc 6 — Việc định kỳ: 6 trong 9 việc KHÔNG AI CHẠY
+
+Đối chiếu 10 tác vụ trong `sync/scheduled-tasks/` với 2 Routine cloud đang bật:
+
+| | Số |
+|---|---:|
+| Được gánh một phần | 3 |
+| **Không ai chạy** | **6** |
+| Chạy tay (không tính) | 1 |
+
+**Cả 10 tác vụ đều neo đường dẫn tuyệt đối của máy** (`/Users/nguyenluan/...`,
+`OneDrive`, `CloudStorage`) — nên phiên cloud không gánh thay được. Cộng với
+`launchd runs = 0` đã đo từ trước, kết quả là sáu việc định kỳ đang trống, và trống
+**im lặng**: chưa từng nổ nên cũng chưa từng báo lỗi.
+
+Ba trong sáu việc đó **chạy được ngay trên cloud** vì chỉ cần nguồn công khai:
+`ebm-uptodate-tuan` · `ebm-tong-hop-chung-cu-tuan` · `ebm-antifacts-weekly` (phần
+digest). Lời nhắc cho cả ba đã viết sẵn, đúng khuôn hai Routine đang chạy —
+**chưa tạo cái nào**, vì mỗi Routine là một cam kết định kỳ tốn hạn mức và gửi thông
+báo mỗi kỳ; đó là quyết định của bác sĩ.
+
+Ba việc còn lại (`ebm-giam-sat-chung-cu`, `goi-duyet-tuan-ebm`, và hai việc chạy
+shell script) **không cloud nào gánh được** — chỉ có hai lối: sửa lịch trên máy cho
+nó thật nổ, hoặc ghi rõ vào `ops/schedule.md` là chạy tay. Điều KHÔNG nên làm là
+tải chúng lên cloud: chúng sẽ chạy, không thấy `/Users/nguyenluan/...`, rồi tùy ứng
+biến — kiểu hỏng tệ nhất vì vẫn sinh ra báo cáo trông như thật.
+
+Bản đồ đầy đủ: [`viec-dinh-ky-ai-chay.md`](viec-dinh-ky-ai-chay.md) ·
+Lời nhắc sẵn: [`loi-nhac-routine-moi.md`](loi-nhac-routine-moi.md)
+
 Cần bác sĩ kiểm chứng.

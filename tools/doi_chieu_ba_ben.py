@@ -313,6 +313,56 @@ def in_cuc_bo(cuc_bo: dict[str, Path], repo_goc: Path) -> None:
                     print(f"      ⚠ {d.name} → {d.resolve()}  (KHÔNG trỏ vào repo)")
 
 
+# Dấu hiệu tác vụ bị neo vào MỘT máy cụ thể: đường dẫn tuyệt đối tới thư mục nhà
+# của một người dùng, hoặc thư mục đồng bộ đám mây của máy đó. Tác vụ mang các dấu
+# này KHÔNG THỂ chạy ở phiên cloud — container không có những đường dẫn ấy.
+NEO_MAY = re.compile(r"/Users/[A-Za-z0-9._-]+|/home/[A-Za-z0-9._-]+/|CloudStorage|OneDrive")
+
+
+def kiem_tac_vu(goc_repo: Path, cloud: dict[str, Skill]) -> list[dict]:
+    """Soát sync/scheduled-tasks/: tác vụ nào neo vào máy, tác vụ nào có trên cloud.
+
+    Đây KHÔNG phải so ba bên. Tác vụ định kỳ thao tác trên file cục bộ nên neo máy
+    là ĐÚNG THIẾT KẾ, không phải lỗi. Việc cần biết là: tác vụ neo máy thì phiên
+    cloud không gánh thay được, nên nếu lịch trên máy không chạy thì việc đó KHÔNG
+    AI LÀM — và chỗ đó im lặng, không ai báo.
+    """
+    thu_muc = goc_repo / "sync" / "scheduled-tasks"
+    if not thu_muc.is_dir():
+        return []
+    ket = []
+    for f in sorted(thu_muc.glob("*/SKILL.md")):
+        raw = _doc(f)
+        fm, _ = tach_frontmatter(raw)
+        neo = sorted(set(NEO_MAY.findall(raw)))
+        ket.append({
+            "ten": f.parent.name,
+            "mo_ta": fm.get("description", ""),
+            "neo_may": bool(neo),
+            "dau_neo": neo[:3],
+            "co_tren_cloud": f.parent.name in cloud,
+        })
+    return ket
+
+
+def in_tac_vu(ds: list[dict]) -> None:
+    if not ds:
+        return
+    print("\n" + "=" * 78)
+    print("  TÁC VỤ ĐỊNH KỲ (sync/scheduled-tasks)")
+    print("=" * 78)
+    neo = [t for t in ds if t["neo_may"]]
+    print(f"  {len(ds)} tác vụ · {len(neo)} neo vào một máy cụ thể · "
+          f"{sum(t['co_tren_cloud'] for t in ds)} có mặt trên cloud\n")
+    for t in ds:
+        dau = "🖥" if t["neo_may"] else "☁"
+        print(f"  {dau} {t['ten']:<30} {t['mo_ta'][:44]}")
+    if neo:
+        print(f"\n  🖥 = neo vào máy ({', '.join(sorted({d for t in neo for d in t['dau_neo']}))[:60]}...)")
+        print("     Phiên cloud KHÔNG gánh thay được. Nếu lịch trên máy không chạy thì")
+        print("     việc này KHÔNG AI LÀM — và nó im lặng, không có gì báo.")
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(
         description="Đối chiếu skill ba bên: cloud · repo · cục bộ. CHỈ ĐỌC.",
@@ -343,10 +393,12 @@ def main(argv=None) -> int:
     kq = doi_chieu(cloud, repo, manifest, chi_custom=not a.tat_ca)
 
     if a.json:
-        print(json.dumps({"cloud": str(bundle), "repo": str(hub), **kq},
+        print(json.dumps({"cloud": str(bundle), "repo": str(hub), **kq,
+                          "tac_vu_dinh_ky": kiem_tac_vu(goc_repo, cloud)},
                          ensure_ascii=False, indent=2))
     else:
         in_ket_qua(kq, str(bundle), str(hub))
+        in_tac_vu(kiem_tac_vu(goc_repo, cloud))
         in_cuc_bo({"~/.claude/skills": Path.home() / ".claude" / "skills",
                    "~/.codex/skills": Path.home() / ".codex" / "skills"}, hub)
 
