@@ -59,6 +59,8 @@ __pycache__/
 # Quy tắc `test_*` ở trên vô tình nuốt luôn tests/test_*.py.
 !tests/
 !tests/**
+# ...nhưng KHÔNG kéo theo bytecode biên dịch (quy tắc sau thắng quy tắc trước).
+tests/__pycache__/
 
 # --- Dữ liệu Retraction Watch tải về (hàng chục MB) — KHÔNG commit ---
 /data/retractionwatch/
