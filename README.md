@@ -182,6 +182,17 @@ python3 tools/kiem_tra_plugin.py   # 0 = up to date, 1 = cache stale
   `retraction_check.py local <file>` gives a complete verdict with no network and no
   index gaps. Source: gitlab.com/crossref/retraction-watch-data (daily updates,
   no API key). Verified: 63.2 MB, 69,453 records indexed.
+- **Funding & COI statements, verbatim:** [`tools/lay_coi_tai_tro.py`](tools/lay_coi_tai_tro.py) —
+  pulls the funding sentence and the conflict-of-interest statement for each DOI from the
+  raw XML that the MCP connectors do not expose: PubMed efetch `<CoiStatement>`/`<GrantList>`,
+  Europe PMC `fullTextXML` `<funding-statement>`, then Europe PMC `grantsList` and Crossref
+  `funder[]` as structured fallbacks. Fills the "COI and funding" section that skill
+  `cap-nhat-chung-cu-y-khoa` (5D-quater) requires. Three states, never merged:
+  **got it** / **not in the index** (the source answered but carries no such field — this is
+  *not* "the paper had no funding") / **not checked** (network error). Needs a machine with
+  open egress. **The parsers have not yet been checked against live API responses** — run the
+  first pass with `--luu-tho` and eyeball the saved raw files. Offline self-test with
+  synthetic fixtures: `--tu-tho tools/mau-thu-lay-coi`.
 - **Retraction checking without network:** [`scripts/retraction_check.py`](scripts/retraction_check.py) —
   extracts DOIs, then turns a Scite `editorialNotices` response into a verdict table
   (retracted / concern / correction / clean / **not checked**). Verified against
