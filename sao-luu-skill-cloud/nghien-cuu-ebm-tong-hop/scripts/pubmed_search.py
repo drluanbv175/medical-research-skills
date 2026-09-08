@@ -9,6 +9,12 @@ Dùng:
     NCBI_EMAIL=you@example.com NCBI_API_KEY=xxxx python pubmed_search.py "sepsis qSOFA" --max 20
 
 Lưu ý EBM: kết quả CẦN bác sĩ kiểm chứng; ưu tiên guideline/SR/RCT; ghi PMID/DOI khi trích dẫn.
+
+MÃ THOÁT — "không tra được" KHÁC "không có bài":
+    0 = chạy xong (kể cả khi thật sự 0 kết quả — đó là câu trả lời hợp lệ)
+    2 = KHÔNG KẾT LUẬN: không gọi được NCBI (mạng chặn/lỗi). TUYỆT ĐỐI không đọc thành
+        "không có bài nào". Trong phiên cloud, eutils.ncbi.nlm.nih.gov bị chặn ở tầng chính
+        sách (403 to CONNECT) → dùng connector PubMed thay thế; xem references/00-duong-tra-cuu.md
 """
 from __future__ import annotations
 
@@ -20,6 +26,10 @@ import time
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
+
+class KhongGoiDuocNCBI(RuntimeError):
+    """Không gọi được NCBI — KHÔNG phải 'không có bài'. Trả mã thoát 2."""
+
 
 EUTILS = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
 EMAIL = os.getenv("NCBI_EMAIL", "")
@@ -38,7 +48,7 @@ def _get(url: str, retries: int = 3, backoff: float = 1.5) -> bytes:
         except Exception as exc:  # noqa: BLE001 - in lỗi, thử lại
             last = exc
             time.sleep(backoff * (2 ** i))
-    raise RuntimeError(f"Gọi NCBI thất bại sau {retries} lần: {last}")
+    raise KhongGoiDuocNCBI(f"Gọi NCBI thất bại sau {retries} lần: {last}")
 
 
 def _common_params() -> str:
@@ -86,14 +96,25 @@ def main() -> int:
     ap.add_argument("--json", action="store_true", help="Xuất JSON")
     args = ap.parse_args()
 
-    pmids = esearch(args.query, args.max)
-    records = efetch(pmids)
+    try:
+        pmids = esearch(args.query, args.max)
+        records = efetch(pmids)
+    except KhongGoiDuocNCBI as exc:
+        print("⊘ KHÔNG KẾT LUẬN — không gọi được NCBI: %s" % exc, file=sys.stderr)
+        print("   ĐÂY KHÔNG PHẢI 'không có bài'. Chưa tra được thì chưa biết gì cả.",
+              file=sys.stderr)
+        print("   Phiên cloud chặn eutils.ncbi.nlm.nih.gov ở tầng chính sách → dùng connector",
+              file=sys.stderr)
+        print("   PubMed (ToolSearch: 'pubmed search articles'). Xem references/00-duong-tra-cuu.md",
+              file=sys.stderr)
+        return 2
 
     if args.json:
         print(json.dumps(records, ensure_ascii=False, indent=2))
     else:
         if not records:
-            print("Không có kết quả (hoặc lỗi mạng). Thử nới chuỗi tìm kiếm.")
+            print("0 kết quả — NCBI có trả lời, và câu trả lời là KHÔNG có bài nào khớp. "
+                  "Thử nới chuỗi tìm kiếm.")
         for r in records:
             tag = "/".join(r["types"][:2])
             print(f"- [{r['year']}] {r['title']}")
