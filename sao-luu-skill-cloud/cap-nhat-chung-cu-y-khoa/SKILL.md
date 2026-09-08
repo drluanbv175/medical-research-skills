@@ -338,6 +338,15 @@ Cả hai mẫu hỗ trợ field tùy chọn `effectText` (hiệu số phi-tỷ-s
 
 Dùng mẫu Dark Analyst CHỈ khi bác sĩ yêu cầu.
 
+> **“Dark Analyst” là một CHẾ ĐỘ HIỂN THỊ của skill này, KHÔNG phải skill riêng** (gộp ngày 08/9/2026).
+> Trước đó tồn tại một skill tên `dark-analyst` với **mô tả kích hoạt giống hệt** skill này nhưng
+> **thiếu toàn bộ `tools/`** — nghĩa là nếu hệ thống chọn nhầm nó thì **không cổng liêm chính nào chạy**.
+> Đối chiếu cho thấy nó không có nội dung riêng: cả 5 template trùng byte, không có file nào ngoài,
+> 8 dòng khác nhau chỉ đảo vai trò mẫu nào là mặc định.
+> Cách gọi chế độ nền tối: nói rõ **“dùng mẫu Dark Analyst”** hoặc **“bản nền tối”** — khi đó dựng
+> dashboard từ `templates/web-dashboard-dark-analyst.html`, **cùng schema `DATA`**, cùng dây chuyền,
+> cùng cổng liêm chính.
+
 
 ## 5B. Trình bày theo PICO và ghi nguồn sạch
 
