@@ -1,0 +1,3 @@
+# Thư mục SAO LƯU skill cloud — phải giữ ĐẦY ĐỦ file.
+# Ghi đè quy tắc "*.html" ở .gitignore gốc để không mất template dashboard.
+!*.html

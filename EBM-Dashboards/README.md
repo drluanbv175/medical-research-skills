@@ -13,6 +13,7 @@ cùng thư viện chỉ mục và các sản phẩm phái sinh.
 
 ```
 EBM-Dashboards/
+├── CapNhat_EBM_<ChuDe>_YYYYMMDD.md                      # bản cập nhật viết theo mẫu chuyên sâu
 ├── WebDashboard_EBM_VanDeCuThe_<ChuDe>_YYYYMMDD.html   # dashboard theo vấn đề
 ├── evidence-library.html                                # chỉ mục mọi bản cập nhật (tự sinh)
 ├── library.json                                         # dữ liệu chỉ mục
@@ -44,9 +45,15 @@ Các sản phẩm phái sinh sinh tự động có thể rút gọn thành "GRAD
 
 ## Danh mục hiện có
 
-| Ngày | Vấn đề lâm sàng | File | Số item |
-|---|---|---|---|
-| 2026-09-08 | Sa sút trí tuệ — chẩn đoán và điều trị theo chứng cứ (ngoại trú Việt Nam) | `WebDashboard_EBM_VanDeCuThe_SaSutTriTue_20260908.html` | 17 |
+| Ngày | Vấn đề lâm sàng | Bản cập nhật (mẫu chuyên sâu) | Dashboard | Số item |
+|---|---|---|---|---|
+| 2026-09-08 | Sa sút trí tuệ — chẩn đoán và điều trị theo chứng cứ (ngoại trú Việt Nam) | `CapNhat_EBM_SaSutTriTue_20260908.md` | `WebDashboard_EBM_VanDeCuThe_SaSutTriTue_20260908.html` | 17 |
+
+**Mỗi bản cập nhật gồm HAI phần, không thay thế nhau:**
+- **Văn bản** `CapNhat_EBM_*.md` — viết theo mẫu `templates/mau-cap-nhat-chuyen-sau.md`
+  của skill `cap-nhat-chung-cu-y-khoa` (11 mục, có thẩm định nguồn và tài liệu tham khảo
+  Vancouver). Đây là bản để đọc, in, đưa vào hồ sơ chuyên môn hoặc dùng làm nền soạn bài giảng.
+- **Dashboard** `WebDashboard_EBM_*.html` — bản tra cứu nhanh tại điểm chăm sóc.
 
 Mở `evidence-library.html` để tra cứu và lọc toàn bộ thư viện.
 
