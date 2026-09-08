@@ -16,6 +16,9 @@ BỐN PHÉP KIỂM
   4. THIẾU CỔNG        — skill bảo chạy verify_dashboard.py thì phải có file đó.
   5. KHOÁ MẪU          — mẫu cập nhật phải khớp SHA-256 đã khoá trong lock file.
 
+Skill đã gỡ khỏi tài khoản: khai trong `sao-luu-skill-cloud/da-go-khoi-tai-khoan.json`.
+Không suy ra được từ đĩa — thư mục của skill đã gỡ vẫn nằm nguyên trong bản đồng bộ.
+
 Cách dùng:
     python3 tools/kiem_dong_bo_skill_ebm.py            # kiểm, in báo cáo
     python3 tools/kiem_dong_bo_skill_ebm.py --sua      # đồng bộ bản sao theo NGUỒN CHUẨN
@@ -29,6 +32,7 @@ import sys, os, re, glob, hashlib, argparse, shutil
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BACKUP = os.path.join(REPO, "sao-luu-skill-cloud")
+DA_GO = os.path.join(BACKUP, "da-go-khoi-tai-khoan.json")
 WORKDIR = os.path.join(REPO, "EBM-Dashboards")
 BUNDLE_GLOB = os.path.expanduser("~/.claude/skills/synced/*/")
 
@@ -89,6 +93,23 @@ def main():
     broot = bundle_root()
     bundle = skills_in(broot) if broot else {}
 
+    # Skill ĐÃ GỠ khỏi tài khoản: thư mục vẫn còn sót trong bản đồng bộ vì đồng bộ chỉ
+    # ghi thêm/ghi đè, KHÔNG xoá. Không có cách nào đọc từ đĩa để biết điều đó.
+    # (Đã thử mốc thời gian tệp — VÔ HIỆU: skill không đổi cũng giữ mốc cũ y như skill đã gỡ.)
+    da_go = {}
+    if os.path.isfile(DA_GO):
+        try:
+            import json as _j
+            da_go = {e["ten"]: e for e in _j.load(open(DA_GO, encoding="utf-8")).get("da_go", [])}
+        except Exception as e:
+            notes.append("Không đọc được %s (%s)." % (os.path.basename(DA_GO), e))
+    for t, e in sorted(da_go.items()):
+        if t in bundle:
+            notes.append("`%s`: ĐÃ GỠ khỏi tài khoản ngày %s (gộp vào `%s`); thư mục còn sót "
+                         "trong bản đồng bộ — bỏ qua khi đối chiếu."
+                         % (t, e.get("ngay_go", "?"), e.get("gop_vao", "?")))
+            bundle.pop(t, None)
+
     # ---------- 1. TRÔI LỆCH BẢN SAO ----------
     print("=" * 72)
     print("KIỂM ĐỒNG BỘ HỆ THỐNG SKILL EBM")
@@ -140,6 +161,8 @@ def main():
     print("[3] MÔ TẢ KÍCH HOẠT CÓ TRÙNG NHAU KHÔNG")
     seen = {}
     for name, bpath in sorted({**bundle, **backup}.items()):
+        if name in da_go:
+            continue
         d = desc_of(os.path.join(bpath, "SKILL.md"))
         if len(d) < 40:
             continue
@@ -152,6 +175,8 @@ def main():
     # ---------- 4. THIẾU CỔNG LIÊM CHÍNH ----------
     print("[4] SKILL BẢO CHẠY CỔNG THÌ CÓ CỔNG KHÔNG")
     for name, bpath in sorted({**bundle, **backup}.items()):
+        if name in da_go:
+            continue
         smd = os.path.join(bpath, "SKILL.md")
         if not os.path.isfile(smd):
             continue

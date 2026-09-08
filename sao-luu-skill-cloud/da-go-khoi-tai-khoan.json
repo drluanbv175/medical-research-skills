@@ -1,0 +1,15 @@
+{
+ "_muc_dich": "Danh sách skill ĐÃ GỠ khỏi tài khoản Claude. Thư mục của chúng vẫn còn sót trong bản đồng bộ của container (đồng bộ chỉ ghi thêm/ghi đè, KHÔNG xoá thư mục của skill đã gỡ), nên công cụ kiểm đồng bộ cần danh sách này để khỏi báo động giả.",
+ "_cach_dung": "Sau khi xoá một skill trên tài khoản, thêm một mục vào đây. Chỉ ghi khi ĐÃ THỰC SỰ xoá và đã xác minh.",
+ "da_go": [
+  {
+   "ten": "dark-analyst",
+   "ngay_go": "2026-09-08",
+   "ly_do": "Bản fork cũ của cap-nhat-chung-cu-y-khoa: mô tả kích hoạt trùng hệt nhưng thiếu toàn bộ tools/ nên không cổng liêm chính nào chạy. Đối chiếu từng byte: 5/5 template trùng, không có file riêng, 8 dòng khác chỉ đảo vai trò mẫu mặc định.",
+   "gop_vao": "cap-nhat-chung-cu-y-khoa",
+   "che_do_thay_the": "Gọi 'dùng mẫu Dark Analyst' hoặc 'bản nền tối' — dựng từ templates/web-dashboard-dark-analyst.html, cùng schema DATA, cùng dây chuyền, cùng cổng.",
+   "xac_minh": "ListSkills lọc 'dark-analyst' trả về rỗng ngày 2026-09-08.",
+   "ban_sao_luu_giu_lai": true
+  }
+ ]
+}
