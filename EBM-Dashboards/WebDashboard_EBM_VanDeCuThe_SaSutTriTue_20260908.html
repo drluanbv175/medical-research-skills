@@ -238,6 +238,16 @@
   .reflist .r{padding-left:14px;text-indent:-14px}
 
   /* ---------- DISCLAIMER ---------- */
+  .prov{background:#f8fafc;border-top:1px solid var(--line);font-size:11px;color:var(--ink-2)}
+  .prov>summary{cursor:pointer;padding:7px 16px;list-style:none;display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+  .prov>summary::-webkit-details-marker{display:none}
+  .prov>summary::before{content:'▸';color:var(--muted)}
+  .prov[open]>summary::before{content:'▾'}
+  .prov>summary b{color:var(--ink);font-family:inherit}
+  .prov .pbody{padding:2px 16px 12px;display:grid;grid-template-columns:auto 1fr;gap:5px 14px;align-items:start}
+  .prov .pk{color:var(--muted);white-space:nowrap;font-size:10.5px;padding-top:1px}
+  .prov .pv{line-height:1.5;word-break:break-word}
+  .prov .miss{color:#b45309;font-weight:600}
   .disclaimer{display:flex;align-items:center;gap:10px;padding:8px 16px;background:#fffbeb;border-top:1px solid #fde68a;font-size:11.5px;color:#92400e}
   .disclaimer b{font-weight:700}
   .disclaimer .upd{margin-left:auto;color:#b45309;font-family:var(--mono);font-size:10.5px}
@@ -331,6 +341,9 @@
   <!-- Lớp nền mờ cho ngăn kéo (chỉ hiện khi màn hẹp) -->
   <div class="scrim" id="scrim" onclick="closeDetail()"></div>
 
+  <!-- ============ GHI VẾT TRA CỨU ============ -->
+  <details class="prov" id="prov"></details>
+
   <!-- ============ DISCLAIMER ============ -->
   <footer class="disclaimer">
     <span>⚠</span><b>Cần bác sĩ kiểm chứng.</b> Đối chiếu toàn văn &amp; bối cảnh bệnh nhân cụ thể. Không lưu thông tin định danh bệnh nhân (PII).
@@ -382,7 +395,20 @@ const DATA = {
       C:'Chăm sóc thường quy, không đánh giá hệ thống',
       O:'Chẩn đoán đúng nguyên nhân · chậm suy giảm nhận thức–chức năng · giảm biến cố có hại do thuốc'
     },
-    updated:'2026-09-08'
+    updated:'2026-09-08',
+    searchDate:'2026-09-08',
+    searchSources:['PubMed qua connector (search_articles · get_article_metadata · convert_article_ids)',
+                   'Scite (search_literature → editorialNotices)',
+                   'Amass BiomedCore (đối chiếu bản ghi)',
+                   'BỊ CHẶN egress, không dùng được: eutils.ncbi.nlm.nih.gov · api.crossref.org · Europe PMC'],
+    searchStrategy:'Tra có chủ đích theo từng câu hỏi lâm sàng (chẩn đoán · dấu ấn sinh học máu · ức chế cholinesterase/memantine · BPSD và chống loạn thần · kháng thể kháng amyloid · GLP-1 · dự phòng đa lĩnh vực · can thiệp thính lực); ưu tiên guideline hội chuyên ngành → tổng quan hệ thống Cochrane → RCT pha 3 → đoàn hệ lớn; phân giải và đối chiếu tiêu đề/tạp chí/năm cho từng định danh trong 17. Chuỗi truy vấn nguyên văn KHÔNG được ghi lại lúc tra — [CẦN BỔ SUNG]; từ bản sau bắt buộc ghi ngay khi chạy.',
+    retractionCheck:'2026-09-08 — 17/17 DOI sạch qua Scite editorialNotices; chỉ mục Scite không phủ 100%',
+    nextReview:'2027-03-08 (6 tháng) — lý do: hai trục đang động là cấp phép/điều kiện dùng kháng thể kháng amyloid và thị trường dấu ấn sinh học máu; phần lõi (ức chế cholinesterase, memantine, BPSD, 14 yếu tố nguy cơ) thì ổn định.',
+    reviewTriggers:['quyết định mới của FDA/EMA hoặc văn bản Bộ Y tế về thuốc kháng amyloid',
+                    'guideline mới của Alzheimer’s Association hoặc AAN',
+                    'safety communication về ARIA, hoặc về thuốc chống loạn thần ở sa sút trí tuệ',
+                    'thông báo rút hoặc đính chính bất kỳ nguồn nào trong danh mục tham khảo',
+                    'kết quả pha 3 mới của một thuốc đang nằm trong bảng điều trị']
   },
   summary:{
     conclusion:'Tại ngoại trú Việt Nam, cốt lõi vẫn là: (1) đánh giá CÓ CẤU TRÚC để xác nhận suy giảm nhận thức kèm suy giảm chức năng và loại trừ nguyên nhân góp phần có thể hồi phục trước khi gán nhãn sa sút trí tuệ; (2) điều trị triệu chứng bằng thuốc ức chế cholinesterase (lợi ích NHỎ, chứng cứ mức trung bình) và memantine cho Alzheimer trung bình–nặng (chứng cứ độ chắc chắn CAO) — KHÔNG dùng memantine cho Alzheimer nhẹ; (3) can thiệp không dùng thuốc là bước đầu tay cho rối loạn hành vi–tâm thần, hạn chế tối đa thuốc chống loạn thần; (4) kiểm soát 14 yếu tố nguy cơ có thể thay đổi. Kháng thể kháng amyloid (lecanemab, donanemab) đã được cấp phép tại Hoa Kỳ và EU nhưng hiệu quả tuyệt đối nhỏ, nguy cơ ARIA đáng kể và hạ tầng bắt buộc (xác nhận amyloid + MRI theo dõi) chưa khả thi ở ngoại trú Việt Nam. Semaglutide uống đã THẤT BẠI ở 2 thử nghiệm pha 3 (evoke, evoke+; Lancet 2026) — không dùng để điều trị Alzheimer.',
@@ -433,6 +459,7 @@ const DATA = {
   },
   items:[
     {id:'ITEM-01', title:'Quy trình đánh giá nhận thức CÓ CẤU TRÚC cho tuyến ban đầu (DETeCD-ADRD)',
+     funding:'CHƯA LẤY ĐƯỢC — tạp chí không đặt câu tài trợ trong tóm tắt; PubMed get_article_metadata và Amass BiomedCore đều không có trường funding; toàn văn bị chặn egress. Xem mục 10.5 của bản cập nhật.',
      source:'Hướng dẫn thực hành lâm sàng DETeCD-ADRD — bản tóm tắt cho tuyến ban đầu', org:'Alzheimer Association (Hoa Kỳ)', dateVersion:'2024/2025 · Alzheimers Dement 2025;21(6):e14333',
      pmid:'39713942', doi:'10.1002/alz.14333', design:'Guideline',
      population:'Người có triệu chứng nhận thức, hành vi hoặc chức năng; áp dụng cho mọi bối cảnh khám, kể cả tuyến ban đầu',
@@ -445,6 +472,7 @@ const DATA = {
      references:['Atri A, Dickerson BC, Clevenger C, và cộng sự. Alzheimer’s Association clinical practice guideline for the Diagnostic Evaluation, Testing, Counseling, and Disclosure of Suspected Alzheimer’s Disease and Related Disorders (DETeCD-ADRD): Executive summary of recommendations for primary care. Alzheimers Dement. 2025;21(6):e14333. PMID 39713942.']},
 
     {id:'ITEM-02', title:'Khi nào chuyển chuyên khoa và làm gì ở tuyến chuyên khoa (DETeCD-ADRD)',
+     funding:'CHƯA LẤY ĐƯỢC — tạp chí không đặt câu tài trợ trong tóm tắt; PubMed get_article_metadata và Amass BiomedCore đều không có trường funding; toàn văn bị chặn egress. Xem mục 10.5 của bản cập nhật.',
      source:'Hướng dẫn thực hành lâm sàng DETeCD-ADRD — bản tóm tắt cho tuyến chuyên khoa', org:'Alzheimer Association (Hoa Kỳ)', dateVersion:'2024/2025 · Alzheimers Dement 2025;21(1):e14337',
      pmid:'39713957', doi:'10.1002/alz.14337', design:'Guideline',
      population:'Bệnh nhân nghi Alzheimer hoặc sa sút trí tuệ liên quan, đánh giá tại tuyến chuyên khoa',
@@ -457,6 +485,7 @@ const DATA = {
      references:['Dickerson BC, Atri A, Clevenger C, và cộng sự. DETeCD-ADRD: Executive summary of recommendations for specialty care. Alzheimers Dement. 2025;21(1):e14337. PMID 39713957.']},
 
     {id:'ITEM-03', title:'Tiêu chuẩn chẩn đoán và phân giai đoạn Alzheimer sửa đổi 2024 — chẩn đoán SINH HỌC',
+     funding:'CHƯA LẤY ĐƯỢC — tạp chí không đặt câu tài trợ trong tóm tắt; PubMed get_article_metadata và Amass BiomedCore đều không có trường funding; toàn văn bị chặn egress. Xem mục 10.5 của bản cập nhật.',
      source:'Revised criteria for diagnosis and staging of Alzheimer’s disease: Alzheimer’s Association Workgroup', org:'Alzheimer Association (Hoa Kỳ) · National Institute on Aging', dateVersion:'2024 · Alzheimers Dement 2024;20(8):5143-5169',
      pmid:'38934362', doi:'10.1002/alz.13859', design:'Guideline',
      population:'Toàn bộ phổ Alzheimer, từ giai đoạn tiền lâm sàng đến sa sút trí tuệ',
@@ -469,6 +498,7 @@ const DATA = {
      references:['Jack CR Jr, Andrews JS, Beach TG, và cộng sự. Revised criteria for diagnosis and staging of Alzheimer’s disease: Alzheimer’s Association Workgroup. Alzheimers Dement. 2024;20(8):5143-5169. PMID 38934362.']},
 
     {id:'ITEM-04', title:'Hướng dẫn đầu tiên về dấu ấn sinh học MÁU trong chẩn đoán Alzheimer (chỉ ở chuyên khoa)',
+     funding:'CHƯA LẤY ĐƯỢC — tạp chí không đặt câu tài trợ trong tóm tắt; PubMed get_article_metadata và Amass BiomedCore đều không có trường funding; toàn văn bị chặn egress. Xem mục 10.5 của bản cập nhật.',
      source:'Alzheimer’s Association Clinical Practice Guideline on the use of blood-based biomarkers', org:'Alzheimer Association (Hoa Kỳ)', dateVersion:'2025 · Alzheimers Dement 2025;21(7):e70535',
      pmid:'40729527', doi:'10.1002/alz.70535', design:'Guideline',
      population:'Người có suy giảm nhận thức KHÁCH QUAN (MCI hoặc sa sút trí tuệ) được đánh giá tại cơ sở chuyên khoa rối loạn trí nhớ',
@@ -484,6 +514,7 @@ const DATA = {
      references:['Palmqvist S, Whitson HE, Allen LA, và cộng sự. Alzheimer’s Association Clinical Practice Guideline on the use of blood-based biomarkers in the diagnostic workup of suspected Alzheimer’s disease within specialized care settings. Alzheimers Dement. 2025;21(7):e70535. PMID 40729527.']},
 
     {id:'ITEM-05', title:'Độ chính xác của dấu ấn sinh học máu — biến thiên RẤT lớn giữa các test',
+     funding:'CHƯA LẤY ĐƯỢC — tạp chí không đặt câu tài trợ trong tóm tắt; PubMed get_article_metadata và Amass BiomedCore đều không có trường funding; toàn văn bị chặn egress. Xem mục 10.5 của bản cập nhật.',
      source:'Blood-based biomarkers for detecting Alzheimer’s disease pathology: systematic review and meta-analysis', org:'Alzheimers Dement', dateVersion:'2025 · Alzheimers Dement 2025;21(11):e70828',
      pmid:'41193403', doi:'10.1002/alz.70828', design:'Meta',
      population:'49 nghiên cứu quan sát, 31 loại test dấu ấn máu, ở người có suy giảm nhận thức tại cơ sở chuyên khoa',
@@ -498,6 +529,7 @@ const DATA = {
      references:['Pahlke S, Kahale LA, Mahinrad S, và cộng sự. Blood-based biomarkers for detecting Alzheimer’s disease pathology in cognitively impaired individuals within specialized care settings: a systematic review and meta-analysis. Alzheimers Dement. 2025;21(11):e70828. PMID 41193403.']},
 
     {id:'ITEM-06', title:'Xét nghiệm máu p-tau217 vượt trội so với đánh giá lâm sàng đơn thuần (Thuỵ Điển)',
+     funding:'CHƯA LẤY ĐƯỢC — tạp chí không đặt câu tài trợ trong tóm tắt; PubMed get_article_metadata và Amass BiomedCore đều không có trường funding; toàn văn bị chặn egress. Xem mục 10.5 của bản cập nhật.',
      source:'Blood Biomarkers to Detect Alzheimer Disease in Primary Care and Secondary Care', org:'JAMA', dateVersion:'2024 · JAMA 2024;332(15):1245-1257',
      pmid:'39068545', doi:'10.1001/jama.2024.13855', design:'Cohort',
      population:'1213 bệnh nhân có triệu chứng nhận thức tại tuyến ban đầu và tuyến chuyên khoa, Thuỵ Điển, 2020–2024',
@@ -512,6 +544,7 @@ const DATA = {
      references:['Palmqvist S, Tideman P, Mattsson-Carlgren N, và cộng sự. Blood Biomarkers to Detect Alzheimer Disease in Primary Care and Secondary Care. JAMA. 2024;332(15):1245-1257. PMID 39068545.']},
 
     {id:'ITEM-07', title:'Thuốc ức chế cholinesterase (donepezil) — lợi ích NHỎ nhưng nhất quán',
+     funding:'CHƯA LẤY ĐƯỢC — tạp chí không đặt câu tài trợ trong tóm tắt; PubMed get_article_metadata và Amass BiomedCore đều không có trường funding; toàn văn bị chặn egress. Xem mục 10.5 của bản cập nhật.',
      source:'Donepezil for dementia due to Alzheimer’s disease (Cochrane Review)', org:'Cochrane Database of Systematic Reviews', dateVersion:'2018 · CD001190.pub3',
      pmid:'29923184', doi:'10.1002/14651858.CD001190.pub3', design:'Meta',
      population:'30 nghiên cứu, 8257 người tham gia; Alzheimer nhẹ, trung bình hoặc nặng; phân tích chính donepezil 10 mg/ngày so với giả dược ở 24–26 tuần',
@@ -525,6 +558,7 @@ const DATA = {
      references:['Birks JS, Harvey RJ. Donepezil for dementia due to Alzheimer’s disease. Cochrane Database Syst Rev. 2018;6(6):CD001190. PMID 29923184.']},
 
     {id:'ITEM-08', title:'Memantine — CÓ lợi ở Alzheimer trung bình–nặng, KHÔNG lợi ở Alzheimer nhẹ',
+     funding:'CHƯA LẤY ĐƯỢC — tạp chí không đặt câu tài trợ trong tóm tắt; PubMed get_article_metadata và Amass BiomedCore đều không có trường funding; toàn văn bị chặn egress. Xem mục 10.5 của bản cập nhật.',
      source:'Memantine for dementia (Cochrane Review)', org:'Cochrane Database of Systematic Reviews', dateVersion:'2019 · CD003154.pub6',
      pmid:'30891742', doi:'10.1002/14651858.CD003154.pub6', design:'Meta',
      population:'44 thử nghiệm, gần 10.000 người tham gia (29 thử nghiệm, 7885 người ở Alzheimer); phân tích ở liều được cấp phép, theo dõi 6–7 tháng',
@@ -539,6 +573,7 @@ const DATA = {
      references:['McShane R, Westby MJ, Roberts E, và cộng sự. Memantine for dementia. Cochrane Database Syst Rev. 2019;3(3):CD003154. PMID 30891742.']},
 
     {id:'ITEM-09', title:'Thuốc chống loạn thần ở người sa sút trí tuệ — phổ tác hại RỘNG hơn cảnh báo cũ',
+     funding:'CHƯA LẤY ĐƯỢC — tạp chí không đặt câu tài trợ trong tóm tắt; PubMed get_article_metadata và Amass BiomedCore đều không có trường funding; toàn văn bị chặn egress. Xem mục 10.5 của bản cập nhật.',
      source:'Multiple adverse outcomes associated with antipsychotic use in people with dementia', org:'BMJ', dateVersion:'2024 · BMJ 2024;385:e076268',
      pmid:'38631737', doi:'10.1136/bmj-2023-076268', design:'Cohort',
      population:'173.910 người ≥50 tuổi được chẩn đoán sa sút trí tuệ tại Anh (1998–2018); 35.339 người mới dùng chống loạn thần, ghép cặp với tối đa 15 người không dùng',
@@ -554,6 +589,7 @@ const DATA = {
      references:['Mok PLH, Carr MJ, Guthrie B, và cộng sự. Multiple adverse outcomes associated with antipsychotic use in people with dementia: population based matched cohort study. BMJ. 2024;385:e076268. PMID 38631737.']},
 
     {id:'ITEM-10', title:'Brexpiprazole cho kích động trong sa sút trí tuệ Alzheimer — hiệu quả NHỎ',
+     funding:'CHƯA LẤY ĐƯỢC — tạp chí không đặt câu tài trợ trong tóm tắt; PubMed get_article_metadata và Amass BiomedCore đều không có trường funding; toàn văn bị chặn egress. Xem mục 10.5 của bản cập nhật.',
      source:'Brexpiprazole for the Treatment of Agitation in Alzheimer Dementia: A Randomized Clinical Trial', org:'JAMA Neurology', dateVersion:'2023 · JAMA Neurol 2023;80(12):1307-1316',
      pmid:'37930669', doi:'10.1001/jamaneurol.2023.3810', design:'RCT',
      population:'345 bệnh nhân có kích động trong sa sút trí tuệ Alzheimer, tại cơ sở chăm sóc hoặc cộng đồng; 12 tuần',
@@ -568,6 +604,8 @@ const DATA = {
      references:['Lee D, Slomkowski M, Hefting N, và cộng sự. Brexpiprazole for the Treatment of Agitation in Alzheimer Dementia: A Randomized Clinical Trial. JAMA Neurol. 2023;80(12):1307-1316. PMID 37930669.']},
 
     {id:'ITEM-11', title:'Lecanemab (CLARITY-AD) — làm chậm suy giảm ở mức khiêm tốn, kèm ARIA',
+     funding:'Funded by Eisai and Biogen (nguyên văn NEJM)',
+     coi:'Hai nhà tài trợ là nhà sản xuất lecanemab. Vai trò trong thiết kế/phân tích: [CẦN KIỂM CHỨNG]. Kết quả DƯƠNG TÍNH với sản phẩm của chính nhà tài trợ → đọc hiệu số tuyệt đối và ARIA thận trọng.',
      source:'Lecanemab in Early Alzheimer’s Disease (CLARITY-AD)', org:'New England Journal of Medicine', dateVersion:'2023 · N Engl J Med 2023;388(1):9-21',
      pmid:'36449413', doi:'10.1056/NEJMoa2212948', design:'RCT',
      population:'1795 người 50–90 tuổi, Alzheimer giai đoạn sớm (MCI hoặc sa sút trí tuệ nhẹ) có bằng chứng amyloid bằng PET hoặc dịch não tuỷ; 18 tháng',
@@ -582,6 +620,7 @@ const DATA = {
      references:['van Dyck CH, Swanson CJ, Aisen P, và cộng sự. Lecanemab in Early Alzheimer’s Disease. N Engl J Med. 2023;388(1):9-21. PMID 36449413.']},
 
     {id:'ITEM-12', title:'Donanemab (TRAILBLAZER-ALZ 2) — hiệu quả tương tự, ARIA cao hơn',
+     funding:'CHƯA LẤY ĐƯỢC — tạp chí không đặt câu tài trợ trong tóm tắt; PubMed get_article_metadata và Amass BiomedCore đều không có trường funding; toàn văn bị chặn egress. Xem mục 10.5 của bản cập nhật.',
      source:'Donanemab in Early Symptomatic Alzheimer Disease: The TRAILBLAZER-ALZ 2 Randomized Clinical Trial', org:'JAMA', dateVersion:'2023 · JAMA 2023;330(6):512-527',
      pmid:'37459141', doi:'10.1001/jama.2023.13239', design:'RCT',
      population:'1736 người Alzheimer có triệu chứng giai đoạn sớm, có amyloid và tau mức thấp/trung bình hoặc cao trên PET; 277 trung tâm, 8 quốc gia; 76 tuần',
@@ -596,6 +635,7 @@ const DATA = {
      references:['Sims JR, Zimmer JA, Evans CD, và cộng sự. Donanemab in Early Symptomatic Alzheimer Disease: The TRAILBLAZER-ALZ 2 Randomized Clinical Trial. JAMA. 2023;330(6):512-527. PMID 37459141.']},
 
     {id:'ITEM-13', title:'Cơ quan quản lý châu Âu cấp phép có ĐIỀU KIỆN cho kháng thể kháng amyloid',
+     funding:'CHƯA LẤY ĐƯỢC — tạp chí không đặt câu tài trợ trong tóm tắt; PubMed get_article_metadata và Amass BiomedCore đều không có trường funding; toàn văn bị chặn egress. Xem mục 10.5 của bản cập nhật.',
      source:'Balancing benefit and risk in early Alzheimer’s disease: the European Medicines Agency (EMA) assessment of lecanemab and donanemab', org:'The Lancet Regional Health – Europe', dateVersion:'2026 · Lancet Reg Health Eur 2026;63:101644',
      pmid:'41852829', doi:'10.1016/j.lanepe.2026.101644', design:'Consensus',
      population:'Bối cảnh quản lý dược tại Liên minh châu Âu; bệnh nhân Alzheimer giai đoạn sớm có xác nhận amyloid',
@@ -609,6 +649,8 @@ const DATA = {
      references:['Guizzaro L, Bałkowiec-Iskra E, Haberkamp M, và cộng sự. Balancing benefit and risk in early Alzheimer’s disease: the European Medicines Agency (EMA) assessment of lecanemab and donanemab. Lancet Reg Health Eur. 2026;63:101644. PMID 41852829.']},
 
     {id:'ITEM-14', title:'Semaglutide uống THẤT BẠI ở Alzheimer sớm (evoke và evoke+) — không dùng',
+     funding:'Novo Nordisk (nguyên văn mục FUNDING, Lancet)',
+     coi:'Nhà tài trợ là nhà sản xuất semaglutide. Kết quả ÂM TÍNH với chính sản phẩm của nhà tài trợ → chiều thiên lệch nếu có sẽ ngược với kết luận đang dùng.',
      source:'Efficacy and safety of oral semaglutide 14 mg in early-stage symptomatic Alzheimer’s disease (evoke and evoke+)', org:'The Lancet', dateVersion:'2026 · Lancet 2026;407(10544):2167-2179',
      pmid:'41865758', doi:'10.1016/S0140-6736(26)00459-9', design:'RCT',
      population:'3808 người 55–85 tuổi, Alzheimer sớm có xác nhận amyloid (MCI hoặc sa sút trí tuệ nhẹ); 566 trung tâm, 40 quốc gia; tới 156 tuần',
@@ -623,6 +665,7 @@ const DATA = {
      references:['Cummings JL, Atri A, Sano M, và cộng sự. Efficacy and safety of oral semaglutide 14 mg (flexible dose) in early-stage symptomatic Alzheimer’s disease (evoke and evoke+): two phase 3, randomised, placebo-controlled trials. Lancet. 2026;407(10544):2167-2179. PMID 41865758.']},
 
     {id:'ITEM-15', title:'14 yếu tố nguy cơ có thể thay đổi — khoảng 45% ca sa sút trí tuệ có thể phòng hoặc trì hoãn',
+     funding:'CHƯA LẤY ĐƯỢC — tạp chí không đặt câu tài trợ trong tóm tắt; PubMed get_article_metadata và Amass BiomedCore đều không có trường funding; toàn văn bị chặn egress. Xem mục 10.5 của bản cập nhật.',
      source:'Dementia prevention, intervention, and care: 2024 report of the Lancet standing Commission', org:'The Lancet', dateVersion:'2024 · Lancet 2024;404(10452):572-628',
      pmid:'39096926', doi:'10.1016/S0140-6736(24)01296-0', design:'Guideline',
      population:'Dân số chung, tiếp cận theo suốt vòng đời (tuổi trẻ, trung niên, cao tuổi)',
@@ -636,6 +679,7 @@ const DATA = {
      references:['Livingston G, Huntley J, Liu KY, và cộng sự. Dementia prevention, intervention, and care: 2024 report of the Lancet standing Commission. Lancet. 2024;404(10452):572-628. PMID 39096926.']},
 
     {id:'ITEM-16', title:'Can thiệp lối sống đa lĩnh vực CÓ CẤU TRÚC (US POINTER) — lợi ích nhỏ nhưng thực tế',
+     funding:'CHƯA LẤY ĐƯỢC — tạp chí không đặt câu tài trợ trong tóm tắt; PubMed get_article_metadata và Amass BiomedCore đều không có trường funding; toàn văn bị chặn egress. Xem mục 10.5 của bản cập nhật.',
      source:'Structured vs Self-Guided Multidomain Lifestyle Interventions for Global Cognitive Function: The US POINTER Randomized Clinical Trial', org:'JAMA', dateVersion:'2025 · JAMA 2025;334(8):681-691',
      pmid:'40720610', doi:'10.1001/jama.2025.12923', design:'RCT',
      population:'2111 người 60–79 tuổi, ít vận động, chế độ ăn chưa tối ưu và có thêm yếu tố nguy cơ; 5 trung tâm tại Hoa Kỳ; 2 năm',
@@ -649,6 +693,8 @@ const DATA = {
      references:['Baker LD, Espeland MA, Whitmer RA, và cộng sự. Structured vs Self-Guided Multidomain Lifestyle Interventions for Global Cognitive Function: The US POINTER Randomized Clinical Trial. JAMA. 2025;334(8):681-691. PMID 40720610.']},
 
     {id:'ITEM-17', title:'Máy trợ thính (ACHIEVE) — kết cục chính ÂM TÍNH, tín hiệu ở nhóm nguy cơ cao',
+     funding:'US National Institutes of Health (nguyên văn mục FUNDING, Lancet)',
+     coi:'Tài trợ công. COI nhóm tác giả: [CẦN KIỂM CHỨNG].',
      source:'Hearing intervention versus health education control to reduce cognitive decline in older adults with hearing loss (ACHIEVE)', org:'The Lancet', dateVersion:'2023 · Lancet 2023;402(10404):786-797',
      pmid:'37478886', doi:'10.1016/S0140-6736(23)01406-X', design:'RCT',
      population:'977 người 70–84 tuổi, giảm thính lực chưa điều trị, chưa suy giảm nhận thức đáng kể; gồm 2 quần thể: đoàn hệ ARIC nguy cơ cao và người tình nguyện cộng đồng khoẻ mạnh; 3 năm',
@@ -852,6 +898,24 @@ function verifyView(){
 function select(id){state.selected=id;if(state.tab!=='cqv'){state.tab='cqv';renderTabs();renderCenter();}renderCenter();renderDetail();openDrawer();}
 function openDrawer(){document.getElementById('detail').classList.add('open');document.getElementById('scrim').classList.add('open');}
 function closeDetail(){document.getElementById('detail').classList.remove('open');document.getElementById('scrim').classList.remove('open');}
+function renderProv(){
+  const m=DATA.meta||{}, el=document.getElementById('prov');
+  if(!el) return;
+  const miss='<span class="miss">CHƯA GHI — bắt buộc</span>';
+  const v=x=>(x==null||x==='')?miss:x;
+  const list=a=>(Array.isArray(a)&&a.length)?a.join(' · '):miss;
+  const dau=x=>{const t=String(x==null?'':x);const i=t.indexOf(' — ');return i>0?t.slice(0,i):t;};  // bỏ phần lý do ở dòng tóm tắt
+  el.innerHTML=`<summary>🔎 <b>Ghi vết tra cứu</b> · Ngày tra: ${v(m.searchDate)} · Rà lại: ${m.nextReview?dau(m.nextReview):miss}</summary>
+    <div class="pbody">
+      <div class="pk">Ngày tra cứu</div><div class="pv">${v(m.searchDate)}</div>
+      <div class="pk">CSDL/nguồn đã tra</div><div class="pv">${list(m.searchSources)}</div>
+      <div class="pk">Chiến lược tìm</div><div class="pv">${v(m.searchStrategy)}</div>
+      <div class="pk">Kiểm bài rút</div><div class="pv">${v(m.retractionCheck)}</div>
+      <div class="pk">Rà lại kế tiếp</div><div class="pv">${v(m.nextReview)}</div>
+      ${(m.reviewTriggers&&m.reviewTriggers.length)?`<div class="pk">Rà sớm hơn nếu</div><div class="pv">${m.reviewTriggers.map(t=>'• '+t).join('<br>')}</div>`:''}
+    </div>`;
+}
+
 function renderDetail(){
   const el=document.getElementById('detail');
   const e=DATA.items.find(x=>x.id===state.selected);
@@ -890,6 +954,8 @@ function renderDetail(){
       <div class="r"><span class="k">Ngày/phiên bản</span><span class="v">${e.dateVersion||'—'}</span></div>
       <div class="r"><span class="k">Quần thể</span><span class="v">${e.population||'—'}</span></div>
       <div class="r"><span class="k">Grading nguồn</span><span class="v">${e.gradeSource||'Nguồn không cung cấp phân hạng'}</span></div>
+      <div class="r"><span class="k">Tài trợ</span><span class="v">${e.funding||'<span style="color:var(--muted)">chưa lấy được — xem mục COI của bản cập nhật</span>'}</span></div>
+      ${e.coi?`<div class="r"><span class="k">COI / vai trò nhà tài trợ</span><span class="v">${e.coi}</span></div>`:''}
     </div></div>
     <div class="dsec"><h3>◧ Đối chiếu ${e.frame||'PICO'}</h3><div class="picogrid">${picoRows}</div></div>
     ${statsHtml}
@@ -913,7 +979,7 @@ function renderDetail(){
 function exportData(fmt){
   const arr=filtered();
   if(fmt==='json'){download('dashboard-ebm.json',JSON.stringify({meta:DATA.meta,items:arr},null,2),'application/json');return;}
-  const cols=['id','title','design','decision','gradeSource','population','source','dateVersion','pmid','doi','action','monitoring','vn'];
+  const cols=['id','title','design','decision','gradeSource','population','source','dateVersion','pmid','doi','funding','coi','action','monitoring','vn'];
   const esc=v=>`"${String(v==null?'':v).replace(/"/g,'""')}"`;
   const rows=[cols.join(',')].concat(arr.map(e=>cols.map(c=>esc(e[c])).join(',')));
   download('dashboard-ebm.csv','﻿'+rows.join('\n'),'text/csv');
@@ -921,7 +987,7 @@ function exportData(fmt){
 function download(name,content,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type}));a.download=name;a.click();URL.revokeObjectURL(a.href);}
 
 /* init */
-renderStatic();renderKPIs();buildFacets();renderTabs();render();
+renderStatic();renderProv();renderKPIs();buildFacets();renderTabs();render();
 </script>
 </body>
 </html>

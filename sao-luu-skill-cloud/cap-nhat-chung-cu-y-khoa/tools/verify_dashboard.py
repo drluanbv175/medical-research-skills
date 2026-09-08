@@ -28,8 +28,12 @@ Mã thoát:
     2 = KHÔNG KẾT LUẬN  — không có lỗi cứng nhưng chưa xác minh được PMID (chỉ khi --online)
 
 Lỗi cứng: item thiếu cả pmid lẫn doi; thiếu disclaimer; item thiếu gradeLevel/decision;
-          PMID không phân giải được trên PubMed.
-Cảnh báo (không chặn): nghi PII; PMID chưa xác minh khi đã bật --offline-ok.
+          PMID không phân giải được trên PubMed;
+          THIẾU GHI VẾT TRA CỨU trong DATA.meta (searchDate · searchSources · searchStrategy ·
+          nextReview) — một dashboard không nói mình tra ngày nào, ở đâu, thì không rà lại được.
+Cảnh báo (không chặn): nghi PII; PMID chưa xác minh khi đã bật --offline-ok;
+          item không có `funding`/`coi` (thường không lấy được bằng máy — phải ghi trong
+          mục COI của bản cập nhật .md, xem 5D-quater của SKILL.md).
 """
 import sys, re, json, argparse
 
@@ -62,6 +66,30 @@ def split_items(data_block):
 def field(chunk, name):
     m = re.search(name + r"\s*:\s*['\"]([^'\"]*)['\"]", chunk)
     return m.group(1) if m else None
+
+
+CO_NGAY = re.compile(r"\d{4}-\d{2}-\d{2}|\d{1,2}/\d{1,2}/\d{4}")
+
+
+def lay_khoi_meta(data_block):
+    """Cắt đoạn meta:{...} — dừng ở `summary:` hoặc `items:`, cái nào tới trước."""
+    i = data_block.find("meta:")
+    if i < 0:
+        return ""
+    ends = [x for x in (data_block.find("summary:", i), data_block.find("items:", i)) if x > 0]
+    return data_block[i:min(ends)] if ends else data_block[i:i + 4000]
+
+
+def mang_chuoi(meta, ten):
+    """Đọc `ten:[ 'a', 'b' ]` → ['a','b']. Trả [] nếu không có hoặc rỗng."""
+    m = re.search(ten + r"\s*:\s*\[", meta)
+    if not m:
+        return []
+    j, sau = m.end(), 1
+    while j < len(meta) and sau:
+        sau += (meta[j] == "[") - (meta[j] == "]")
+        j += 1
+    return re.findall(r"['\"]([^'\"]+)['\"]", meta[m.end():j - 1])
 
 
 def verify_pmid_online(pmid):
@@ -103,12 +131,36 @@ def main():
         errors.append("Không tìm thấy khối const DATA.")
         return report(errors, warns, oks, [], a.offline_ok)
 
+    # 1-bis) GHI VẾT TRA CỨU trong DATA.meta (bắt buộc từ 2026-09-08)
+    meta = lay_khoi_meta(data)
+    for ten, nhan, phai_co_ngay in (
+            ("searchDate", "ngày tra cứu", True),
+            ("searchStrategy", "chiến lược tìm", False),
+            ("nextReview", "ngày rà lại kế tiếp", True)):
+        gt = (field(meta, ten) or "").strip()
+        if not gt:
+            errors.append("GHI VẾT: DATA.meta THIẾU `%s` (%s)." % (ten, nhan))
+        elif phai_co_ngay and not CO_NGAY.search(gt):
+            errors.append("GHI VẾT: DATA.meta.%s không có ngày thật: %r" % (ten, gt[:60]))
+        else:
+            oks.append("GHI VẾT %s: %s" % (ten, gt[:70]))
+    nguon = mang_chuoi(meta, "searchSources")
+    if not nguon:
+        errors.append("GHI VẾT: DATA.meta THIẾU `searchSources` — phải liệt kê từng CSDL đã tra "
+                      "(ghi cả nguồn BỊ CHẶN, để lần sau khỏi thử lại).")
+    else:
+        oks.append("GHI VẾT searchSources: %d nguồn (%s)." % (len(nguon), ", ".join(nguon[:4])))
+    if not (field(meta, "retractionCheck") or "").strip():
+        warns.append("GHI VẾT: DATA.meta chưa có `retractionCheck` — chạy tools/retraction_check.py "
+                     "rồi ghi ngày + kết quả vào đây (xem 5D-ter).")
+
     items = split_items(data)
     if not items:
         errors.append("Không tách được item nào trong items[].")
     oks.append("Số item: %d." % len(items))
 
     pmids = []
+    thieu_funding = []
     for ch in items:
         iid = field(ch, "id") or "(?)"
         pmid = field(ch, "pmid")
@@ -126,6 +178,14 @@ def main():
             errors.append("[%s] decision không hợp lệ: %r (cần %s)." % (iid, dec, VALID_DECISION))
         if "references" not in ch:
             warns.append("[%s] không thấy references[]." % iid)
+        if not (field(ch, "funding") or "").strip():
+            thieu_funding.append(iid)
+
+    if thieu_funding:
+        warns.append("%d item chưa ghi `funding` (%s%s) — thường KHÔNG lấy được bằng máy; "
+                     "phải ghi vào mục COI/tài trợ của bản cập nhật .md."
+                     % (len(thieu_funding), ", ".join(thieu_funding[:6]),
+                        "…" if len(thieu_funding) > 6 else ""))
 
     # 2) PII (heuristic — chỉ cảnh báo)
     pii = []

@@ -107,6 +107,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("file")
     ap.add_argument("--outdir", default="derivatives")
+    ap.add_argument("--ghi-de", dest="ghi_de", action="store_true",
+                    help="cho phép ghi đè bản ĐÃ RÀ TAY (mất công rà lại từ đầu)")
     a = ap.parse_args()
 
     html = open(a.file, encoding="utf-8").read()
@@ -185,13 +187,24 @@ def main():
 """.format(q=q, hook=(conclusion[:90] + "…") if conclusion else q,
            pts="\n".join("• " + x for x in pts) or "• —", rf="; ".join(redFlags[:2]) or "—")
 
-    written = []
+    written, giu = [], []
     for suffix, content in [("to-dan-nguoi-benh", patient), ("slide-outline", slide), ("kich-ban-tiktok", tiktok)]:
         path = os.path.join(a.outdir, "%s_%s.md" % (slug, suffix))
+        # KHÔNG ghi đè bản đã rà tay. Bản tự sinh luôn mang dấu "BẢN NHÁP TỰ ĐỘNG";
+        # tệp đã có mà KHÔNG còn dấu đó nghĩa là người đã sửa — ghi đè là xoá công rà ngôn ngữ.
+        if os.path.isfile(path) and not a.ghi_de:
+            cu = open(path, encoding="utf-8").read()
+            if "BẢN NHÁP TỰ ĐỘNG" not in cu:
+                giu.append(path)
+                print("  ⊘ GIỮ NGUYÊN (đã rà tay, không ghi đè): " + path)
+                continue
         open(path, "w", encoding="utf-8").write(content)
         written.append(path)
         print("  + " + path)
-    print("Đã sinh %d sản phẩm phái sinh. Slide=faithful; tờ dặn & TikTok = BẢN NHÁP cần rà ngôn ngữ phổ thông." % len(written))
+    print("Đã sinh %d sản phẩm phái sinh%s. Slide=faithful; tờ dặn & TikTok = BẢN NHÁP cần rà ngôn ngữ phổ thông."
+          % (len(written), (", GIỮ NGUYÊN %d bản đã rà tay" % len(giu)) if giu else ""))
+    if giu:
+        print("     Muốn dựng lại từ đầu (mất phần đã rà): thêm --ghi-de.")
     return 0
 
 

@@ -238,6 +238,16 @@
   .reflist .r{padding-left:14px;text-indent:-14px}
 
   /* ---------- DISCLAIMER ---------- */
+  .prov{background:#f8fafc;border-top:1px solid var(--line);font-size:11px;color:var(--ink-2)}
+  .prov>summary{cursor:pointer;padding:7px 16px;list-style:none;display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+  .prov>summary::-webkit-details-marker{display:none}
+  .prov>summary::before{content:'▸';color:var(--muted)}
+  .prov[open]>summary::before{content:'▾'}
+  .prov>summary b{color:var(--ink);font-family:inherit}
+  .prov .pbody{padding:2px 16px 12px;display:grid;grid-template-columns:auto 1fr;gap:5px 14px;align-items:start}
+  .prov .pk{color:var(--muted);white-space:nowrap;font-size:10.5px;padding-top:1px}
+  .prov .pv{line-height:1.5;word-break:break-word}
+  .prov .miss{color:#b45309;font-weight:600}
   .disclaimer{display:flex;align-items:center;gap:10px;padding:8px 16px;background:#fffbeb;border-top:1px solid #fde68a;font-size:11.5px;color:#92400e}
   .disclaimer b{font-weight:700}
   .disclaimer .upd{margin-left:auto;color:#b45309;font-family:var(--mono);font-size:10.5px}
@@ -331,6 +341,9 @@
   <!-- Lớp nền mờ cho ngăn kéo (chỉ hiện khi màn hẹp) -->
   <div class="scrim" id="scrim" onclick="closeDetail()"></div>
 
+  <!-- ============ GHI VẾT TRA CỨU ============ -->
+  <details class="prov" id="prov"></details>
+
   <!-- ============ DISCLAIMER ============ -->
   <footer class="disclaimer">
     <span>⚠</span><b>Cần bác sĩ kiểm chứng.</b> Đối chiếu toàn văn &amp; bối cảnh bệnh nhân cụ thể. Không lưu thông tin định danh bệnh nhân (PII).
@@ -345,7 +358,14 @@
    (SGLT2i ở suy tim EF giảm) để file hiển thị được ngay — hãy thay toàn bộ.
 
    SCHEMA:
-   meta:    { question, eyebrow, pico:{P,I,C,O}, updated }
+   meta:    { question, eyebrow, pico:{P,I,C,O}, updated,
+              searchDate,        // BẮT BUỘC — ngày THỰC SỰ chạy truy vấn (YYYY-MM-DD)
+              searchSources:[…], // BẮT BUỘC — từng CSDL/nguồn đã tra, ghi cả cái BỊ CHẶN
+              searchStrategy,    // BẮT BUỘC — từ khoá/MeSH · giới hạn · số trả về → số chọn
+              retractionCheck,   // ngày kiểm bài rút + kết quả (n/n sạch, hay còn CHƯA KIỂM)
+              nextReview,        // BẮT BUỘC — ngày rà lại kế tiếp + LÝ DO chọn mốc
+              reviewTriggers:[…] // sự kiện buộc rà sớm hơn
+            }
    summary: { conclusion, doNow:[…], dontDo:[…], redFlags:[…] }   // Lớp 1
    items:   [ {
      id:'ITEM-01',                       // mã cục bộ, KHÔNG phải ID Master
@@ -363,6 +383,8 @@
      rob?:{'Ngẫu nhiên hóa':'l','Sai lệch can thiệp':'l','Dữ liệu thiếu':'s',
            'Đo kết cục':'l','Báo cáo chọn lọc':'l'},   // RoB 2 — CHỈ cho RCT
                                          // 'l' thấp · 's' có lo ngại · 'h' cao
+     funding?:'nguyên văn câu tài trợ của nguồn, hoặc CHƯA LẤY ĐƯỢC',
+     coi?:'COI/vai trò nhà tài trợ — nguyên văn hoặc [CẦN KIỂM CHỨNG]. KHÔNG suy đoán từ tên thuốc.',
      gradeSource,                        // nguyên văn của nguồn, vd 'GRADE Cao' / 'Khuyến cáo I·A'
      gradeLevel:'high'|'mod'|'low'|'vlow'|'na',  // để tô màu; 'na' nếu nguồn không cung cấp
      decision:'apply'|'consider'|'notyet',
@@ -377,7 +399,16 @@ const DATA = {
     eyebrow:'Cập nhật chứng cứ · vấn đề lâm sàng',
     question:'SGLT2i ở suy tim EF giảm (HFrEF) — có giảm tử vong TM & nhập viện?',
     pico:{P:'HFrEF, EF ≤ 40%', I:'SGLT2 inhibitor', C:'Placebo / điều trị chuẩn', O:'Tử vong TM + nhập viện suy tim'},
-    updated:'2026-06-07'
+    updated:'2026-06-07',
+    /* ── GHI VẾT TRA CỨU — 5 trường dưới là BẮT BUỘC. Bỏ trống → dashboard in
+       "CHƯA GHI — bắt buộc" và cổng verify_dashboard.py trả LỖI CỨNG. ── */
+    searchDate:'2026-06-07',
+    searchSources:['PubMed (connector)','Scite (editorialNotices)','trang hội chuyên ngành'],
+    searchStrategy:'“SGLT2 inhibitors” AND “heart failure reduced ejection fraction”; giới hạn 2021→nay, guideline + SR/MA + RCT pha 3; 214 kết quả → 12 đọc toàn văn → 3 đưa vào.',
+    retractionCheck:'2026-06-07 — 3/3 DOI sạch (Scite)',
+    nextReview:'2026-12-07 (6 tháng) — lý do: nhóm thuốc đang mở rộng chỉ định, guideline hội tim mạch cập nhật theo chu kỳ ngắn.',
+    reviewTriggers:['guideline mới của hội chuyên ngành','safety communication của cơ quan quản lý dược',
+                    'thông báo rút/đính chính bất kỳ nguồn nào đang dùng','kết quả pha 3 mới của thuốc trong bảng']
   },
   summary:{
     conclusion:'Thêm SGLT2i (dapagliflozin/empagliflozin) vào nền điều trị HFrEF chuẩn (ARNI/ACEi + chẹn beta + MRA) cho mọi bệnh nhân phù hợp — giảm ~25% tử vong TM & nhập viện suy tim, nhất quán giữa 2 RCT lớn và phân tích gộp.',
@@ -622,6 +653,24 @@ function verifyView(){
 function select(id){state.selected=id;if(state.tab!=='cqv'){state.tab='cqv';renderTabs();renderCenter();}renderCenter();renderDetail();openDrawer();}
 function openDrawer(){document.getElementById('detail').classList.add('open');document.getElementById('scrim').classList.add('open');}
 function closeDetail(){document.getElementById('detail').classList.remove('open');document.getElementById('scrim').classList.remove('open');}
+function renderProv(){
+  const m=DATA.meta||{}, el=document.getElementById('prov');
+  if(!el) return;
+  const miss='<span class="miss">CHƯA GHI — bắt buộc</span>';
+  const v=x=>(x==null||x==='')?miss:x;
+  const list=a=>(Array.isArray(a)&&a.length)?a.join(' · '):miss;
+  const dau=x=>{const t=String(x==null?'':x);const i=t.indexOf(' — ');return i>0?t.slice(0,i):t;};  // bỏ phần lý do ở dòng tóm tắt
+  el.innerHTML=`<summary>🔎 <b>Ghi vết tra cứu</b> · Ngày tra: ${v(m.searchDate)} · Rà lại: ${m.nextReview?dau(m.nextReview):miss}</summary>
+    <div class="pbody">
+      <div class="pk">Ngày tra cứu</div><div class="pv">${v(m.searchDate)}</div>
+      <div class="pk">CSDL/nguồn đã tra</div><div class="pv">${list(m.searchSources)}</div>
+      <div class="pk">Chiến lược tìm</div><div class="pv">${v(m.searchStrategy)}</div>
+      <div class="pk">Kiểm bài rút</div><div class="pv">${v(m.retractionCheck)}</div>
+      <div class="pk">Rà lại kế tiếp</div><div class="pv">${v(m.nextReview)}</div>
+      ${(m.reviewTriggers&&m.reviewTriggers.length)?`<div class="pk">Rà sớm hơn nếu</div><div class="pv">${m.reviewTriggers.map(t=>'• '+t).join('<br>')}</div>`:''}
+    </div>`;
+}
+
 function renderDetail(){
   const el=document.getElementById('detail');
   const e=DATA.items.find(x=>x.id===state.selected);
@@ -660,6 +709,8 @@ function renderDetail(){
       <div class="r"><span class="k">Ngày/phiên bản</span><span class="v">${e.dateVersion||'—'}</span></div>
       <div class="r"><span class="k">Quần thể</span><span class="v">${e.population||'—'}</span></div>
       <div class="r"><span class="k">Grading nguồn</span><span class="v">${e.gradeSource||'Nguồn không cung cấp phân hạng'}</span></div>
+      <div class="r"><span class="k">Tài trợ</span><span class="v">${e.funding||'<span style="color:var(--muted)">chưa lấy được — xem mục COI của bản cập nhật</span>'}</span></div>
+      ${e.coi?`<div class="r"><span class="k">COI / vai trò nhà tài trợ</span><span class="v">${e.coi}</span></div>`:''}
     </div></div>
     <div class="dsec"><h3>◧ Đối chiếu ${e.frame||'PICO'}</h3><div class="picogrid">${picoRows}</div></div>
     ${statsHtml}
@@ -683,7 +734,7 @@ function renderDetail(){
 function exportData(fmt){
   const arr=filtered();
   if(fmt==='json'){download('dashboard-ebm.json',JSON.stringify({meta:DATA.meta,items:arr},null,2),'application/json');return;}
-  const cols=['id','title','design','decision','gradeSource','population','source','dateVersion','pmid','doi','action','monitoring','vn'];
+  const cols=['id','title','design','decision','gradeSource','population','source','dateVersion','pmid','doi','funding','coi','action','monitoring','vn'];
   const esc=v=>`"${String(v==null?'':v).replace(/"/g,'""')}"`;
   const rows=[cols.join(',')].concat(arr.map(e=>cols.map(c=>esc(e[c])).join(',')));
   download('dashboard-ebm.csv','﻿'+rows.join('\n'),'text/csv');
@@ -691,7 +742,7 @@ function exportData(fmt){
 function download(name,content,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type}));a.download=name;a.click();URL.revokeObjectURL(a.href);}
 
 /* init */
-renderStatic();renderKPIs();buildFacets();renderTabs();render();
+renderStatic();renderProv();renderKPIs();buildFacets();renderTabs();render();
 </script>
 </body>
 </html>

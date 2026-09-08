@@ -12,6 +12,13 @@ Hai việc, hai chiều khác nhau:
      Đây là lỗi đã xảy ra thật: lần đầu chỉ giao Web Dashboard, KHÔNG có bản cập nhật
      văn bản nào; lần sau có văn bản nhưng phải đối chiếu tay mới biết đủ 11 mục.
 
+  C. BẢN CẬP NHẬT có GHI VẾT TRA CỨU không?  (ngày tra · CSDL · chiến lược · kiểm bài rút ·
+     ngày rà lại kế tiếp)
+     Danh sách trường lấy TRỰC TIẾP từ bảng "GHI VẾT TRA CỨU" trong mẫu — mẫu là nguồn
+     chân lý duy nhất, sửa mẫu là danh sách tự đổi theo (sau khi `--khoa-lai`).
+     Thiếu trường, hoặc để nguyên chỗ trống của mẫu, là LỖI CỨNG: một bản cập nhật không
+     nói mình tra ngày nào, ở đâu, thì không ai rà lại hay tái lập được.
+
 Cách dùng:
     python3 tools/kiem_mau_cap_nhat.py                      # chỉ kiểm MẪU còn nguyên
     python3 tools/kiem_mau_cap_nhat.py CapNhat_EBM_*.md     # kiểm bản cập nhật theo mẫu
@@ -21,9 +28,12 @@ Cách dùng:
 Mã thoát: 0 = đạt · 1 = lệch mẫu hoặc thiếu mục (phải sửa trước khi giao).
 
 PHÂN BIỆT LỖI CỨNG / CẢNH BÁO
-  Lỗi cứng : sai số mục · sai thứ tự · thiếu mục · mẫu đổi mà chưa khoá lại.
+  Lỗi cứng : sai số mục · sai thứ tự · thiếu mục · mẫu đổi mà chưa khoá lại ·
+             thiếu trường ghi vết tra cứu · trường ghi vết còn nguyên chỗ trống của mẫu ·
+             trường "Ngày ..." không có ngày thật.
   Cảnh báo : chữ tiêu đề mục khác chút so với mẫu (vd thêm "(Vancouver/NLM)") —
-             chấp nhận được, nhưng in ra để người viết biết mình đã đổi chữ.
+             chấp nhận được, nhưng in ra để người viết biết mình đã đổi chữ;
+             trường ghi vết còn dấu [CẦN ...] — chấp nhận được nhưng phải thấy rõ.
 """
 import sys, os, re, json, difflib, hashlib, argparse, unicodedata
 
@@ -42,6 +52,41 @@ def chuan_hoa(s):
 
 def giong(a, b):
     return difflib.SequenceMatcher(None, " ".join(chuan_hoa(a)), " ".join(chuan_hoa(b))).ratio()
+
+
+TIEU_DE_GHI_VET = "GHI VẾT TRA CỨU"
+CHO_TRONG = re.compile(r"\[[^\]]*(?:\.\.\.|…|YYYY-MM-DD|n/n|liệt kê|từ khoá)[^\]]*\]", re.I)
+CO_NGAY = re.compile(r"\d{4}-\d{2}-\d{2}|\d{1,2}/\d{1,2}/\d{4}")
+CAN_LAM = re.compile(r"\[CẦN [^\]]*\]", re.I)
+
+
+def doc_bang_ghi_vet(path):
+    """Đọc bảng GHI VẾT TRA CỨU → [(nhãn, giá trị), ...] theo đúng thứ tự trong tệp.
+
+    Bảng nhận diện bằng dòng tiêu đề `**GHI VẾT TRA CỨU**`; lấy các dòng `| a | b |`
+    ngay sau đó cho tới khi hết bảng. Không phụ thuộc vị trí tuyệt đối trong tệp.
+    """
+    txt = open(path, encoding="utf-8").read()
+    i = txt.find(TIEU_DE_GHI_VET)
+    if i < 0:
+        return []
+    ra, trong_bang = [], False
+    for dong in txt[i:].splitlines()[1:]:
+        d = dong.strip()
+        if not d.startswith("|"):
+            if trong_bang:
+                break
+            continue
+        o = [c.strip() for c in d.strip("|").split("|")]
+        if len(o) < 2:
+            continue
+        if set("".join(o)) <= set("-: "):          # dòng gạch ngăn
+            trong_bang = True
+            continue
+        if not trong_bang:                          # dòng tiêu đề cột
+            continue
+        ra.append((o[0], o[1]))
+    return ra
 
 
 def doc_muc(path):
@@ -74,13 +119,16 @@ def main():
             if not a.phien_ban:
                 print("✗ --khoa-lai phải kèm --phien-ban (vd 1.1). Đổi mẫu là việc CÓ CHỦ Ý.")
                 return 1
+            gv = doc_bang_ghi_vet(tpl)
             lock.update({"phien_ban": a.phien_ban, "sha256_mau": sha_now,
-                         "muc": doc_muc(tpl), "so_muc": len(doc_muc(tpl))})
+                         "muc": doc_muc(tpl), "so_muc": len(doc_muc(tpl)),
+                         "truong_ghi_vet": [n for n, _ in gv],
+                         "cho_trong_ghi_vet": {n: v for n, v in gv}})
             from datetime import date
             lock["ngay_khoa"] = date.today().isoformat()
             json.dump(lock, open(LOCK, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-            print("✓ Đã khoá lại mẫu: phiên bản %s · %d mục · sha256 %s"
-                  % (a.phien_ban, lock["so_muc"], sha_now[:16]))
+            print("✓ Đã khoá lại mẫu: phiên bản %s · %d mục · %d trường ghi vết · sha256 %s"
+                  % (a.phien_ban, lock["so_muc"], len(lock["truong_ghi_vet"]), sha_now[:16]))
             print("  Nhớ ghi lý do đổi mẫu vào CHANGELOG.md của skill.")
             return 0
         if sha_now != lock["sha256_mau"]:
@@ -117,6 +165,37 @@ def main():
         for j in range(len(chuan), len(thuc)):
             canh_bao.append("mục thừa %d: «%s» — mẫu không có" % (j + 1, thuc[j]))
 
+        # ---------- C. GHI VẾT TRA CỨU ----------
+        can = lock.get("truong_ghi_vet") or []
+        if not can:
+            canh_bao.append("Bản khoá %s chưa có danh sách trường ghi vết tra cứu — "
+                            "chạy --khoa-lai để nạp từ mẫu." % lock["phien_ban"])
+        else:
+            co = dict(doc_bang_ghi_vet(a.file))
+            mau_trong = lock.get("cho_trong_ghi_vet") or {}
+            for nhan in can:
+                if nhan not in co:
+                    loi.append("GHI VẾT: thiếu dòng «%s» — bản cập nhật không nói "
+                               "mình tra ngày nào / ở đâu / bằng gì." % nhan)
+                    continue
+                gt = co[nhan].strip()
+                if not gt or gt in ("—", "-", "…"):
+                    loi.append("GHI VẾT: «%s» để trống." % nhan)
+                elif gt == mau_trong.get(nhan, "").strip():
+                    loi.append("GHI VẾT: «%s» còn NGUYÊN chỗ trống của mẫu — chưa điền." % nhan)
+                elif CHO_TRONG.search(gt):
+                    loi.append("GHI VẾT: «%s» còn chỗ trống chưa điền: %s"
+                               % (nhan, CHO_TRONG.search(gt).group(0)))
+                elif nhan.lower().startswith("ngày") and not CO_NGAY.search(gt):
+                    loi.append("GHI VẾT: «%s» không có ngày thật (cần YYYY-MM-DD hoặc "
+                               "dd/mm/yyyy), đang là: %s" % (nhan, gt[:60]))
+                else:
+                    if CAN_LAM.search(gt):
+                        canh_bao.append("GHI VẾT: «%s» còn dấu %s — chấp nhận được, "
+                                        "nhưng phải nêu rõ khi giao."
+                                        % (nhan, CAN_LAM.search(gt).group(0)))
+                    dat.append("ghi vết «%s» đã điền" % nhan)
+
     # ---------- Báo cáo ----------
     print("=" * 68)
     print("KIỂM MẪU CẬP NHẬT CHỨNG CỨ")
@@ -126,6 +205,10 @@ def main():
         khop = len([d for d in dat if "khớp mẫu" in d])
         if khop:
             print("  ✓ %d/%d mục khớp nguyên văn mẫu." % (khop, lock["so_muc"]))
+        gv = len([d for d in dat if d.startswith("ghi vết")])
+        if gv:
+            print("  ✓ %d/%d trường ghi vết tra cứu đã điền."
+                  % (gv, len(lock.get("truong_ghi_vet") or [])))
     for c in canh_bao:
         print("  ⚠ " + c)
     for e in loi:

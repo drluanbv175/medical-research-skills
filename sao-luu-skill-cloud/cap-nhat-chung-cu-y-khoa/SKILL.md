@@ -2,7 +2,7 @@
 name: cap-nhat-chung-cu-y-khoa
 description: Sử dụng skill này khi bác sĩ yêu cầu cập nhật chứng cứ hoặc khuyến cáo hiện hành cho MỘT vấn đề lâm sàng cụ thể. Mỗi cập nhật phải kèm Web Dashboard độc lập theo mô hình MẶC ĐỊNH "Evidence Workbench" (bố cục 3 cột: bộ lọc · bảng điểm chứng cứ · panel thẩm định; lớp Clinical Quick View là màn hình tóm tắt mặc định) nếu môi trường hỗ trợ tạo file; đây không phải hệ thống giám sát định kỳ hoặc Dashboard Master mặc định.
 metadata:
-  version: 1.12.0
+  version: 1.14.0
 ---
 
 # Skill: Cập nhật chứng cứ y khoa theo vấn đề lâm sàng cụ thể
@@ -101,6 +101,10 @@ Phải xác minh tối thiểu:
 - ngày hoặc phiên bản;
 - quần thể;
 - khuyến cáo/kết quả liên quan trực tiếp đến câu hỏi.
+
+**Ghi vết NGAY khi tra, không tái dựng về sau.** Mỗi lần chạy truy vấn phải ghi lại: ngày ·
+CSDL/công cụ đã dùng · chuỗi truy vấn nguyên văn · giới hạn · số kết quả trả về → số đưa vào.
+Trí nhớ về "đã tra gì" hỏng rất nhanh; tái dựng sau đó là bịa. Xem **5D-quater**.
 
 Đọc `references/01-nguon-va-xac-minh.md`.
 
@@ -476,6 +480,52 @@ python3 tools/retraction_check.py report <scite>.json --dois-from CapNhat_EBM_<.
 Luôn dùng `--dois-from` để công cụ phát hiện DOI mà Scite bỏ sót. *"Không tra được"* khác
 *"không bị rút"* — cùng nguyên tắc fail-closed như cổng liêm chính ở mục 5D(a).
 
+## 5D-quater. GHI VẾT TRA CỨU — bản cập nhật phải nói mình tra ngày nào, ở đâu, bằng gì
+
+Skill `literature-review` từ lâu đã buộc *"ghi ngày tra + CSDL"*. Skill này thì không — nghịch lý,
+vì đây mới là skill trực tiếp đổi thực hành. Từ 2026-09-08, **mọi bản cập nhật và mọi dashboard
+đều phải mang khối GHI VẾT**, và **hai cổng đều chặn** nếu thiếu.
+
+| Trường | Vì sao bắt buộc | Cổng chặn |
+|---|---|---|
+| **Ngày tra cứu** | Chứng cứ hết hạn theo thời gian. Không có ngày tra thì không biết bản này đã cũ bao lâu. Là ngày **thực sự chạy truy vấn**, không phải ngày viết bài. | cả hai — lỗi cứng |
+| **CSDL/nguồn đã tra** | Cho biết phạm vi đã phủ và **chưa** phủ. Ghi cả nguồn **BỊ CHẶN** để lần sau khỏi thử lại. | cả hai — lỗi cứng |
+| **Chiến lược tìm** | Từ khoá/MeSH · giới hạn · số trả về → số đưa vào. Không có thì **không ai tái lập được** — kể cả chính mình 6 tháng sau. | cả hai — lỗi cứng |
+| **Ngày kiểm bài rút** | Nối với 5D-ter: kiểm rồi mà không ghi ngày thì lần sau không biết có phải kiểm lại. | `.md` lỗi cứng · dashboard cảnh báo |
+| **Ngày rà lại kế tiếp** | Biến bản cập nhật từ *ảnh chụp một lần* thành *tài sản có vòng đời*. **Phải kèm LÝ DO chọn mốc và sự kiện buộc rà sớm** — nếu không thì chỉ là con số tuỳ tiện. | cả hai — lỗi cứng |
+
+**Chọn mốc rà lại thế nào** (chọn mốc NGẮN NHẤT áp dụng được, rồi ghi lý do):
+
+| Tình huống | Mốc |
+|---|---|
+| Đang có cảnh báo an toàn mở, hoặc thuốc mới đang mở rộng chỉ định | **3 tháng** |
+| Guideline nguồn đã công bố lịch ra bản mới | **theo đúng lịch đó** |
+| Có RCT pha 3 lớn dự kiến đọc kết quả trong 12 tháng, hoặc lĩnh vực vừa có guideline đầu tiên | **6 tháng** |
+| Chủ đề ổn định, nguồn chính đều là guideline chu kỳ dài | **12 tháng** |
+
+Luôn liệt kê thêm **sự kiện kích hoạt rà sớm** (`reviewTriggers`): quyết định mới của cơ quan
+quản lý dược · guideline mới của hội chuyên ngành · safety communication · thông báo rút/đính chính
+· kết quả pha 3 mới của thuốc đang nằm trong bảng điều trị.
+
+### COI và tài trợ của nguồn chính — mục 10.x của bản cập nhật
+
+Ba quy tắc, không có ngoại lệ:
+
+1. **Ghi NGUYÊN VĂN hoặc ghi "nguồn không cung cấp".** Không suy đoán tài trợ từ tên thuốc,
+   tên hãng hay tên tác giả. Suy đoán tài trợ là bịa dữ liệu.
+2. **Tài trợ công nghiệp KHÔNG tự động hạ mức chứng cứ.** Ghi lại để người đọc tự cân, và nêu
+   **chiều** của thiên lệch có thể có: một thử nghiệm do nhà sản xuất tài trợ mà cho kết quả
+   **âm tính** với chính sản phẩm của họ thì chiều thiên lệch ngược với kết luận — nói rõ điều đó.
+3. **"Chưa lấy được" phải nói là chưa lấy được**, kèm nơi cần mở để lấy. Không để trống.
+
+**Đo được 2026-09-08 — đọc trước khi mất thời gian thử lại:** trong môi trường cloud hiện tại,
+câu tài trợ chỉ lấy được bằng máy khi **tạp chí đặt nó trong tóm tắt** (kiểu *Lancet* → đoạn
+FUNDING cuối; *NEJM* → "(Funded by …)"). Với *JAMA*, *BMJ*, *Alzheimer's & Dementia*, *Cochrane*
+thì **không có đường máy nào**: `mcp__PubMed__get_article_metadata` không có trường funding
+(các trường có: abstract, article_types, authors, citation, doi, identifiers, journal, language,
+mesh_terms, publication_date, title), Amass BiomedCore cũng không. Trên 17 nguồn của bản sa sút
+trí tuệ, lấy được **3/17**. Phần còn lại phải mở toàn văn trên máy có mạng.
+
 ## 5E. Lớp phủ an toàn thuốc · Giám sát định kỳ · Bản địa hóa BYT
 
 **(a) An toàn thuốc (người cao tuổi/đa thuốc):** khi cập nhật có thuốc và liên quan nhóm `cao-tuoi`/`da-thuoc`, chạy `tools/drug_safety_scan.py <dashboard>.html` (đối chiếu bảng cờ **Beers 2023/STOPP-START v3** trong `data/drug_flags.json`) → cảnh báo + sinh prompt rà soát ĐẦY ĐỦ bằng skill `nguoi-cao-tuoi-da-benh-da-thuoc`. Bảng cờ KHÔNG đầy đủ, chỉ để nhắc. Chi tiết: `references/09-an-toan-thuoc-overlay.md`.
@@ -556,6 +606,7 @@ Không mặc định coi Web Dashboard theo vấn đề cụ thể là bản ghi
 - Đã phân tích nhóm đặc biệt liên quan chưa?
 - Đã ghi rõ nội dung chưa đủ để thay đổi chưa?
 - Đã viết **bản cập nhật `CapNhat_EBM_*.md` theo mẫu 11 mục** và chạy `tools/kiem_mau_cap_nhat.py` ra **ĐÚNG MẪU** chưa? (xem 5D-bis) — Web Dashboard KHÔNG thay thế bản cập nhật văn bản.
+- Đã điền **đủ 5 trường GHI VẾT TRA CỨU** (ngày tra · CSDL · chiến lược · kiểm bài rút · ngày rà lại kế tiếp **kèm lý do**) trong **cả** bản `.md` **và** `DATA.meta` của dashboard chưa? Đã ghi **COI/tài trợ** của nguồn chính ở mục 10.x — nguyên văn, hoặc nói rõ "chưa lấy được"? (xem 5D-quater)
 - Đã chạy `tools/retraction_check.py` (qua Scite) và **không có bài bị rút** chưa? Có DOI `CHƯA KIỂM` thì đã nêu rõ trong bản giao chưa? (xem 5D-ter)
 - Đã dựng **trang đọc được** bằng `tools/render_ban_cap_nhat.py` và giao link cho bác sĩ chưa? (file `.md`/`.html` gửi kèm thường không mở được trong khung chát)
 - Đã tạo Web Dashboard độc lập từ template MẶC ĐỊNH `web-dashboard-evidence-workbench.html` (Evidence Workbench; hoặc `web-dashboard-dark-analyst.html` khi bác sĩ yêu cầu — CÙNG schema `DATA`) và chạy TRỌN dây chuyền tự động (cổng liêm chính → thư viện → phái sinh) chưa?
@@ -580,7 +631,7 @@ Không mặc định coi Web Dashboard theo vấn đề cụ thể là bản ghi
 - `templates/web-dashboard-evidence-workbench.html` ⭐ TEMPLATE MẶC ĐỊNH (Evidence Workbench, nền sáng; có EtD; chrome tự sinh từ DATA)
 - `templates/web-dashboard-dark-analyst.html` (mẫu KHI YÊU CẦU — nền tối, CÙNG schema DATA)
 - `templates/web-dashboard-van-de-cu-the-clinical-quick-view.html` (một-cột cũ, chỉ khi yêu cầu riêng)
-- `templates/web-dashboard-record-schema.csv`
+- `templates/web-dashboard-record-schema.csv` (đã có `search_date` · `search_sources` · `search_strategy` · `next_review` · `funding` · `coi`)
 - `references/05-web-dashboard-clinical-quick-view.md`
 - `references/06-pico-va-trich-dan.md`
 - `references/07-mo-hinh-cau-hoi-va-khung-thay-the.md`
