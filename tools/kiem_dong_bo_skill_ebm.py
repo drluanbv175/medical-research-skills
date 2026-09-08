@@ -104,11 +104,12 @@ def main():
         except Exception as e:
             notes.append("Không đọc được %s (%s)." % (os.path.basename(DA_GO), e))
     for t, e in sorted(da_go.items()):
-        if t in bundle:
-            notes.append("`%s`: ĐÃ GỠ khỏi tài khoản ngày %s (gộp vào `%s`); thư mục còn sót "
-                         "trong bản đồng bộ — bỏ qua khi đối chiếu."
-                         % (t, e.get("ngay_go", "?"), e.get("gop_vao", "?")))
-            bundle.pop(t, None)
+        con_sot = t in bundle
+        notes.append("`%s`: ĐÃ GỠ khỏi tài khoản ngày %s (gộp vào `%s`). Bản trong "
+                     "sao-luu-skill-cloud là BẢN GHI LỊCH SỬ — không đối chiếu, không đòi cập nhật.%s"
+                     % (t, e.get("ngay_go", "?"), e.get("gop_vao", "?"),
+                        " Thư mục còn sót trong bản đồng bộ." if con_sot else ""))
+        bundle.pop(t, None)
 
     # ---------- 1. TRÔI LỆCH BẢN SAO ----------
     print("=" * 72)
@@ -144,6 +145,8 @@ def main():
     # ---------- 2. TÀI LIỆU ≠ CODE ----------
     print("[2] TÀI LIỆU CÓ KHỚP CODE KHÔNG")
     for name, bpath in sorted(backup.items()):
+        if name in da_go:
+            continue          # bản lưu trữ: đóng băng ở trạng thái cũ, không phải skill đang chạy
         smd = os.path.join(bpath, "SKILL.md")
         if not os.path.isfile(smd):
             continue
