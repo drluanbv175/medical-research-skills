@@ -190,6 +190,15 @@
   .vn-col h5{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:700;margin-bottom:8px}
   .needconf{display:inline-block;font-size:9.5px;font-weight:700;color:#b45309;background:#fef3c7;border:1px solid #fcd34d;border-radius:5px;padding:1px 6px}
 
+  /* RoB 2 — chỉ dùng cho RCT */
+  .robmini{display:flex;gap:3px}
+  .robmini i{width:11px;height:11px;border-radius:50%;display:inline-block}
+  .robfull{display:flex;flex-direction:column;gap:6px}
+  .robfull .r{display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:var(--ink-2)}
+  .robfull .r i{width:15px;height:15px;border-radius:50%;display:inline-grid;place-items:center;font-size:9px;font-weight:800;color:#fff}
+  .rl{background:var(--g-high)}.rs{background:var(--g-mod)}.rh{background:var(--g-vlow)}
+  .efftext{font-size:10.5px;color:var(--ink-2);line-height:1.35;display:block;max-width:230px}
+
   /* verify tasks */
   .vtask{display:flex;gap:11px;align-items:flex-start;padding:11px 13px;border:1px solid var(--line);border-radius:11px;background:var(--surface)}
   .vtask .n{width:24px;height:24px;border-radius:7px;background:var(--primary);color:#fff;display:grid;place-items:center;font-weight:800;flex-shrink:0;font-family:var(--mono)}
@@ -346,7 +355,14 @@
      population,
      pico:{ P:[txt,'match'|'mis'], I:[…], C:[…], O:[…] },
      effect?:{ measure:'HR', hr:0.74, lo:0.65, hi:0.85, ci:'0.65–0.85', favors:true },
-                                         // chỉ điền nếu nguồn báo cáo; số trích ĐÚNG nguồn
+                                         // CHỈ khi hiệu số là TỶ SỐ (HR/RR/OR) → vẽ forest
+     effectText?:'CDR-SB −0,45 (95% CI −0,67 đến −0,23)',
+                                         // hiệu số PHI-TỶ-SỐ (chênh lệch trung bình, %, SMD…)
+                                         // trích ĐÚNG nguồn. KHÔNG nhét số này vào `effect`
+                                         // vì forest lấy mốc vô hiệu = 1,0, sai với hiệu số hiệu.
+     rob?:{'Ngẫu nhiên hóa':'l','Sai lệch can thiệp':'l','Dữ liệu thiếu':'s',
+           'Đo kết cục':'l','Báo cáo chọn lọc':'l'},   // RoB 2 — CHỈ cho RCT
+                                         // 'l' thấp · 's' có lo ngại · 'h' cao
      gradeSource,                        // nguyên văn của nguồn, vd 'GRADE Cao' / 'Khuyến cáo I·A'
      gradeLevel:'high'|'mod'|'low'|'vlow'|'na',  // để tô màu; 'na' nếu nguồn không cung cấp
      decision:'apply'|'consider'|'notyet',
@@ -423,6 +439,7 @@ const DESIGN_META={Guideline:['b-guideline','Guideline'],Meta:['b-meta','Meta-an
 const GRADE_META={high:['g-high','Cao',4],mod:['g-mod','Trung bình',3],low:['g-low','Thấp',2],vlow:['g-vlow','Rất thấp',1],na:['g-na','Nguồn không phân hạng',0]};
 const DEC_META={apply:['d-apply','Áp dụng ngay','--apply'],consider:['d-consider','Cân nhắc chọn lọc','--consider'],notyet:['d-notyet','Chưa đủ thay đổi','--notyet']};
 const GROUP_META={'cao-tuoi':'Người cao tuổi','ckd':'CKD','gan':'Bệnh gan','dtd':'Đái tháo đường','tim-mach':'Tim mạch','da-thuoc':'Đa thuốc'};
+const ROB_META={l:['rl','✓','Nguy cơ thấp'],s:['rs','!','Có lo ngại'],h:['rh','✕','Nguy cơ cao']};
 
 let state={selected:null, tab:'cqv', q:'', filters:{decision:new Set(),group:new Set(),design:new Set(),grade:new Set()}};
 
@@ -555,7 +572,9 @@ function renderCenter(){
 function tableView(arr){
   const rows=arr.map(e=>{
     const dm=DESIGN_META[e.design]||['',''], gm=GRADE_META[e.gradeLevel]||GRADE_META.na, dec=DEC_META[e.decision]||DEC_META.consider;
-    const eff=e.effect?`<span class="effect ${e.effect.favors?'fav':(e.effect.favors===false?'harm':'ns')}">${e.effect.hr!=null?e.effect.hr.toFixed(2):(e.effect.measure||'')}</span> <span class="ci">${e.effect.ci?'('+e.effect.ci+')':''}</span>`:'<span class="effect ns">—</span>';
+    const eff=e.effect
+      ?`<span class="effect ${e.effect.favors?'fav':(e.effect.favors===false?'harm':'ns')}">${e.effect.hr!=null?e.effect.hr.toFixed(2):(e.effect.measure||'')}</span> <span class="ci">${e.effect.ci?'('+e.effect.ci+')':''}</span>`
+      :(e.effectText?`<span class="efftext">${e.effectText}</span>`:'<span class="effect ns">—</span>');
     const pips=Array.from({length:4},(_,i)=>`<span class="pip ${i<gm[2]?'on':''}"></span>`).join('');
     return `<tr class="${e.id===state.selected?'sel':''}" onclick="select('${e.id}')">
       <td><span class="ttl">${e.title}<span class="auth">${e.source} · <span class="idtag">${e.id}</span>${e.pmid?` · PMID <span class="pmid">${e.pmid}</span>`:''}</span>${e.flag?`<span class="flag-mini">⚑ ${e.flag}</span>`:''}</span></td>
@@ -615,6 +634,14 @@ function renderDetail(){
   const statsHtml=eff?`<div class="dsec"><h3>∑ Hiệu số (đúng như nguồn báo cáo)</h3><div class="stats">
       <div class="stat"><div class="l">${eff.measure||'Hiệu số'}</div><div class="n" style="color:${eff.favors?'var(--g-high)':'var(--ink)'}">${eff.hr!=null?eff.hr.toFixed(2):'—'}</div><div class="x">95% CI ${eff.ci||'—'}</div></div>
       <div class="stat"><div class="l">Forest</div><div style="margin-top:6px">${miniForest(eff)}</div><div class="x">ngưỡng 1.0</div></div>
+    </div></div>`
+    :(e.effectText?`<div class="dsec"><h3>∑ Hiệu số (đúng như nguồn báo cáo)</h3>
+      <p style="font-size:12px;color:var(--ink);line-height:1.5">${e.effectText}</p>
+      <p style="font-size:10px;color:var(--muted);margin-top:5px">Hiệu số phi-tỷ-số — không vẽ forest vì mốc vô hiệu là 0, không phải 1,0.</p>
+    </div>`:'');
+  const robHtml=e.rob?`<div class="dsec"><h3>◔ Nguy cơ sai lệch (RoB 2)<span class="needconf" style="margin-left:6px">đánh giá vận hành</span></h3>
+    <p style="font-size:10px;color:var(--muted);margin:-4px 0 8px">Chấm theo RoB 2 bởi người tổng hợp, KHÔNG phải phân hạng của nguồn. Chỉ điền khi đã đọc đủ phương pháp; để trống thì tốt hơn là đoán.</p><div class="robfull">
+      ${Object.keys(e.rob).map(d=>{const r=ROB_META[e.rob[d]]||ROB_META.s;return `<div class="r"><span>${d}</span><i class="${r[0]}" title="${r[2]}">${r[1]}</i></div>`;}).join('')}
     </div></div>`:'';
   el.innerHTML=`
     <div class="dhead">
@@ -636,6 +663,7 @@ function renderDetail(){
     </div></div>
     <div class="dsec"><h3>◧ Đối chiếu ${e.frame||'PICO'}</h3><div class="picogrid">${picoRows}</div></div>
     ${statsHtml}
+    ${robHtml}
     <div class="dsec"><h3>➤ Hành động & theo dõi</h3><div class="kvline">
       <div class="r"><span class="k">Hành động</span><span class="v">${e.action||'—'}</span></div>
       <div class="r"><span class="k">Monitoring</span><span class="v">${e.monitoring||'—'}</span></div>

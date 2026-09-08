@@ -395,12 +395,14 @@ Sau khi dựng dashboard, dùng bộ công cụ trong `tools/` để bảo đả
 
 **(a) Cổng kiểm liêm chính — `tools/verify_dashboard.py`** (chạy TRƯỚC khi giao):
 `python3 tools/verify_dashboard.py <dashboard>.html --online`
-Kiểm: mỗi item có PMID/DOI · `gradeLevel` & `decision` hợp lệ · có disclaimer · quét PII · và **tự xác minh mỗi PMID phân giải đúng trên PubMed** (chống trích dẫn ảo). FAIL → sửa trước khi giao.
+Kiểm: mỗi item có PMID/DOI · `gradeLevel` & `decision` hợp lệ · có disclaimer · quét PII · và **tự xác minh mỗi PMID phân giải đúng trên PubMed** (chống trích dẫn ảo).
+**Cổng FAIL CLOSED (từ 2026-09-08):** khi đã yêu cầu `--online` mà KHÔNG xác minh được PMID (mạng lỗi/bị chặn), cổng **KHÔNG in PASS** mà trả `⊘ KHÔNG KẾT LUẬN` (mã thoát 2) — vì *chưa xác minh* khác *đã xác minh*. Muốn giao trong hoàn cảnh đó thì phải nêu rõ bằng `--offline-ok`, khi đó cổng in `PASS CÓ ĐIỀU KIỆN` kèm dòng **GHI VẾT** số PMID chưa xác minh. Mã thoát: `0` PASS · `1` FAIL (có lỗi cứng) · `2` KHÔNG KẾT LUẬN.
 
 **(b) Thư viện cập nhật — `tools/build_library.py`** (tích lũy thành tài sản tra cứu):
 `python3 tools/build_library.py add <dashboard>.html` → cập nhật `library.json` + sinh `evidence-library.html` (chỉ mục mọi bản cập nhật, có tìm/lọc, mở thẳng từng dashboard).
 
-**(c) Sản phẩm phái sinh — TỰ ĐỘNG mỗi lần chạy:** sau khi cổng liêm chính PASS, tự sinh 3 sản phẩm vào `EBM-Dashboards/derivatives/` (`tools/make_derivatives.py <dashboard>.html`): **tờ dặn người bệnh** (ngôn ngữ phổ thông, BỎ liều) · **dàn ý slide** (giữ hiệu số + GRADE + PMID) · **kịch bản TikTok**. Slide = faithful; tờ dặn & TikTok do model rà ngôn ngữ phổ thông trước khi giao. **Video TikTok thật: theo yêu cầu qua skill `tao-video-tiktok`.** Playbook: `references/08-xuat-san-pham-phai-sinh.md`. Người bệnh & TikTok **KHÔNG nêu liều**; kèm disclaimer; không PII; bác sĩ duyệt trước khi phát/đăng.
+**(c) Sản phẩm phái sinh — TỰ ĐỘNG mỗi lần chạy:** sau khi cổng liêm chính PASS, tự sinh 3 sản phẩm vào `EBM-Dashboards/derivatives/` (`tools/make_derivatives.py <dashboard>.html`): **tờ dặn người bệnh** (ngôn ngữ phổ thông, BỎ liều) · **dàn ý slide** (giữ hiệu số + **phân hạng NGUYÊN VĂN của nguồn** + PMID) · **kịch bản TikTok**.
+**Không tự gán nhãn GRADE trong phái sinh:** dàn ý slide in nguyên văn trường `gradeSource`, KHÔNG dựng chuỗi "GRADE <mức>" từ `gradeLevel` — `gradeLevel` chỉ để tô màu và lọc trên dashboard. Slide = faithful; tờ dặn & TikTok do model rà ngôn ngữ phổ thông trước khi giao. **Video TikTok thật: theo yêu cầu qua skill `tao-video-tiktok`.** Playbook: `references/08-xuat-san-pham-phai-sinh.md`. Người bệnh & TikTok **KHÔNG nêu liều**; kèm disclaimer; không PII; bác sĩ duyệt trước khi phát/đăng.
 
 **GRADE Evidence-to-Decision (EtD):** Dashboard Dark Analyst tự hiển thị khối EtD khi `DATA` có field `etd` (vấn đề · lợi ích · tác hại · độ chắc chắn · giá trị · cân bằng · nguồn lực · công bằng · chấp nhận · khả thi → khuyến cáo + độ mạnh). **Hàng lợi ích/tác hại/độ chắc chắn lấy TỪ chứng cứ; các hàng còn lại + khuyến cáo = "đánh giá vận hành"** (ghi rõ trên dashboard). Điền `etd` cho mỗi cập nhật có khuyến cáo đổi thực hành.
 
@@ -491,7 +493,7 @@ Không mặc định coi Web Dashboard theo vấn đề cụ thể là bản ghi
 - Đã dùng tài liệu tham khảo có thể truy nguyên chưa?
 - Nếu câu hỏi về hiệu quả can thiệp: đã trình bày khối PICO đủ 5 dòng và trích hiệu số đúng như nguồn (point estimate + CI/p) chưa?
 - Đã tự nhận diện loại câu hỏi và chọn đúng khung (PICO/PECO/chẩn đoán/tiên lượng/tần suất/định tính/dịch vụ) và nêu rõ khung đã dùng chưa? (xem 5C)
-- Đã chạy `tools/verify_dashboard.py --online` và PASS (mọi item có PMID/DOI, PMID phân giải đúng, có disclaimer, không PII) trước khi giao chưa? (xem 5D)
+- Đã chạy `tools/verify_dashboard.py --online` và đạt **PASS thật** (mọi item có PMID/DOI, **PMID đã phân giải đúng**, có disclaimer, không PII) trước khi giao chưa? Nếu cổng trả `⊘ KHÔNG KẾT LUẬN` thì **KHÔNG được nói là đã xác minh**; chỉ giao khi đã dùng `--offline-ok` và **nêu rõ ghi vết đó trong câu trả lời**. (xem 5D)
 - Nếu cập nhật có thuốc cho người cao tuổi/đa thuốc: đã chạy `tools/drug_safety_scan.py` + đối chiếu Beers/STOPP qua skill người cao tuổi chưa? (xem 5E)
 - Đã tự sinh 3 sản phẩm phái sinh (tờ dặn/slide/TikTok) vào `derivatives/` và (khi có khuyến cáo đổi thực hành) điền khối `etd` cho Dashboard chưa? (xem 5D)
 - Đã nêu cả hai chiều khi chứng cứ không đồng nhất, và đánh dấu `[CẦN BỔ SUNG]` khi chỉ có đồng thuận/nguyên lý chưa?
