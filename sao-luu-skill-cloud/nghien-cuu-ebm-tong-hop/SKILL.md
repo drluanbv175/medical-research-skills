@@ -7,7 +7,7 @@ description: >-
   phân loại thiết kế nghiên cứu, xếp hạng mức chứng cứ, giải mâu thuẫn nghiên cứu, lập đề cương
   (PICO, cỡ mẫu, tiêu chí chọn/loại, endpoint, kiểm soát nhiễu), phân tích sống còn/Cox/ROC/
   hiệu chỉnh/DCA/nomogram, hoặc viết IMRAD theo chuẩn báo cáo (CONSORT/STROBE/PRISMA). Chỉ dùng
-  nguồn & API MIỄN PHÍ (PubMed E-utilities…). Mọi đầu ra kèm PMID/DOI + disclaimer
+  nguồn miễn phí, ưu tiên connector MCP (API trực tiếp bị chặn trong phiên cloud). Mọi đầu ra kèm PMID/DOI + disclaimer
   "Cần bác sĩ kiểm chứng". KHÔNG lưu thông tin định danh bệnh nhân (PII). KHÔNG dùng cho bench/omics.
 license: MIT
 author: "Hợp nhất & Việt hoá từ AIPOCH Medical Research Skills (MIT) cho thực hành EBM ngoại trú"
@@ -23,8 +23,11 @@ giữ/loại tại `MANIFEST-giu-loai.md`.
 ## Nguyên tắc bắt buộc (áp cho mọi đầu ra)
 1. **Không bịa**: không bịa trích dẫn, PMID/DOI, số liệu hay đặc điểm nghiên cứu. Không chắc → nói rõ.
 2. **Truy vết**: mọi khẳng định y khoa kèm `[PMID: …]` hoặc `[DOI: …]`; ưu tiên nguồn gốc.
-3. **Chỉ API miễn phí**: PubMed E-utilities, Europe PMC, Crossref, OpenAlex, Unpaywall…
+3. **Chỉ nguồn miễn phí, và phải dùng ĐƯỜNG THỰC SỰ CHẠY ĐƯỢC**: connector MCP trước
+   (PubMed · Scite · Amass · Clinical Trials · Consensus), API trực tiếp (E-utilities, Europe PMC,
+   Crossref, OpenAlex, Unpaywall) **chỉ khi tên miền mở** — trong phiên cloud thì **không**.
    KHÔNG dùng backend trả phí (parallel.ai/Perplexity/OpenRouter…).
+   Chi tiết + bảng năng lực: `references/00-duong-tra-cuu.md`. **Không tra được ≠ không có.**
 4. **Disclaimer**: kết thúc mọi đầu ra y khoa bằng *"⚠️ Cần bác sĩ kiểm chứng và đối chiếu bối
    cảnh bệnh nhân cụ thể trước khi áp dụng."*
 5. **Không PII**: không nhập/lưu thông tin định danh bệnh nhân.
@@ -47,14 +50,20 @@ Xác định ý định người dùng rồi đọc file tham chiếu tương �
 ## Quy trình chung (mọi mô-đun)
 1. **Làm rõ câu hỏi**: dân số – can thiệp/phơi nhiễm – so sánh – kết cục – bối cảnh (PICO/PECO).
 2. **Đọc file tham chiếu** của mô-đun, áp đúng khung/luật.
-3. **Thực thi** từng bước; với tìm kiếm, dùng `scripts/pubmed_search.py` (E-utilities, miễn phí).
+3. **Thực thi** từng bước; với tìm kiếm: **connector PubMed trước** (tìm bằng `ToolSearch`,
+   đừng ghi cứng tên công cụ — tên đã đổi ngay trong một phiên). `scripts/pubmed_search.py` chỉ
+   dùng khi chạy trên máy có mạng tới NCBI; script trả **mã thoát 2 = KHÔNG KẾT LUẬN** khi lỗi
+   mạng, và mã 0 kèm "0 bài" khi thật sự không có kết quả — **hai thứ đó khác nhau**.
 4. **Tách bạch**: phần "đã neo nguồn" (kèm PMID/DOI) vs "suy luận của mô hình" (gắn nhãn rõ).
 5. **Cảnh báo độ mới/mâu thuẫn**: nguồn >5 năm hoặc đã có guideline mới hơn → nêu rõ.
 6. **Kết luận + disclaimer**.
 
 ## Công cụ kèm theo
+- `references/00-duong-tra-cuu.md` — **đọc trước khi tra bất cứ thứ gì**: đường nào chạy được,
+  đường nào bị chặn, giới hạn từng công cụ.
 - `scripts/pubmed_search.py` — tìm PubMed qua E-utilities (miễn phí, không cần key; thêm email/API
-  key để tăng giới hạn). Trả PMID + metadata; không bịa.
+  key để tăng giới hạn). Trả PMID + metadata; không bịa. **Chỉ chạy khi có mạng tới NCBI**;
+  mã thoát: `0` xong · `2` KHÔNG KẾT LUẬN (lỗi mạng) — đừng đọc mã 2 thành "không có bài".
 
 ## Ranh giới
 Skill HỖ TRỢ tra cứu & soạn thảo nghiên cứu, **không thay phán đoán lâm sàng**, không ra y lệnh.
