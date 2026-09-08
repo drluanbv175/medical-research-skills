@@ -1,5 +1,5 @@
 {
- "_muc_dich": "Danh sách skill ĐÃ GỠ khỏi tài khoản Claude. Thư mục của chúng vẫn còn sót trong bản đồng bộ của container (đồng bộ chỉ ghi thêm/ghi đè, KHÔNG xoá thư mục của skill đã gỡ), nên công cụ kiểm đồng bộ cần danh sách này để khỏi báo động giả.",
+ "_muc_dich": "Danh sách skill ĐÃ GỠ khỏi tài khoản Claude. Bản trong sao-luu-skill-cloud/ của chúng là BẢN GHI LỊCH SỬ — đóng băng ở trạng thái lúc lưu, KHÔNG phải skill đang chạy. Công cụ kiểm đồng bộ đọc danh sách này để không đối chiếu và không đòi cập nhật chúng.",
  "_cach_dung": "Sau khi xoá một skill trên tài khoản, thêm một mục vào đây. Chỉ ghi khi ĐÃ THỰC SỰ xoá và đã xác minh.",
  "da_go": [
   {
@@ -11,5 +11,6 @@
    "xac_minh": "ListSkills lọc 'dark-analyst' trả về rỗng ngày 2026-09-08.",
    "ban_sao_luu_giu_lai": true
   }
- ]
+ ],
+ "_ghi_chu_dong_bo": "Bản đồng bộ trong container CÓ xoá thư mục của skill đã gỡ, nhưng không tức thì — có thể còn sót tới lần đồng bộ sau. Đừng suy ra trạng thái tài khoản từ đĩa; mốc thời gian tệp cũng KHÔNG dùng được (skill không đổi giữ mốc cũ y như skill đã gỡ)."
 }
