@@ -1,0 +1,6 @@
+# Thư mục SAO LƯU skill cloud — phải giữ ĐẦY ĐỦ file, không thiếu byte nào.
+# Ghi đè các quy tắc của .gitignore ở gốc repo vốn sẽ nuốt mất file của skill:
+#   *.html  → template Web Dashboard (cap-nhat-chung-cu-y-khoa, dark-analyst)
+#   test_*  → script kiểm thử đi kèm skill (clinical-evidence-rag)
+!*.html
+!test_*
