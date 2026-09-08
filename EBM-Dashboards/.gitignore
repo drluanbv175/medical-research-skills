@@ -1,0 +1,3 @@
+# Dashboard EBM và trang thư viện là SẢN PHẨM BÀN GIAO —
+# ghi đè quy tắc "*.html" của .gitignore ở gốc repo.
+!*.html
