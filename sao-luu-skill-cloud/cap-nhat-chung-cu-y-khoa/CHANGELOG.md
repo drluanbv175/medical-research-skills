@@ -1,5 +1,38 @@
 # Changelog
 
+## 2026-09-08 (c) — Kiểm bài RÚT vào dây chuyền bắt buộc
+
+Lỗ hổng nặng nhất còn lại: một bài **đã bị rút** có thể làm nền cho khuyến cáo đổi thực hành
+mà không gì chặn. Skill `citation-management` đã bắt buộc kiểm; skill này thì không — nghịch
+lý, vì đây mới là skill trực tiếp đổi thực hành lâm sàng.
+
+Hạ tầng đã có sẵn trong repo (`scripts/retraction_check.py`, thiết kế đúng cho môi trường bị
+chặn egress: đi qua connector Scite thay vì Crossref). Thiếu là **phần nối vào dây chuyền**.
+Nay: dây chuyền 9 bước, kiểm bài rút là bước 5, ngay sau cổng liêm chính. Mục mới 5D-ter.
+
+### Hai lỗi thật của công cụ, phát hiện khi chạy lần đầu
+
+1. **Không đọc được thứ nó thực sự nhận.** `report` mong JSON thô của Scite, nhưng agent gọi
+   qua MCP thì kết quả về dạng phong bì `[{"type":"text","text":"..."}]` → vỡ ngay
+   (`AttributeError: 'list' object has no attribute 'get'`). Nay `unwrap_scite()` gỡ được cả
+   ba dạng: JSON thô, phong bì MCP (bao nhiêu lớp cũng gỡ), và mảng hit trần.
+
+2. **Regex DOI nuốt dấu nháy đóng.** Rút từ dashboard cho ra `10.1002/alz.14333'` vì trong khối
+   `DATA` viết là `doi:'…'`. DOI hỏng thì Scite tra không ra ⇒ bị xếp `CHƯA KIỂM`, che mất việc
+   thực chất là chưa kiểm được gì.
+   Bản vá đầu **hỏng hơn**: loại luôn `)` nên cắt cụt DOI Elsevier hợp lệ
+   (`10.1016/S0140-6736(24)01296-0` → `10.1016/s0140-6736(24`). Nay chỉ loại dấu nháy, còn
+   ngoặc thì **đếm cân bằng** rồi mới cắt phần thừa.
+   Bài học ghi lại: phép đối chiếu HTML ↔ .md vẫn báo "trùng khớp" trong khi **cả hai cùng sai
+   giống nhau** — hai sản phẩm dẫn xuất khớp nhau KHÔNG chứng minh cái nào đúng. Phải đối chiếu
+   với dữ liệu thật (ở đây là bộ DOI đã gọi Scite và có kết quả trả về).
+
+### Kết quả trên bản cập nhật sa sút trí tuệ
+17/17 DOI: không bài nào bị rút, đính chính hay nêu quan ngại. Ghi vào mục 10.4 của bản cập
+nhật, kèm giới hạn: chỉ mục Scite không phủ 100%, nên "không thấy thông báo" chưa phải bằng
+chứng tuyệt đối.
+
+
 ## 2026-09-08 (b) — Khoá mẫu cập nhật + đưa bản cập nhật văn bản vào dây chuyền bắt buộc
 
 Hai vấn đề hệ thống, không phải lỗi lẻ.
