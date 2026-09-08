@@ -1,5 +1,36 @@
 # Changelog
 
+## 2026-09-08 (b) — Khoá mẫu cập nhật + đưa bản cập nhật văn bản vào dây chuyền bắt buộc
+
+Hai vấn đề hệ thống, không phải lỗi lẻ.
+
+### Bản cập nhật văn bản trước đây KHÔNG nằm trong dây chuyền
+Dây chuyền tự động ở mục 5D chỉ có: dựng Dashboard → cổng → thư viện → phái sinh.
+Không bước nào sinh ra `CapNhat_EBM_*.md`. Hậu quả thật: lần chạy đầu cho ca sa sút trí
+tuệ chỉ giao Web Dashboard, bác sĩ phải hỏi mới có bản cập nhật văn bản.
+Nay dây chuyền có 8 bước, **bước 1 là viết bản cập nhật theo mẫu 11 mục**, và bước 8 là
+dựng trang đọc được — vì `.md`/`.html` gửi kèm thường không mở được trong khung chát.
+
+### Mẫu cập nhật nay được KHOÁ
+`templates/mau-cap-nhat-chuyen-sau.md` khoá bằng SHA-256 trong
+`data/mau_cap_nhat.lock.json` (phiên bản 1.0, 11 mục, khoá 2026-09-08).
+Công cụ mới `tools/kiem_mau_cap_nhat.py`:
+- kiểm **mẫu** có bị đổi lén không (so SHA-256);
+- kiểm **bản cập nhật** có đủ 11 mục, đúng thứ tự không;
+- đổi mẫu phải CÓ CHỦ Ý: `--khoa-lai --phien-ban <mới>` kèm ghi CHANGELOG.
+Đổi chữ tiêu đề mục = cảnh báo (chấp nhận). Đổi số mục hoặc thứ tự = lỗi cứng, chặn giao.
+Quy tắc kèm theo: chủ đề không có nội dung cho một mục thì ghi "không áp dụng" hoặc
+`[CẦN BỔ SUNG]` — **không xoá mục**.
+
+### Kèm theo
+- `tools/render_ban_cap_nhat.py` + `templates/trang-doc-ban-cap-nhat.css`: dựng bản cập
+  nhật thành trang đọc/in được. Bảng xuống dòng cho vừa khung (đo được 9/9 bảng vừa,
+  kể cả bảng 7 cột); chuỗi font tránh Times New Roman và thêm Be Vietnam Pro vì
+  **Poppins không có bộ ký tự tiếng Việt**.
+- `quality/acceptance-checklist.md`: thêm 9 mục kiểm, mỗi mục tương ứng một lỗi ĐÃ XẢY RA.
+- Công cụ đồng bộ ở repo có thêm phép kiểm [5]: mẫu còn khớp khoá không.
+
+
 ## 2026-09-08 — Sửa 3 lỗi liêm chính + đồng bộ tài liệu với code
 
 Phát hiện khi dùng skill cho ca sa sút trí tuệ. Cả ba đều ảnh hưởng đến độ tin cậy

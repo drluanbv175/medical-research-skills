@@ -1,0 +1,21 @@
+{
+ "_muc_dich": "KHOÁ MẪU cập nhật chứng cứ. Mọi bản cập nhật phải theo đúng bộ mục này. Mẫu chỉ được đổi CÓ CHỦ Ý qua `kiem_mau_cap_nhat.py --khoa-lai`, kèm tăng phien_ban.",
+ "phien_ban": "1.0",
+ "ngay_khoa": "2026-09-08",
+ "tep_mau": "templates/mau-cap-nhat-chuyen-sau.md",
+ "sha256_mau": "e738c567ed980dd37721aadd293ea14b4177bfc7387588c38e5ea73312e8e574",
+ "so_muc": 11,
+ "muc": [
+  "1. Tóm tắt thực hành nhanh",
+  "2. Điểm mới có thể thay đổi xử trí",
+  "3. Chẩn đoán và chẩn đoán phân biệt",
+  "4. Phân tầng nguy cơ; nhập viện/chuyển tuyến",
+  "5. Điều trị không dùng thuốc và dùng thuốc",
+  "6. Bảng điều trị",
+  "7. Điều trị theo nhóm đặc biệt",
+  "8. Thực hành không còn phù hợp hoặc chưa đủ để thay đổi",
+  "9. Áp dụng tại Việt Nam",
+  "10. Thẩm định nguồn chính, khi cần",
+  "11. Tài liệu tham khảo Vancouver/NLM"
+ ]
+}

@@ -325,7 +325,18 @@ Chỉ cần thay khối hằng số `DATA = {…}` ở cuối file; KHÔNG sửa
 **Mẫu KHI BÁC SĨ YÊU CẦU (nền tối, dày dữ liệu):** `templates/web-dashboard-dark-analyst.html` — **CÙNG schema `DATA`** (một khối dữ liệu chạy được cả hai). Template một-cột cũ `web-dashboard-van-de-cu-the-clinical-quick-view.html` chỉ dùng khi yêu cầu riêng.
 Cả hai mẫu hỗ trợ field tùy chọn `effectText` (hiệu số phi-tỷ-số), `rob` (RoB 2, chỉ RCT), `frame`/`frameLabels` (khung không-PICO) và `etd` (GRADE Evidence-to-Decision).
 
-**TỰ ĐỘNG khi gọi skill:** mỗi lần skill được gọi cho một vấn đề → tự chạy TRỌN dây chuyền (không cần yêu cầu từng bước): dựng Dashboard (EW mặc định) → `tools/verify_dashboard.py --online` (PASS) → `tools/drug_safety_scan.py` (nếu có thuốc + cao tuổi/đa thuốc) → `tools/build_library.py add` → `tools/make_derivatives.py` (3 phái sinh). Dùng mẫu Dark Analyst CHỈ khi bác sĩ yêu cầu.
+**TỰ ĐỘNG khi gọi skill:** mỗi lần skill được gọi cho một vấn đề → tự chạy TRỌN dây chuyền (không cần yêu cầu từng bước):
+
+1. **Viết BẢN CẬP NHẬT `CapNhat_EBM_<ChuDe>_YYYYMMDD.md`** theo `templates/mau-cap-nhat-chuyen-sau.md` — **BẮT BUỘC, không được bỏ**. Web Dashboard là công cụ tra cứu, KHÔNG thay thế bản cập nhật văn bản.
+2. `tools/kiem_mau_cap_nhat.py <file>.md` → phải **ĐÚNG MẪU** (đủ mục, đúng thứ tự).
+3. Dựng **Dashboard** (Evidence Workbench mặc định) từ cùng nội dung đã xác minh.
+4. `tools/verify_dashboard.py --online` → **PASS thật**; nếu `⊘ KHÔNG KẾT LUẬN` thì xử lý theo mục 5D(a).
+5. `tools/drug_safety_scan.py` (nếu có thuốc + cao tuổi/đa thuốc).
+6. `tools/build_library.py add` → thư viện chỉ mục.
+7. `tools/make_derivatives.py` → 3 phái sinh.
+8. `tools/render_ban_cap_nhat.py <file>.md` → **trang đọc/in được**; bác sĩ thường KHÔNG mở được `.md` hay `.html` gửi kèm trong khung chát, nên phải đăng thành trang có link.
+
+Dùng mẫu Dark Analyst CHỈ khi bác sĩ yêu cầu.
 
 
 ## 5B. Trình bày theo PICO và ghi nguồn sạch
@@ -409,6 +420,26 @@ Kiểm: mỗi item có PMID/DOI · `gradeLevel` & `decision` hợp lệ · có d
 **(d) Thư mục chung tích lũy:** xuất MỌI dashboard vào `EBM-Dashboards/` (trong OneDrive → tự đồng bộ Mac↔Windows). Sau khi PASS cổng (a), chạy `EBM-Dashboards/tools/build_library.py add <file>.html` để tích lũy vào chỉ mục `EBM-Dashboards/evidence-library.html`. Hướng dẫn: `EBM-Dashboards/README.md`.
 
 
+## 5D-bis. KHOÁ MẪU — mẫu cập nhật không được đổi theo từng lần
+
+`templates/mau-cap-nhat-chuyen-sau.md` là **mẫu chuẩn 11 mục** của mọi bản cập nhật. Nó được
+khoá bằng SHA-256 trong `data/mau_cap_nhat.lock.json` (phiên bản · ngày khoá · danh sách 11 mục).
+
+| Tình huống | Việc phải làm |
+|---|---|
+| Viết bản cập nhật mới | Theo đúng 11 mục, đúng thứ tự. Chạy `tools/kiem_mau_cap_nhat.py <file>.md` trước khi giao. |
+| Mẫu bị đổi **không chủ ý** | Công cụ báo `MẪU ĐÃ BỊ ĐỔI` → **khôi phục mẫu**, không làm bản cập nhật nào cho tới khi khớp lại. |
+| Muốn đổi mẫu **có chủ ý** | `tools/kiem_mau_cap_nhat.py --khoa-lai --phien-ban <mới>` **và** ghi lý do vào `CHANGELOG.md`. |
+
+Ba quy tắc bất biến:
+
+- **Không tự ý thêm, bớt, đổi thứ tự mục** cho vừa một chủ đề cụ thể. Chủ đề nào không có nội
+  dung cho một mục thì ghi rõ *"không áp dụng"* hoặc `[CẦN BỔ SUNG]` — **không xoá mục**.
+- **Đổi chữ tiêu đề mục** (vd bỏ đuôi *", khi cần"*) chỉ là cảnh báo, chấp nhận được; **đổi số
+  mục hoặc thứ tự** là lỗi cứng, chặn giao.
+- Cấu trúc 8 phần ở mục 5 của tài liệu này là bố cục **câu trả lời trong hội thoại**. **Tệp bàn
+  giao luôn theo mẫu 11 mục** — hai thứ không thay thế nhau.
+
 ## 5E. Lớp phủ an toàn thuốc · Giám sát định kỳ · Bản địa hóa BYT
 
 **(a) An toàn thuốc (người cao tuổi/đa thuốc):** khi cập nhật có thuốc và liên quan nhóm `cao-tuoi`/`da-thuoc`, chạy `tools/drug_safety_scan.py <dashboard>.html` (đối chiếu bảng cờ **Beers 2023/STOPP-START v3** trong `data/drug_flags.json`) → cảnh báo + sinh prompt rà soát ĐẦY ĐỦ bằng skill `nguoi-cao-tuoi-da-benh-da-thuoc`. Bảng cờ KHÔNG đầy đủ, chỉ để nhắc. Chi tiết: `references/09-an-toan-thuoc-overlay.md`.
@@ -488,6 +519,8 @@ Không mặc định coi Web Dashboard theo vấn đề cụ thể là bản ghi
 - Đã nêu hành động, monitoring, cờ đỏ/chuyển tuyến khi cần chưa?
 - Đã phân tích nhóm đặc biệt liên quan chưa?
 - Đã ghi rõ nội dung chưa đủ để thay đổi chưa?
+- Đã viết **bản cập nhật `CapNhat_EBM_*.md` theo mẫu 11 mục** và chạy `tools/kiem_mau_cap_nhat.py` ra **ĐÚNG MẪU** chưa? (xem 5D-bis) — Web Dashboard KHÔNG thay thế bản cập nhật văn bản.
+- Đã dựng **trang đọc được** bằng `tools/render_ban_cap_nhat.py` và giao link cho bác sĩ chưa? (file `.md`/`.html` gửi kèm thường không mở được trong khung chát)
 - Đã tạo Web Dashboard độc lập từ template MẶC ĐỊNH `web-dashboard-evidence-workbench.html` (Evidence Workbench; hoặc `web-dashboard-dark-analyst.html` khi bác sĩ yêu cầu — CÙNG schema `DATA`) và chạy TRỌN dây chuyền tự động (cổng liêm chính → thư viện → phái sinh) chưa?
 - Đã tránh tạo ID quản trị hoặc cập nhật Dashboard Master khi người dùng không yêu cầu chưa?
 - Đã dùng tài liệu tham khảo có thể truy nguyên chưa?
@@ -517,6 +550,8 @@ Không mặc định coi Web Dashboard theo vấn đề cụ thể là bản ghi
 - `references/08-xuat-san-pham-phai-sinh.md`
 - `templates/phai-sinh-to-dan-nguoi-benh.md`
 - `templates/phai-sinh-kich-ban-tiktok.md`
+- `tools/kiem_mau_cap_nhat.py` + `data/mau_cap_nhat.lock.json` (KHOÁ MẪU 11 mục · kiểm bản cập nhật đúng mẫu)
+- `tools/render_ban_cap_nhat.py` + `templates/trang-doc-ban-cap-nhat.css` (dựng trang đọc/in được)
 - `tools/verify_dashboard.py` (cổng kiểm liêm chính + xác minh PMID/DOI)
 - `tools/build_library.py` (thư viện chỉ mục cập nhật → evidence-library.html)
 - `tools/make_derivatives.py` (tự sinh tờ dặn người bệnh / dàn ý slide / kịch bản TikTok → derivatives/)

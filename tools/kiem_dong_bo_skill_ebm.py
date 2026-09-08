@@ -14,6 +14,7 @@ BỐN PHÉP KIỂM
   2. TÀI LIỆU ≠ CODE   — SKILL.md hứa field nào thì template phải cài đặt field đó.
   3. MÔ TẢ TRÙNG NHAU  — hai skill cùng mô tả kích hoạt ⇒ hệ thống có thể chọn nhầm.
   4. THIẾU CỔNG        — skill bảo chạy verify_dashboard.py thì phải có file đó.
+  5. KHOÁ MẪU          — mẫu cập nhật phải khớp SHA-256 đã khoá trong lock file.
 
 Cách dùng:
     python3 tools/kiem_dong_bo_skill_ebm.py            # kiểm, in báo cáo
@@ -158,6 +159,27 @@ def main():
             if not os.path.isfile(os.path.join(bpath, "tools", "verify_dashboard.py")):
                 problems.append("`%s` yêu cầu chạy verify_dashboard.py nhưng KHÔNG ship file đó "
                                 "⇒ mọi đầu ra của skill này chưa qua cổng liêm chính." % name)
+
+    # ---------- 5. KHOÁ MẪU CẬP NHẬT ----------
+    print("[5] MẪU CẬP NHẬT CÒN KHỚP KHOÁ KHÔNG")
+    import json as _json
+    for name, bpath in sorted({**bundle, **backup}.items()):
+        lk = os.path.join(bpath, "data", "mau_cap_nhat.lock.json")
+        if not os.path.isfile(lk):
+            continue
+        try:
+            lock = _json.load(open(lk, encoding="utf-8"))
+            tpl = os.path.join(bpath, lock["tep_mau"])
+            if not os.path.isfile(tpl):
+                problems.append("`%s`: lock trỏ tới %s nhưng không có tệp đó." % (name, lock["tep_mau"]))
+            elif sha(tpl) != lock["sha256_mau"]:
+                problems.append("`%s`: MẪU CẬP NHẬT đã đổi mà chưa khoá lại "
+                                "⇒ bản cập nhật sau sẽ theo mẫu khác bản trước." % name)
+            else:
+                notes.append("`%s`: mẫu cập nhật khoá ở phiên bản %s (%d mục) — còn nguyên."
+                             % (name, lock.get("phien_ban", "?"), lock.get("so_muc", 0)))
+        except Exception as e:
+            problems.append("`%s`: không đọc được lock mẫu (%s)." % (name, e))
 
     # ---------- BÁO CÁO ----------
     print("-" * 72)
