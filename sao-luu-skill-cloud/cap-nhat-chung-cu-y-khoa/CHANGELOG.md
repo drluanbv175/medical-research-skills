@@ -1,5 +1,60 @@
 # Changelog
 
+## 2026-09-08 (d) — GHI VẾT TRA CỨU · COI/tài trợ · ngày rà lại kế tiếp — **MẪU LÊN 1.1**
+
+Mâu thuẫn nội bộ còn lại: skill `literature-review` buộc *"ghi ngày tra + CSDL"*, còn skill
+này — skill **trực tiếp đổi thực hành lâm sàng** — thì không. Hậu quả cụ thể ở bản sa sút trí
+tuệ 08/9: không ai, kể cả người viết, tái lập được là đã tra gì; và không có mốc nào nói khi nào
+phải rà lại. Một bản cập nhật không ghi vết là **ảnh chụp một lần**, không phải tài sản có vòng đời.
+
+### Đổi mẫu CÓ CHỦ Ý — vì sao phải lên phiên bản
+
+`templates/mau-cap-nhat-chuyen-sau.md` thêm khối **GHI VẾT TRA CỨU** (5 dòng, đặt ngay dưới tiêu
+đề) và khung bảng **COI/tài trợ** trong mục 10. **Số mục vẫn là 11, thứ tự không đổi** — nên mọi
+bản cập nhật cũ vẫn hợp lệ về cấu trúc mục. Mẫu đã khoá lại:
+`kiem_mau_cap_nhat.py --khoa-lai --phien-ban 1.1`.
+
+### Cổng nào chặn cái gì
+
+- `tools/kiem_mau_cap_nhat.py` — thêm **phần C**: danh sách trường ghi vết **đọc thẳng từ bảng
+  trong mẫu** (mẫu là nguồn chân lý duy nhất; sửa mẫu → danh sách tự đổi sau khi `--khoa-lai`).
+  Lỗi cứng khi: thiếu dòng · để trống · **còn nguyên chỗ trống của mẫu** · trường "Ngày …" không
+  có ngày thật. Cảnh báo khi còn dấu `[CẦN …]` — chấp nhận được nhưng phải thấy rõ.
+- `tools/verify_dashboard.py` — `DATA.meta` thiếu `searchDate` / `searchSources` / `searchStrategy`
+  / `nextReview` là **lỗi cứng**. `retractionCheck` thiếu → cảnh báo. Item không có `funding`
+  → cảnh báo (thường không lấy được bằng máy).
+- Cả hai mẫu dashboard (Evidence Workbench **và** Dark Analyst) hiển thị dải **Ghi vết tra cứu**
+  gập/mở ở chân trang; trường bỏ trống in đỏ `CHƯA GHI — bắt buộc`, không im lặng.
+
+### Một phép đo, để lần sau khỏi mất công thử lại
+
+Câu **tài trợ** chỉ lấy được bằng máy khi tạp chí đặt nó **trong tóm tắt** (*Lancet*: đoạn
+FUNDING cuối; *NEJM*: "(Funded by …)"). `mcp__PubMed__get_article_metadata` **không có** trường
+funding/COI; **Amass BiomedCore cũng không**. Trên 17 nguồn của bản sa sút trí tuệ: lấy được
+**3/17** (evoke/evoke+ → "Novo Nordisk."; CLARITY-AD → "Funded by Eisai and Biogen"; ACHIEVE →
+"US National Institutes of Health."). 14 nguồn còn lại phải mở toàn văn trên máy có mạng —
+đã ghi rõ là **CHƯA LẤY ĐƯỢC**, không để trống và không suy đoán.
+
+### Quy tắc COI được viết thành luật trong SKILL.md (5D-quater)
+
+Ghi nguyên văn hoặc ghi "nguồn không cung cấp" — **suy đoán tài trợ là bịa dữ liệu**. Tài trợ
+công nghiệp **không** tự động hạ mức chứng cứ; phải nêu **chiều** thiên lệch có thể có (evoke là
+ví dụ ngược chiều: nhà sản xuất tài trợ, kết quả âm tính với chính sản phẩm của họ).
+
+### Lỗi bắt được ngay trong lần chạy này: `make_derivatives.py` xoá công rà tay
+
+Chạy lại dây chuyền sau khi sửa mẫu thì `make_derivatives.py` **ghi đè** tờ dặn người bệnh và
+kịch bản TikTok **đã được rà ngôn ngữ phổ thông** bằng bản nháp máy — im lặng, không hỏi.
+Đã khôi phục, và bịt: bản tự sinh luôn mang dấu `BẢN NHÁP TỰ ĐỘNG`; tệp đã có mà **không còn
+dấu đó** nghĩa là người đã sửa → công cụ **giữ nguyên** và in `⊘ GIỮ NGUYÊN (đã rà tay)`.
+Muốn dựng lại từ đầu phải nói rõ bằng `--ghi-de`.
+
+### Ngày rà lại kế tiếp — có bảng chọn mốc, không tuỳ tiện
+
+3 tháng (cảnh báo an toàn đang mở) · theo lịch guideline nếu nguồn đã công bố · 6 tháng (RCT lớn
+sắp đọc kết quả, hoặc lĩnh vực vừa có guideline đầu tiên) · 12 tháng (chủ đề ổn định). **Bắt buộc
+kèm lý do** và danh sách **sự kiện buộc rà sớm**. Bản sa sút trí tuệ: **2027-03-08**, 6 tháng.
+
 ## 2026-09-08 (c) — Kiểm bài RÚT vào dây chuyền bắt buộc
 
 Lỗ hổng nặng nhất còn lại: một bài **đã bị rút** có thể làm nền cho khuyến cáo đổi thực hành

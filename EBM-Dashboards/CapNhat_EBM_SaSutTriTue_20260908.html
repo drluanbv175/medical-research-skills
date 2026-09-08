@@ -1,0 +1,811 @@
+<title>Sa sút trí tuệ — chẩn đoán và điều trị</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Poppins:wght@500;600;700&display=swap">
+<style>
+@import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Poppins:wght@500;600;700&display=swap");
+:root{
+    --ink:#141413; --ink-2:#3a3934; --muted:#6f6d64; --ground:#faf9f5;
+    --card:#ffffff; --rule:#e8e6dc; --rule-2:#b0aea5;
+    --warn:#d97757; --dx:#6a9bcc; --rx:#788c5d;
+    /* Poppins KHÔNG có bộ ký tự tiếng Việt → Be Vietnam Pro đứng ngay sau để
+       chữ có dấu vẫn ra sans hình học, không rơi về Arial/Times. */
+    --sans:'Poppins','Be Vietnam Pro','Segoe UI',Arial,'Noto Sans',sans-serif;
+    --sans-vn:'Be Vietnam Pro','Segoe UI',Arial,'Noto Sans',sans-serif;
+    /* Georgia thiếu trên Linux/Android → Noto Serif chặn trước Times New Roman. */
+    --serif:'Lora',Georgia,'Noto Serif','Source Serif 4','DejaVu Serif',serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,'DejaVu Sans Mono',monospace;
+    --measure:72ch;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--ground);color:var(--ink);font-family:var(--serif);
+       font-size:16px;line-height:1.66;margin:0;-webkit-font-smoothing:antialiased}
+  .wrap{display:grid;grid-template-columns:minmax(0,1fr)}
+  @media(min-width:1060px){.wrap{grid-template-columns:236px minmax(0,1fr);
+       max-width:1240px;margin:0 auto;gap:40px}}
+
+  nav{padding:32px 20px 18px;border-bottom:1px solid var(--rule)}
+  @media(min-width:1060px){nav{position:sticky;top:0;align-self:start;max-height:100vh;
+       overflow:auto;border-bottom:0;border-right:1px solid var(--rule);padding:44px 0 44px 20px}}
+  nav .lbl{font-family:var(--sans-vn);font-size:10px;font-weight:600;letter-spacing:.12em;
+       text-transform:uppercase;color:var(--muted);margin-bottom:13px}
+  nav a{display:flex;gap:10px;align-items:baseline;font-family:var(--sans-vn);font-size:12.5px;
+       font-weight:500;color:var(--ink-2);text-decoration:none;padding:6px 8px 6px 0;
+       border-radius:5px;line-height:1.35}
+  nav a:hover{color:var(--ink);background:var(--rule)}
+  nav a:focus-visible{outline:2px solid var(--dx);outline-offset:2px}
+  nav a i{font-style:normal;font-variant-numeric:tabular-nums;font-size:10.5px;
+       font-weight:700;color:var(--rule-2);min-width:17px}
+  nav a.t-new i,nav a.t-warn i{color:var(--warn)}
+  nav a.t-dx i{color:var(--dx)} nav a.t-rx i{color:var(--rx)}
+
+  /* Cột chữ giữ bề rộng dễ đọc; BẢNG được dùng trọn bề ngang để không phải cuộn. */
+  main{padding:32px 20px 90px;min-width:0}
+  @media(min-width:1060px){main{padding:44px 26px 110px 0}}
+  main > p, main > ul, main > ol, main > blockquote, main > h3{max-width:var(--measure)}
+  h1{font-family:var(--sans);font-weight:700;font-size:28px;line-height:1.22;
+     letter-spacing:-.015em;margin:0 0 14px;max-width:var(--measure);text-wrap:balance}
+  h2{font-family:var(--sans);font-weight:600;font-size:19px;line-height:1.3;margin:50px 0 14px;
+     padding-top:19px;border-top:1px solid var(--rule);display:flex;gap:12px;
+     align-items:baseline;text-wrap:balance}
+  h2 .num{font-family:var(--sans-vn);font-size:11.5px;font-weight:700;
+     font-variant-numeric:tabular-nums;color:var(--rule-2);letter-spacing:.06em;flex:none}
+  h2.s-new .num,h2.s-warn .num{color:var(--warn)}
+  h2.s-dx .num{color:var(--dx)} h2.s-rx .num{color:var(--rx)}
+  h3{font-family:var(--sans);font-weight:600;font-size:14.5px;margin:26px 0 9px}
+  p{margin:0 0 14px} ul,ol{margin:0 0 15px;padding-left:22px} li{margin-bottom:7px}
+  strong{font-weight:600}
+  hr{border:0;border-top:1px solid var(--rule);margin:32px 0}
+  a{color:#4a7ba8;text-decoration:underline;text-underline-offset:2px}
+  a:focus-visible{outline:2px solid var(--dx);outline-offset:2px}
+
+  /* ---------- BẢNG: vừa trang, xuống dòng thay vì tràn ---------- */
+  .tw{margin:0 0 20px;border:1px solid var(--rule);border-radius:8px;
+      background:var(--card);overflow-x:auto}
+  table{border-collapse:collapse;width:100%;table-layout:auto;
+        font-family:var(--sans-vn);font-size:12px;line-height:1.45}
+  th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--rule);
+        vertical-align:top;white-space:normal;overflow-wrap:break-word;word-break:normal;
+        hyphens:auto;min-width:0}
+  th{font-weight:600;font-size:10px;letter-spacing:.045em;text-transform:uppercase;
+     color:var(--muted);background:#f4f2ea;line-height:1.3}
+  tr:last-child td{border-bottom:0}
+  td{font-variant-numeric:tabular-nums}
+  /* cột đầu là "nhãn hàng" — cho hẹp lại để các cột nội dung có chỗ thở */
+  td:first-child,th:first-child{width:15%;min-width:104px}
+
+  blockquote{margin:20px 0;padding:13px 16px;background:#fbf1ec;
+     border-left:3px solid var(--warn);border-radius:0 7px 7px 0;
+     font-size:14.5px;color:var(--ink-2)}
+  blockquote p:last-child{margin-bottom:0}
+  code{font-family:var(--mono);font-size:12px;background:var(--rule);
+     padding:1.5px 5px;border-radius:4px;overflow-wrap:break-word}
+  /* KHÔNG nowrap: nhãn dài trong ô hẹp chính là thứ đẩy bảng tràn ra ngoài */
+  .flag{font-family:var(--sans-vn);font-size:10.5px;font-weight:600;color:#a8502f;
+     background:#fbeee7;border:1px solid #eccbbb;border-radius:4px;padding:1px 5px;
+     white-space:normal;display:inline}
+  .pmid{font-family:var(--mono);font-size:11.5px;color:var(--muted);overflow-wrap:break-word}
+
+  @media print{
+    nav{display:none} .wrap{grid-template-columns:1fr;max-width:none}
+    body{background:#fff;font-size:10.5pt} main{padding:0}
+    main>p,main>ul,main>ol,main>blockquote,main>h3,h1{max-width:none}
+    table{font-size:8.5pt} th,td{padding:5px 7px}
+    h2{break-after:avoid} .tw{break-inside:avoid;border-color:#ccc;overflow:visible}
+    a{color:inherit;text-decoration:none}
+  }
+  @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+<nav aria-label="Mục lục"><div class="lbl">11 mục · mẫu chuyên sâu</div>
+<a href="#m1" class="t-sum"><i>01</i>Tóm tắt thực hành nhanh</a>
+<a href="#m2" class="t-new"><i>02</i>Điểm mới có thể thay đổi xử trí</a>
+<a href="#m3" class="t-dx"><i>03</i>Chẩn đoán và chẩn đoán phân biệt</a>
+<a href="#m4" class="t-warn"><i>04</i>Phân tầng nguy cơ; nhập viện/chuyển tuyến</a>
+<a href="#m5" class="t-rx"><i>05</i>Điều trị không dùng thuốc và dùng thuốc</a>
+<a href="#m6" class="t-rx"><i>06</i>Bảng điều trị</a>
+<a href="#m7" class="t-rx"><i>07</i>Điều trị theo nhóm đặc biệt</a>
+<a href="#m8" class="t-warn"><i>08</i>Thực hành không còn phù hợp hoặc chưa đủ để thay đổi</a>
+<a href="#m9" class="t-dx"><i>09</i>Áp dụng tại Việt Nam</a>
+<a href="#m10" class="t-dx"><i>10</i>Thẩm định nguồn chính</a>
+<a href="#m11" class="t-ref"><i>11</i>Tài liệu tham khảo (Vancouver/NLM)</a>
+</nav>
+<main>
+<h1>Cập nhật thực hành: Sa sút trí tuệ — chẩn đoán và điều trị</h1>
+<p><strong>Bối cảnh áp dụng:</strong> phòng khám ngoại trú, Việt Nam · <strong>Ngày tổng hợp:</strong> 08/9/2026
+<strong>Khung câu hỏi đã dùng:</strong> PICO (điều trị, dự phòng) · <strong>PIRT</strong> (độ chính xác chẩn đoán) · <strong>PECO</strong> (tác hại)
+<strong>Dashboard đi kèm:</strong> <code>WebDashboard_EBM_VanDeCuThe_SaSutTriTue_20260908.html</code> (17 điểm chứng cứ)
+<strong>Cổng liêm chính:</strong> <code>verify_dashboard.py --online</code> → <code>PASS CÓ ĐIỀU KIỆN</code> (0 lỗi cứng; <strong>ghi vết</strong>: 17 PMID chưa xác minh được qua NCBI E-utilities vì môi trường chặn egress — đã phân giải bằng kết nối PubMed, cần chạy lại khi có mạng)</p>
+<p><strong>GHI VẾT TRA CỨU</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Trường</th>
+<th>Nội dung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ngày tra cứu</td>
+<td>2026-09-08 (mọi nguồn của bản này được truy xuất và đối chiếu trong ngày này)</td>
+</tr>
+<tr>
+<td>CSDL/nguồn đã tra</td>
+<td>PubMed qua connector (<code>search_articles</code>, <code>get_article_metadata</code>, <code>convert_article_ids</code>) · Scite (<code>search_literature</code> → <code>editorialNotices</code>) · Amass BiomedCore (đối chiếu bản ghi). Truy cập TRỰC TIẾP <code>eutils.ncbi.nlm.nih.gov</code>, <code>api.crossref.org</code>, Europe PMC <strong>bị chặn egress</strong> trong môi trường này — không dùng được.</td>
+</tr>
+<tr>
+<td>Chiến lược tìm</td>
+<td>Tra có chủ đích theo từng câu hỏi lâm sàng (chẩn đoán · dấu ấn sinh học máu · ức chế cholinesterase/memantine · BPSD và chống loạn thần · kháng thể kháng amyloid · GLP-1 · dự phòng đa lĩnh vực · can thiệp thính lực), ưu tiên guideline hội chuyên ngành → tổng quan hệ thống Cochrane → RCT pha 3 → đoàn hệ lớn; sau đó phân giải và đối chiếu tiêu đề/tạp chí/năm cho <strong>từng</strong> trong 17 định danh. <strong>Chuỗi truy vấn nguyên văn và số kết quả từng bước KHÔNG được ghi lại tại thời điểm tra</strong> — <code><span class="flag">[CẦN BỔ SUNG]</span></code>. Đây chính là lỗ hổng mà khối GHI VẾT này được thêm vào để bịt: từ bản cập nhật sau, chuỗi truy vấn phải ghi ngay khi chạy, không tái dựng về sau.</td>
+</tr>
+<tr>
+<td>Ngày kiểm bài rút</td>
+<td>2026-09-08 — 17/17 DOI sạch (không rút, không đính chính, không nêu quan ngại) qua Scite <code>editorialNotices</code>; giới hạn: chỉ mục Scite không phủ 100%, xem mục 10.4</td>
+</tr>
+<tr>
+<td>Ngày rà lại kế tiếp</td>
+<td>2027-03-08 (6 tháng). Lý do chọn mốc: chủ đề đang có <strong>hai trục động</strong> — cấp phép và điều kiện sử dụng kháng thể kháng amyloid, và thị trường dấu ấn sinh học máu vừa có guideline đầu tiên năm 2025; phần lõi (ức chế cholinesterase, memantine, BPSD, 14 yếu tố nguy cơ) thì ổn định. Rà <strong>sớm hơn</strong> nếu: có quyết định mới của FDA/EMA hoặc văn bản Bộ Y tế về thuốc kháng amyloid · có guideline mới của Alzheimer's Association/AAN · có safety communication về ARIA hoặc về thuốc chống loạn thần ở sa sút trí tuệ · có thông báo rút/đính chính bất kỳ nguồn nào trong mục 11 · có kết quả pha 3 mới của một thuốc đang nằm trong bảng mục 6.</td>
+</tr>
+</tbody>
+</table></div>
+<blockquote>
+<p>⚠ <strong>Cần bác sĩ kiểm chứng.</strong> Tài liệu hỗ trợ ra quyết định; không thay thế khám trực tiếp, phác đồ của đơn vị hay xử trí cấp cứu.
+Đây <strong>không phải</strong> bản ghi đã được duyệt vào Dashboard Master.</p>
+</blockquote>
+<hr />
+<h2 id="m1" class="s-sum"><span class="num">01</span>Tóm tắt thực hành nhanh</h2>
+<p><strong>Làm ngay</strong>
+- Đánh giá <strong>có cấu trúc</strong> theo 3 bước: xác nhận suy giảm nhận thức <strong>kèm</strong> suy giảm chức năng (bắt buộc có thông tin từ người thân) → mô tả hội chứng nhận thức–hành vi → truy tìm nguyên nhân và yếu tố góp phần <strong>có thể hồi phục</strong>, trước khi gán nhãn sa sút trí tuệ.
+- <strong>Rà thuốc mỗi lần khám</strong>: kháng cholinergic, benzodiazepin, thuốc ngủ nhóm Z, opioid, kháng histamin thế hệ 1.
+- <strong>Ức chế cholinesterase</strong> cho Alzheimer nhẹ → nặng; <strong>memantine</strong> cho Alzheimer <strong>trung bình–nặng</strong>.
+- <strong>Can thiệp không dùng thuốc là bước đầu tay</strong> cho rối loạn hành vi–tâm thần (BPSD).
+- <strong>Kiểm soát 14 yếu tố nguy cơ có thể thay đổi</strong> — lồng vào quản lý bệnh mạn sẵn có.</p>
+<p><strong>Không nên làm / chưa nên thay đổi</strong>
+- Không dùng memantine cho Alzheimer <strong>nhẹ</strong>; không dùng memantine để trị <strong>kích động</strong>.
+- Không dùng thuốc chống loạn thần như bước đầu tay cho BPSD.
+- Không dùng <strong>semaglutide uống</strong> để điều trị hoặc làm chậm Alzheimer.
+- Không dùng dấu ấn sinh học máu như test <strong>tầm soát</strong> ở người chưa có suy giảm nhận thức khách quan.</p>
+<p><strong>Cờ đỏ:</strong> tiến triển nhanh vài tuần–tháng · khởi phát &lt;65 tuổi hoặc hội chứng không điển hình · dấu thần kinh khu trú, co giật · dáng đi loạng choạng kèm tiểu không tự chủ sớm · chấn thương đầu hoặc đang dùng kháng đông · <strong>lú lẫn cấp → nghĩ sảng trước, không chẩn đoán sa sút trí tuệ trong đợt cấp</strong>.</p>
+<p><strong>Nguồn chính mới nhất đã xác minh:</strong> evoke &amp; evoke+ (<em>Lancet</em> 2026) · đánh giá của EMA (<em>Lancet Reg Health Eur</em> 2026) · hướng dẫn dấu ấn sinh học máu của Alzheimer Association (2025) · US POINTER (<em>JAMA</em> 2025) · DETeCD-ADRD (2024/2025) · Lancet Commission (2024).</p>
+<hr />
+<h2 id="m2" class="s-new"><span class="num">02</span>Điểm mới có thể thay đổi xử trí</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Điểm mới</th>
+<th>Quyết định thực hành</th>
+<th>Đối tượng áp dụng</th>
+<th>Nguồn chính; ngày/phiên bản</th>
+<th>Độ mạnh/grading của nguồn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Semaglutide uống <strong>không</strong> làm chậm Alzheimer sớm; hai thử nghiệm đã dừng</td>
+<td><strong>Không kê</strong> vì lý do trí nhớ; chủ động cải chính kỳ vọng cho gia đình</td>
+<td>Alzheimer sớm có xác nhận amyloid</td>
+<td>evoke &amp; evoke+, <em>Lancet</em> 2026;407:2167-2179 (n=3808)</td>
+<td>Nguồn không cung cấp phân hạng GRADE</td>
+</tr>
+<tr>
+<td>Hướng dẫn <strong>đầu tiên</strong> về dấu ấn sinh học máu, đặt ngưỡng hiệu năng cụ thể</td>
+<td>Chưa triển khai ngoại trú VN; dùng để tư vấn khi BN được chào mời xét nghiệm dịch vụ</td>
+<td>MCI/sa sút trí tuệ tại chuyên khoa trí nhớ</td>
+<td>Alzheimer Association CPG, <em>Alzheimers Dement</em> 2025;21(7):e70535</td>
+<td>GRADE + khung EtD; độ chắc chắn <strong>trung bình → rất thấp</strong></td>
+</tr>
+<tr>
+<td>EU cấp phép lecanemab và donanemab, <strong>giới hạn</strong> ở người ApoE ε4 không mang hoặc dị hợp tử</td>
+<td>Chưa áp dụng tại VN; dùng để tư vấn đúng kỳ vọng</td>
+<td>Alzheimer sớm có xác nhận amyloid</td>
+<td>EMA assessment, <em>Lancet Reg Health Eur</em> 2026;63:101644</td>
+<td>Personal View của chuyên gia EMA — không phải guideline lâm sàng</td>
+</tr>
+<tr>
+<td>Hướng dẫn chẩn đoán Hoa Kỳ <strong>đầu tiên sau hai thập kỷ</strong>, viết cho <strong>cả tuyến ban đầu</strong></td>
+<td><strong>Áp dụng ngay</strong> làm khung khám</td>
+<td>Mọi bối cảnh khám</td>
+<td>DETeCD-ADRD, <em>Alzheimers Dement</em> 2025;21(6):e14333 và 21(1):e14337</td>
+<td>Tổng quan hệ thống + Delphi cải biên; nguồn không cung cấp GRADE</td>
+</tr>
+<tr>
+<td>Tiêu chuẩn AD 2024: định nghĩa <strong>sinh học</strong>; một dấu ấn Core 1 bất thường đủ xác lập chẩn đoán</td>
+<td>Hiểu nguyên tắc; <strong>không</strong> chuyển thành chỉ định xét nghiệm đại trà</td>
+<td>Toàn phổ Alzheimer</td>
+<td>Jack CR Jr và cs., <em>Alzheimers Dement</em> 2024;20(8):5143-5169</td>
+<td>Tài liệu tiêu chuẩn; nguồn không cung cấp GRADE</td>
+</tr>
+<tr>
+<td>Thêm <strong>LDL-C cao</strong> và <strong>mất thị lực không điều trị</strong> → 14 yếu tố, ~45% ca có thể phòng/trì hoãn</td>
+<td><strong>Áp dụng ngay</strong>: lồng vào quản lý bệnh mạn</td>
+<td>Dân số chung, theo vòng đời</td>
+<td>Lancet Commission, <em>Lancet</em> 2024;404:572-628</td>
+<td>Báo cáo Ủy ban; PAF từ mô hình</td>
+</tr>
+<tr>
+<td>Chống loạn thần: phổ tác hại <strong>rộng hơn</strong> cảnh báo cũ (thêm viêm phổi, AKI, VTE, gãy xương, NMCT, suy tim)</td>
+<td><strong>Rà lại toàn bộ BN đang dùng</strong>; nguy cơ cao nhất ngay sau khởi trị</td>
+<td>Sa sút trí tuệ ≥50 tuổi</td>
+<td>Mok PLH và cs., <em>BMJ</em> 2024;385:e076268 (n=173.910)</td>
+<td>Đoàn hệ ghép cặp, có kết cục chứng âm</td>
+</tr>
+<tr>
+<td>Lối sống đa lĩnh vực <strong>có cấu trúc</strong> tốt hơn tự hướng dẫn</td>
+<td>Kê "đơn vận động" cụ thể + hẹn tái khám để duy trì tính có cấu trúc</td>
+<td>60–79 tuổi có nguy cơ</td>
+<td>US POINTER, <em>JAMA</em> 2025;334(8):681-691 (n=2111)</td>
+<td>Nguồn không cung cấp phân hạng GRADE</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2 id="m3" class="s-dx"><span class="num">03</span>Chẩn đoán và chẩn đoán phân biệt</h2>
+<h3>3.1 Ba bước cốt lõi (DETeCD-ADRD)</h3>
+<ol>
+<li><strong>Xác nhận có suy giảm</strong> — bệnh sử từ người thân về việc <em>trước làm được, nay làm khó</em>: quản lý tiền, uống thuốc đúng giờ, nấu ăn, đi chợ, tìm đường về nhà. <strong>Kèm</strong> test nhận thức ngắn. Không chẩn đoán bằng một điểm số đơn độc.</li>
+<li><strong>Mô tả hội chứng nhận thức–hành vi</strong> — trí nhớ / ngôn ngữ / thị giác–không gian / điều hành / hành vi. Kiểu hội chứng định hướng nguyên nhân nền.</li>
+<li><strong>Truy tìm bệnh nền và yếu tố góp phần</strong> — rồi công bố chẩn đoán cho cặp bệnh nhân–người chăm sóc và lập kế hoạch chăm sóc.</li>
+</ol>
+<h3>3.2 Nguyên nhân góp phần <strong>có thể hồi phục</strong> — bắt buộc loại trừ trước</h3>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Nhóm</th>
+<th>Cần nghĩ đến</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Thuốc</td>
+<td>Kháng cholinergic, benzodiazepin, thuốc ngủ nhóm Z, opioid, kháng histamin thế hệ 1, thuốc chống co giật, thuốc chống loạn thần</td>
+</tr>
+<tr>
+<td>Nội tiết – chuyển hóa</td>
+<td>Suy giáp, thiếu vitamin B12, rối loạn điện giải, hạ/tăng đường huyết</td>
+</tr>
+<tr>
+<td>Tâm thần</td>
+<td><strong>Trầm cảm</strong> (giả sa sút trí tuệ), lo âu, mất ngủ mạn</td>
+</tr>
+<tr>
+<td>Giác quan</td>
+<td><strong>Giảm thính lực, giảm thị lực</strong> — rất thường bị bỏ sót</td>
+</tr>
+<tr>
+<td>Giấc ngủ</td>
+<td>Ngưng thở khi ngủ do tắc nghẽn</td>
+</tr>
+<tr>
+<td>Cấp tính</td>
+<td>Nhiễm trùng, mất nước, đau không kiểm soát → <strong>sảng</strong></td>
+</tr>
+<tr>
+<td>Cấu trúc</td>
+<td>Tụ máu dưới màng cứng mạn, u, não úng thuỷ áp lực bình thường</td>
+</tr>
+</tbody>
+</table></div>
+<h3>3.3 Chẩn đoán phân biệt theo kiểu hội chứng (khung định hướng)</h3>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Gợi ý lâm sàng nổi bật</th>
+<th>Hướng nghĩ tới</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Quên tình tiết tiến triển từ từ, học thông tin mới kém</td>
+<td>Bệnh Alzheimer</td>
+</tr>
+<tr>
+<td>Khởi phát/nặng lên theo bậc thang, có yếu tố nguy cơ mạch máu, dấu khu trú</td>
+<td>Sa sút trí tuệ mạch máu; thường <strong>hỗn hợp</strong> với Alzheimer ở người cao tuổi</td>
+</tr>
+<tr>
+<td>Nhận thức dao động, ảo thị chi tiết, hội chứng Parkinson, rối loạn hành vi giấc ngủ REM</td>
+<td>Sa sút trí tuệ thể Lewy — <strong>quá mẫn thuốc chống loạn thần</strong></td>
+</tr>
+<tr>
+<td>Thay đổi nhân cách–hành vi hoặc rối loạn ngôn ngữ nổi bật, khởi phát trẻ</td>
+<td>Sa sút trí tuệ trán–thái dương</td>
+</tr>
+<tr>
+<td>Tiến triển rất nhanh (tuần–tháng), rung giật cơ, dấu thần kinh lan toả</td>
+<td>Nguyên nhân hiếm: viêm não tự miễn, bệnh Prion, cận ung → <strong>chuyển tuyến khẩn</strong></td>
+</tr>
+<tr>
+<td>Lú lẫn cấp, ý thức dao động, rối loạn chú ý</td>
+<td><strong>Sảng</strong> — xử trí nguyên nhân cấp trước, không chẩn đoán sa sút trí tuệ lúc này</td>
+</tr>
+</tbody>
+</table></div>
+<blockquote>
+<p><strong><span class="flag">[CẦN BỔ SUNG]</span></strong> Bảng trên là khung định hướng lâm sàng. Bản cập nhật này <strong>chưa xác minh</strong> các bộ tiêu chuẩn chẩn đoán chính thức cho thể Lewy, trán–thái dương và sa sút trí tuệ mạch máu; nếu cần dùng cho đào tạo hoặc hồ sơ, phải bổ sung và trích dẫn đúng bộ tiêu chuẩn tương ứng.</p>
+</blockquote>
+<h3>3.4 Cận lâm sàng</h3>
+<ul>
+<li><strong>Nền tối thiểu:</strong> công thức máu, điện giải, calci, đường huyết/HbA1c, chức năng thận, chức năng gan, TSH, vitamin B12. Cân nhắc huyết thanh học theo yếu tố nguy cơ.</li>
+<li><strong>Hình ảnh học sọ não (CT hoặc MRI)</strong>: chỉ định trong đánh giá ban đầu để loại trừ tổn thương cấu trúc.</li>
+<li><strong>Dấu ấn sinh học</strong> (dịch não tuỷ, PET, huyết tương): thuộc tuyến chuyên khoa — xem mục 5.4 và 8.</li>
+</ul>
+<h3>3.5 Giới hạn độ chính xác của chẩn đoán lâm sàng — con số cần nhớ</h3>
+<p>Trong nghiên cứu tiến cứu tại Thuỵ Điển (Palmqvist và cs., <em>JAMA</em> 2024), sau khám lâm sàng, test nhận thức và CT sọ não:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Người chẩn đoán</th>
+<th>Chỉ lâm sàng</th>
+<th>Có thêm xét nghiệm APS2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bác sĩ tuyến ban đầu</td>
+<td><strong>61%</strong> (95% CI 53–69)</td>
+<td><strong>91%</strong> (86–96)</td>
+</tr>
+<tr>
+<td>Bác sĩ chuyên khoa trí nhớ</td>
+<td><strong>73%</strong> (68–79)</td>
+<td><strong>91%</strong> (88–95)</td>
+</tr>
+</tbody>
+</table></div>
+<p>→ <strong>Hệ quả thực hành:</strong> nên nói với gia đình là <strong>"nhiều khả năng do Alzheimer"</strong>, không khẳng định tuyệt đối; và tăng độ tin cậy bằng <strong>theo dõi diễn tiến theo thời gian</strong> thay vì chốt nguyên nhân ngay lần khám đầu.</p>
+<hr />
+<h2 id="m4" class="s-warn"><span class="num">04</span>Phân tầng nguy cơ; nhập viện/chuyển tuyến</h2>
+<h3>4.1 Chuyển <strong>cấp cứu</strong> hoặc nhập viện</h3>
+<ul>
+<li>Lú lẫn cấp, ý thức dao động → <strong>sảng</strong>: tìm và xử trí nguyên nhân cấp (nhiễm trùng, mất nước, rối loạn điện giải, bí tiểu, thuốc).</li>
+<li>Dấu thần kinh khu trú mới, co giật, đau đầu dữ dội.</li>
+<li>Ngã đập đầu, đặc biệt khi đang dùng kháng đông → nghi tụ máu dưới màng cứng.</li>
+<li>Ý tưởng tự sát, hành vi gây nguy hiểm cho bản thân hoặc người khác.</li>
+<li>Nghi <strong>ARIA</strong> ở bệnh nhân đang dùng kháng thể kháng amyloid: đau đầu mới/dai dẳng, buồn nôn, lú lẫn tăng, rối loạn thị giác, co giật → <strong>MRI khẩn</strong>.</li>
+</ul>
+<h3>4.2 Chuyển <strong>chuyên khoa</strong> (thần kinh, lão khoa, phòng khám trí nhớ)</h3>
+<p><em>(danh sách dưới đây là </em><em>đánh giá vận hành</em><em>, phù hợp với tinh thần guideline DETeCD-ADRD)</em></p>
+<ul>
+<li>Khởi phát <strong>trước 65 tuổi</strong>.</li>
+<li>Tiến triển <strong>nhanh bất thường</strong>.</li>
+<li>Hội chứng <strong>không điển hình</strong>: ngôn ngữ, thị giác–không gian, hành vi–nhân cách nổi bật.</li>
+<li>Dấu thần kinh khu trú, co giật hoặc rối loạn vận động đi kèm.</li>
+<li>Nghi nguyên nhân hiếm hoặc có thể điều trị đặc hiệu.</li>
+<li><strong>Chẩn đoán vẫn không chắc chắn</strong> sau đánh giá cốt lõi.</li>
+<li>Cần thần kinh–tâm lý chuyên sâu, hình ảnh học chuyên biệt hoặc dấu ấn sinh học.</li>
+</ul>
+<h3>4.3 Phân tầng an toàn tại nhà (mỗi lần tái khám)</h3>
+<p>Đánh giá và ghi hồ sơ: nguy cơ <strong>đi lạc</strong> · <strong>quên tắt bếp</strong> · <strong>lái xe</strong> · <strong>té ngã</strong> · <strong>quản lý thuốc</strong> · <strong>quản lý tài chính</strong> · <strong>gánh nặng người chăm sóc</strong>.</p>
+<hr />
+<h2 id="m5" class="s-rx"><span class="num">05</span>Điều trị không dùng thuốc và dùng thuốc</h2>
+<h3>5.1 Không dùng thuốc — nền tảng cho mọi giai đoạn</h3>
+<ul>
+<li><strong>Bước đầu tay cho BPSD:</strong> truy tìm và xử lý yếu tố thúc đẩy — đau, táo bón, bí tiểu, nhiễm trùng, khát, nóng/ồn, thay đổi chỗ ở, <strong>thuốc mới</strong>.</li>
+<li>Giữ nếp sinh hoạt đều đặn; vận động thường xuyên; duy trì kết nối xã hội.</li>
+<li><strong>Điều trị giảm thính lực và giảm thị lực</strong> (lấy ráy tai, đo thính lực, khám mắt, mổ đục thể thuỷ tinh).</li>
+<li>Giáo dục và hỗ trợ người chăm sóc; kế hoạch an toàn; <strong>kế hoạch chăm sóc trước</strong>.</li>
+<li>Can thiệp lối sống <strong>có cấu trúc</strong>: US POINTER cho thấy nhóm có cấu trúc tăng nhận thức <strong>0,243 SD/năm</strong> so với <strong>0,213 SD/năm</strong> ở nhóm tự hướng dẫn — chênh <strong>0,029 SD/năm</strong> (95% CI 0,008–0,050; P = 0,008). Lợi ích nhất quán ở người mang và không mang ApoE ε4; có vẻ <strong>lớn hơn</strong> ở người có nhận thức nền thấp hơn (P tương tác = 0,02).</li>
+</ul>
+<h3>5.2 Thuốc điều trị triệu chứng</h3>
+<ul>
+<li><strong>Ức chế cholinesterase</strong> (donepezil, galantamine, rivastigmine): Alzheimer nhẹ → nặng. Lợi ích <strong>nhỏ</strong> nhưng nhất quán trên nhận thức, hoạt động sống hằng ngày và ấn tượng lâm sàng toàn thể; <strong>không</strong> cải thiện triệu chứng hành vi.</li>
+<li><strong>Memantine</strong>: Alzheimer <strong>trung bình–nặng</strong>, đơn trị hoặc phối hợp với ức chế cholinesterase. <strong>Không</strong> dùng cho Alzheimer nhẹ; <strong>không</strong> dùng để trị kích động.</li>
+</ul>
+<h3>5.3 Thuốc cho rối loạn hành vi–tâm thần</h3>
+<ul>
+<li>Chỉ cân nhắc <strong>sau khi</strong> đã xử lý yếu tố thúc đẩy và can thiệp không dùng thuốc thất bại, <strong>và</strong> có nguy cơ thật sự cho bệnh nhân hoặc người khác.</li>
+<li>Nếu dùng chống loạn thần: <strong>liều thấp nhất – thời gian ngắn nhất</strong>, ghi rõ <strong>triệu chứng đích</strong> và <strong>thời hạn đánh giá lại</strong> (thường 4–12 tuần), có kế hoạch giảm và ngưng ngay từ đầu.</li>
+<li><strong>Brexpiprazole</strong> là thuốc duy nhất trong bản cập nhật này có RCT riêng cho kích động trong Alzheimer, hiệu quả <strong>nhỏ</strong> (d = 0,35), theo dõi chỉ 12 tuần — có thuốc được nghiên cứu riêng <strong>không</strong> đồng nghĩa nên dùng sớm.</li>
+</ul>
+<h3>5.4 Thuốc điều chỉnh bệnh (kháng thể kháng amyloid) — bối cảnh, chưa áp dụng tại VN</h3>
+<ul>
+<li><strong>Lecanemab</strong> và <strong>donanemab</strong> làm chậm suy giảm ở <strong>mức khiêm tốn</strong>, <strong>không</strong> dừng hay đảo ngược bệnh.</li>
+<li>Bắt buộc: <strong>xác nhận amyloid</strong> trước điều trị, <strong>MRI nền và MRI theo dõi định kỳ</strong>, năng lực xử trí <strong>ARIA</strong>.</li>
+<li>Tại EU, chỉ định giới hạn ở người <strong>ApoE ε4 không mang hoặc dị hợp tử</strong> (loại trừ đồng hợp tử ε4 — nhóm nguy cơ ARIA cao nhất).</li>
+<li>Vai trò của bác sĩ ngoại trú Việt Nam hiện nay: <strong>tư vấn đúng kỳ vọng</strong>, không tạo hy vọng sai.</li>
+</ul>
+<hr />
+<h2 id="m6" class="s-rx"><span class="num">06</span>Bảng điều trị</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Can thiệp/thuốc</th>
+<th>Chỉ định</th>
+<th>Lợi ích (đúng như nguồn)</th>
+<th>Nguy cơ/thận trọng</th>
+<th>Monitoring</th>
+<th>Mức chứng cứ/khuyến cáo nguồn</th>
+<th>Ghi chú thực hành</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Donepezil</strong> (đại diện nhóm ức chế cholinesterase)</td>
+<td>Alzheimer nhẹ → nặng</td>
+<td>ADAS-Cog <strong>−2,67</strong> (95% CI −3,31 đến −2,02); MMSE <strong>+1,05</strong> (0,73–1,37); SIB <strong>+5,92</strong> (4,53–7,31); ADCS-ADL bản nặng <strong>+1,03</strong> (0,21–1,85); cải thiện toàn thể <strong>OR 1,92</strong> (1,54–2,39). <strong>Không</strong> cải thiện NPI (−1,62; −3,43 đến 0,19)</td>
+<td>AE 72% vs 65% (<strong>OR 1,59</strong>; 1,31–1,95); ngưng thuốc <strong>OR 1,25</strong> (1,05–1,50). Nhịp chậm, block dẫn truyền, hội chứng nút xoang, ngất; loét dạ dày–tá tràng; hen/COPD nặng</td>
+<td>Mạch, cân nặng, triệu chứng tiêu hoá, té ngã; đánh giá lại lợi ích sau 3–6 tháng <strong>cùng người chăm sóc</strong></td>
+<td><strong>Trung bình</strong> (GRADE của Cochrane 2018)</td>
+<td>Liều 23 mg <strong>không</strong> lợi hơn 10 mg nhưng nhiều AE hơn. Trao đổi trung thực: lợi ích <strong>nhỏ</strong>, không đảo ngược bệnh</td>
+</tr>
+<tr>
+<td><strong>Memantine</strong></td>
+<td>Alzheimer <strong>trung bình–nặng</strong></td>
+<td>CIBIC+ <strong>0,21</strong> (0,14–0,30); SIB <strong>+3,11</strong> (2,42–3,92); ADL19 <strong>+1,09</strong> (0,62–1,64); NPI <strong>1,84</strong> (1,05–2,76). Lợi ích <strong>không đổi</strong> dù có hay không dùng kèm ức chế cholinesterase</td>
+<td>Chóng mặt ~1,6 lần (6,1% vs 3,9%); đau đầu ~1,3 lần; <strong>không</strong> tăng té ngã; tổng AE <strong>RR 1,03</strong> (1,00–1,06)</td>
+<td>Chức năng thận; chóng mặt, huyết áp tư thế</td>
+<td><strong>CAO</strong> (GRADE của Cochrane 2019)</td>
+<td><strong>Hiệu chỉnh liều theo mức lọc cầu thận</strong> [CẦN XÁC NHẬN TẠI ĐƠN VỊ theo tờ HDSD biệt dược đang lưu hành]</td>
+</tr>
+<tr>
+<td><strong>Memantine ở Alzheimer NHẸ</strong></td>
+<td><em>Không khuyến cáo</em></td>
+<td>ADAS-Cog <strong>0,21</strong> (−0,95 đến 1,38); ADL <strong>−0,07</strong> (−1,80 đến 1,66) → không lợi ích</td>
+<td>Tăng ngưng thuốc do AE <strong>RR 2,12</strong> (1,03–4,39)</td>
+<td>—</td>
+<td>Chủ yếu <strong>trung bình</strong> (phân nhóm hậu kiểm)</td>
+<td>Điểm cần sửa thói quen kê đơn phổ biến</td>
+</tr>
+<tr>
+<td><strong>Memantine cho kích động</strong></td>
+<td><em>Không khuyến cáo</em></td>
+<td>CMAI <strong>0,50</strong> (−3,71 đến 4,71) → không hiệu quả</td>
+<td>—</td>
+<td>—</td>
+<td><strong>Trung bình</strong> (nguyên văn tổng quan)</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Can thiệp không dùng thuốc cho BPSD</strong></td>
+<td>Bước <strong>đầu tay</strong> mọi trường hợp</td>
+<td>Xử lý yếu tố thúc đẩy: đau, táo bón, bí tiểu, nhiễm trùng, môi trường, thuốc mới</td>
+<td>Không có hại</td>
+<td>Ghi nhận triệu chứng đích và tần suất trước–sau</td>
+<td>Đồng thuận thực hành</td>
+<td>Luôn thử trước khi nghĩ đến thuốc</td>
+</tr>
+<tr>
+<td><strong>Thuốc chống loạn thần</strong></td>
+<td>Chỉ khi bước không dùng thuốc thất bại <strong>và</strong> có nguy cơ thật sự</td>
+<td>Hiệu quả khiêm tốn</td>
+<td>Viêm phổi <strong>HR 2,19</strong> (2,10–2,28); AKI <strong>1,72</strong> (1,61–1,84); VTE <strong>1,62</strong> (1,46–1,80); đột quỵ <strong>1,61</strong> (1,52–1,71); gãy xương <strong>1,43</strong> (1,35–1,52); NMCT <strong>1,28</strong> (1,15–1,42); suy tim <strong>1,27</strong> (1,18–1,37). Tuyệt đối: viêm phổi 90 ngày <strong>4,48% vs 1,49%</strong>, chênh <strong>2,99%</strong> (2,77–3,22)</td>
+<td>Dấu hiệu nhiễm trùng hô hấp, mất nước, ngã; <strong>hẹn đánh giá lại 4–12 tuần</strong></td>
+<td>Đoàn hệ ghép cặp (quan sát, <strong>không</strong> kết luận nhân quả)</td>
+<td>Nguy cơ <strong>cao nhất ngay sau khởi trị</strong>. Nhãn thuốc có cảnh báo tăng tử vong ở người cao tuổi sa sút trí tuệ</td>
+</tr>
+<tr>
+<td><strong>Brexpiprazole</strong></td>
+<td>Kích động trong sa sút trí tuệ Alzheimer, sau khi bước không dùng thuốc thất bại</td>
+<td>CMAI <strong>−5,32</strong> (−8,77 đến −1,87); P = 0,003; <strong>Cohen d = 0,35</strong></td>
+<td>Trong RCT: không AE nào ≥5% và cao hơn giả dược; ngưng do AE 5,3% vs 4,3%. Thực hành: an thần, hạ HA tư thế, ngoại tháp, ngã, nuốt sặc</td>
+<td>Đặt hạn định đánh giá lại; theo dõi như nhóm chống loạn thần</td>
+<td>Nguồn không cung cấp phân hạng GRADE</td>
+<td>Thuộc nhóm chống loạn thần → áp dụng cùng cảnh báo ở hàng trên</td>
+</tr>
+<tr>
+<td><strong>Lecanemab</strong></td>
+<td>Alzheimer sớm có xác nhận amyloid (<strong>chưa khả thi tại VN</strong>)</td>
+<td>CDR-SB <strong>−0,45</strong> (−0,67 đến −0,23) sau 18 tháng, trên thang 0–18; ADAS-cog14 −1,44 (−2,27 đến −0,61); ADCS-MCI-ADL +2,0 (1,2–2,8)</td>
+<td><strong>ARIA-E 12,6%</strong>; phản ứng liên quan truyền <strong>26,4%</strong></td>
+<td>MRI nền + MRI định kỳ; xác nhận amyloid; kiểu gen ApoE ε4</td>
+<td>Nguồn không cung cấp phân hạng GRADE</td>
+<td>Làm <strong>chậm</strong>, không dừng bệnh</td>
+</tr>
+<tr>
+<td><strong>Donanemab</strong></td>
+<td>Như trên</td>
+<td>iADRS <strong>+2,92</strong> (1,51–4,33) quần thể gộp; <strong>+3,25</strong> (1,88–4,62) nhóm tau thấp/trung bình; CDR-SB <strong>−0,70</strong> (−0,95 đến −0,45)</td>
+<td><strong>ARIA-E 24,0%</strong> (52 ca có triệu chứng) vs 2,1% giả dược; phản ứng truyền 8,7% vs 0,5%; <strong>3 ca tử vong</strong> được xem là liên quan điều trị</td>
+<td>Như trên</td>
+<td>Nguồn không cung cấp phân hạng GRADE</td>
+<td>Nguy cơ ARIA cao hơn lecanemab</td>
+</tr>
+</tbody>
+</table></div>
+<blockquote>
+<p><strong>Ba lớp phải tách bạch:</strong> (a) khuyến cáo/kết quả <strong>của nguồn</strong>; (b) <strong>độ chắc chắn chứng cứ theo nguồn</strong>; (c) <strong>đánh giá vận hành</strong> của người tổng hợp.
+Chỉ ba nguồn trong bản cập nhật này có phân hạng GRADE <strong>nguyên bản</strong>: Cochrane donepezil (trung bình), Cochrane memantine (cao cho AD trung bình–nặng), tổng quan dấu ấn sinh học máu (trung bình → rất thấp). Các RCT, guideline và nghiên cứu đoàn hệ còn lại <strong>không</strong> cung cấp GRADE.</p>
+</blockquote>
+<hr />
+<h2 id="m7" class="s-rx"><span class="num">07</span>Điều trị theo nhóm đặc biệt</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Nhóm</th>
+<th>Điều chỉnh</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Người cao tuổi, suy yếu, nguy cơ té ngã</strong></td>
+<td>Ưu tiên <strong>bớt thuốc trước khi thêm thuốc</strong>. Chống loạn thần tăng <strong>gãy xương HR 1,43</strong>. Ức chế cholinesterase gây nhịp chậm và ngất → hỏi về té ngã mỗi lần khám</td>
+</tr>
+<tr>
+<td><strong>Bệnh thận mạn</strong></td>
+<td><strong>Memantine cần hiệu chỉnh liều theo mức lọc cầu thận</strong> <span class="flag">[CẦN XÁC NHẬN TẠI ĐƠN VỊ]</span>. Chống loạn thần tăng <strong>AKI HR 1,72</strong></td>
+</tr>
+<tr>
+<td><strong>Bệnh tim mạch</strong></td>
+<td>Ức chế cholinesterase: thận trọng khi nhịp chậm, block dẫn truyền, hội chứng nút xoang, đang dùng chẹn beta. Chống loạn thần: <strong>NMCT 1,28 · suy tim 1,27 · đột quỵ 1,61</strong></td>
+</tr>
+<tr>
+<td><strong>Đái tháo đường</strong></td>
+<td>Là 1 trong 14 yếu tố nguy cơ. <strong>Semaglutide dùng theo chỉ định gốc (ĐTĐ típ 2, béo phì) — không dùng vì lý do trí nhớ</strong></td>
+</tr>
+<tr>
+<td><strong>Đa thuốc</strong></td>
+<td>Gánh nặng kháng cholinergic là nguyên nhân suy giảm nhận thức <strong>có thể đảo ngược</strong> thường bị bỏ sót. Lớp phủ an toàn thuốc của bản cập nhật này gắn cờ <strong>nhóm chống loạn thần</strong> (Beers 2023) và <strong>nhóm opioid</strong> (STOPP v3/Beers)</td>
+</tr>
+<tr>
+<td><strong>Sa sút trí tuệ thể Lewy / trong bệnh Parkinson</strong></td>
+<td><strong>Quá mẫn với thuốc chống loạn thần</strong>, có thể gây phản ứng nặng — đặc biệt thận trọng, ưu tiên chuyển chuyên khoa</td>
+</tr>
+<tr>
+<td><strong>Sa sút trí tuệ mạch máu nhẹ–trung bình</strong></td>
+<td>Memantine: ADAS-Cog <strong>2,15</strong> (1,05–3,25) — lợi ích nhỏ; chứng cứ hạn chế hơn Alzheimer</td>
+</tr>
+<tr>
+<td><strong>Bệnh gan</strong></td>
+<td><strong><span class="flag">[CẦN BỔ SUNG]</span></strong> — các nguồn trong bản cập nhật này không cung cấp khuyến cáo hiệu chỉnh riêng theo chức năng gan</td>
+</tr>
+<tr>
+<td><strong>Thai kỳ</strong></td>
+<td>Không liên quan quần thể của bản cập nhật này</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2 id="m8" class="s-warn"><span class="num">08</span>Thực hành không còn phù hợp hoặc chưa đủ để thay đổi</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Nội dung</th>
+<th>Lý do</th>
+<th>Trạng thái</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Semaglutide uống cho Alzheimer</td>
+<td>CDR-SB <strong>−0,08</strong> (−0,35 đến 0,20; P = 0,57) và <strong>0,10</strong> (−0,17 đến 0,38; P = 0,46); cả hai thử nghiệm đã dừng</td>
+<td><strong>Chứng cứ âm tính — không dùng</strong></td>
+</tr>
+<tr>
+<td>Memantine cho Alzheimer nhẹ</td>
+<td>Không lợi ích; tăng ngưng thuốc do AE</td>
+<td>Không còn khuyến cáo</td>
+</tr>
+<tr>
+<td>Memantine để trị kích động</td>
+<td>CMAI 0,50 (−3,71 đến 4,71)</td>
+<td>Không còn khuyến cáo</td>
+</tr>
+<tr>
+<td>Chống loạn thần như bước đầu tay cho BPSD</td>
+<td>Phổ tác hại rộng, nguy cơ cao nhất ngay sau khởi trị</td>
+<td>Không khuyến cáo</td>
+</tr>
+<tr>
+<td>Kháng thể kháng amyloid tại ngoại trú VN</td>
+<td>Cần xác nhận amyloid + MRI lặp lại + năng lực xử trí ARIA; chi phí rất cao; chưa lưu hành</td>
+<td>Chưa đủ để thay đổi thực hành tại VN</td>
+</tr>
+<tr>
+<td>Dấu ấn sinh học máu ở tuyến ban đầu VN</td>
+<td>Chưa sẵn có; độ nhạy gộp <strong>49,3%–91,4%</strong>, độ đặc hiệu <strong>61,5%–96,7%</strong> tuỳ test và nền tảng</td>
+<td>Cần xác nhận tại đơn vị</td>
+</tr>
+<tr>
+<td>Máy trợ thính để <strong>phòng</strong> sa sút trí tuệ</td>
+<td>ACHIEVE: kết cục chính <strong>âm tính</strong> (chênh 0,002; −0,077 đến 0,081; P = 0,96); chỉ có tín hiệu ở phân nhóm nguy cơ cao (P tương tác = 0,010)</td>
+<td>Vẫn điều trị giảm thính lực vì lợi ích giao tiếp và chất lượng sống — <strong>không hứa hẹn phòng được sa sút trí tuệ</strong></td>
+</tr>
+<tr>
+<td>Sản phẩm "bổ não", thực phẩm chức năng tăng cường trí nhớ</td>
+<td>Không thay thế đánh giá và điều trị có chứng cứ</td>
+<td>Không khuyến cáo</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2 id="m9" class="s-dx"><span class="num">09</span>Áp dụng tại Việt Nam</h2>
+<h3>9.1 Triển khai ngay, không cần thêm nguồn lực</h3>
+<ul>
+<li>Chuẩn hoá 3 bước đánh giá; <strong>bắt buộc có người thân đi cùng</strong> khi khám trí nhớ.</li>
+<li>Thêm hai câu hỏi vào mọi lần khám người cao tuổi: <em>"Nghe có rõ không? Nhìn có rõ không?"</em> → giới thiệu đo thính lực, khám mắt.</li>
+<li><strong>Rà soát danh sách bệnh nhân sa sút trí tuệ đang dùng chống loạn thần</strong>; đặt câu hỏi <em>"còn chỉ định không"</em> mỗi lần tái khám.</li>
+<li>Lồng phòng ngừa vào hệ thống quản lý tăng huyết áp, đái tháo đường, rối loạn lipid máu sẵn có.</li>
+<li>Kê "đơn vận động" cụ thể; khuyến khích câu lạc bộ người cao tuổi, sinh hoạt tổ dân phố, tôn giáo.</li>
+</ul>
+<h3>9.2 Cần đối chiếu tại đơn vị — <code><span class="flag">[CẦN XÁC NHẬN TẠI ĐƠN VỊ]</span></code></h3>
+<ul>
+<li>Công cụ nhận thức nào đã chuẩn hoá tiếng Việt và được dùng thống nhất; ngưỡng diễn giải theo trình độ học vấn.</li>
+<li>Danh mục thuốc và phạm vi chi trả BHYT cho donepezil, memantine; khả năng tiếp cận brexpiprazole.</li>
+<li>Địa chỉ và tiêu chí chuyển tuyến chuyên khoa thần kinh/lão khoa; năng lực MRI và thời gian chờ.</li>
+<li>Liều memantine theo mức lọc cầu thận, theo tờ HDSD của biệt dược đang lưu hành.</li>
+<li>Phác đồ hoặc hướng dẫn hiện hành của Bộ Y tế về sa sút trí tuệ — <strong>chưa đối chiếu trong bản cập nhật này</strong>.</li>
+</ul>
+<h3>9.3 Theo dõi và safety-netting</h3>
+<ul>
+<li>Tái khám <strong>mỗi 3–6 tháng</strong>, kể cả khi "vẫn vậy"; mỗi lần mang <strong>toàn bộ thuốc đang dùng</strong>.</li>
+<li>Đánh giá lại: nhận thức, chức năng, an toàn tại nhà, <strong>gánh nặng người chăm sóc</strong>.</li>
+<li>Dặn gia đình dấu hiệu <strong>quay lại ngay</strong>: lú lẫn đột ngột, xấu đi rất nhanh, yếu liệt hoặc co giật, ngã đập đầu, đi lạc, ý tưởng tự sát.</li>
+<li>Tiêu chí <strong>thất bại điều trị</strong>: không cải thiện hoặc xấu đi rõ về chức năng sau 3–6 tháng dùng thuốc → xem lại chẩn đoán, rà thuốc, cân nhắc ngưng thuốc không hiệu quả.</li>
+</ul>
+<hr />
+<h2 id="m10" class="s-dx"><span class="num">10</span>Thẩm định nguồn chính</h2>
+<h3>10.1 DETeCD-ADRD (Alzheimer Association, 2024/2025) — nguồn khung chẩn đoán</h3>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Khía cạnh</th>
+<th>Nhận định</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Phạm vi và mục đích</td>
+<td>Rõ: quy trình đánh giá chẩn đoán cho <strong>cả tuyến ban đầu và chuyên khoa</strong>, có hai bản tóm tắt riêng</td>
+</tr>
+<tr>
+<td>Sự nghiêm ngặt của phương pháp</td>
+<td>Tổng quan <strong>7374 công bố</strong>, 133 bài đưa vào; quy trình <strong>Delphi cải biên</strong></td>
+</tr>
+<tr>
+<td>Tính rõ ràng khi trình bày</td>
+<td>Khuyến cáo được sắp theo <strong>các bước của quy trình đánh giá</strong> — dễ chuyển thành checklist phòng khám</td>
+</tr>
+<tr>
+<td>Khả năng áp dụng</td>
+<td>Nguồn tự nêu điều kiện: <em>"nếu hệ thống y tế cung cấp đủ nguồn lực"</em> — đúng là nút thắt tại Việt Nam</td>
+</tr>
+<tr>
+<td>Hạn chế cho người đọc VN</td>
+<td>Xây dựng trong bối cảnh Hoa Kỳ; <strong>không</strong> cung cấp phân hạng GRADE hay mức độ mạnh khuyến cáo dạng chữ/số</td>
+</tr>
+<tr>
+<td>Tính độc lập biên tập, COI</td>
+<td><strong><span class="flag">[CẦN KIỂM CHỨNG]</span></strong> — chưa đọc toàn văn phần công bố xung đột lợi ích và nguồn tài trợ</td>
+</tr>
+</tbody>
+</table></div>
+<h3>10.2 Hướng dẫn dấu ấn sinh học máu (Alzheimer Association, 2025)</h3>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Khía cạnh</th>
+<th>Nhận định</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Phương pháp</td>
+<td>Tổng quan hệ thống riêng (49 nghiên cứu, 31 test) + <strong>GRADE</strong> + khung <strong>Evidence-to-Decision</strong></td>
+</tr>
+<tr>
+<td>Điểm mạnh nổi bật</td>
+<td>Khuyến cáo dựa trên <strong>ngưỡng hiệu năng</strong>, <strong>không gắn thương hiệu</strong> — bền vững khi thị trường xét nghiệm thay đổi</td>
+</tr>
+<tr>
+<td>Cảnh báo do chính nguồn nêu</td>
+<td>Nhiều test thương mại <strong>không đạt</strong> ngưỡng, nhất là khi dùng một điểm cắt duy nhất</td>
+</tr>
+<tr>
+<td>Độ chắc chắn chứng cứ</td>
+<td><strong>Trung bình → rất thấp</strong>; đa số nghiên cứu <strong>nguy cơ sai lệch cao</strong> theo QUADAS-2 (chọn bệnh nhân, thực hiện index test, chuẩn tham chiếu)</td>
+</tr>
+<tr>
+<td>Phạm vi áp dụng</td>
+<td><strong>Chỉ</strong> cho người có suy giảm nhận thức <strong>khách quan</strong>, tại cơ sở chuyên khoa — không phải test tầm soát</td>
+</tr>
+<tr>
+<td>Hạn chế cho người đọc VN</td>
+<td>Chưa có test nào được xác nhận hiệu năng trên quần thể Việt Nam <strong><span class="flag">[CẦN BỔ SUNG]</span></strong></td>
+</tr>
+</tbody>
+</table></div>
+<h3>10.3 Lưu ý về xác minh trích dẫn trong phiên tổng hợp này</h3>
+<p>Toàn bộ <strong>17 PMID</strong> đã được phân giải và đối chiếu tiêu đề, tạp chí, năm qua kết nối PubMed. Bước <code>verify_dashboard.py --online</code> <strong>không chạy được</strong> do môi trường chặn truy cập trực tiếp <code>eutils.ncbi.nlm.nih.gov</code> (HTTP 403) — kết quả là 17 cảnh báo mạng, <strong>không phải lỗi cứng</strong>. Nên chạy lại <code>--online</code> trên máy có mạng bình thường để có bản ghi kiểm toán đầy đủ.</p>
+<h3>10.4 Kiểm bài rút (retraction screening) — 08/9/2026</h3>
+<div class="tw"><table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Phạm vi</td>
+<td><strong>17/17 DOI</strong> của bản cập nhật này</td>
+</tr>
+<tr>
+<td>Cách kiểm</td>
+<td><code>retraction_check.py extract</code> → connector <strong>Scite</strong> (<code>editorialNotices</code>) → <code>report</code></td>
+</tr>
+<tr>
+<td>Vì sao không dùng Retraction Watch đầy đủ</td>
+<td>Bộ dữ liệu đầy đủ nằm ở Crossref; <code>api.crossref.org</code> bị chặn egress trong môi trường này</td>
+</tr>
+<tr>
+<td><strong>Kết quả</strong></td>
+<td><strong>Không bài nào bị rút, bị đính chính, hay bị nêu quan ngại</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Giới hạn của phép kiểm này:</strong> chỉ mục của Scite <strong>không phủ 100%</strong>. "Không tìm thấy thông báo"
+không đồng nghĩa tuyệt đối với "chắc chắn không bị rút". Muốn kết luận chắc hơn thì chạy
+<code>tools/tai_retraction_watch.py</code> trên máy có mạng tới Crossref rồi tra lại bằng chế độ <code>local</code>.</p>
+<p>Cần kiểm lại khi: bản cập nhật được dùng lại sau <strong>6 tháng</strong>, hoặc trước khi đưa vào bài giảng,
+hồ sơ chuyên môn, hay bản thảo công bố.</p>
+<h3>10.5 Xung đột lợi ích và tài trợ của nguồn chính</h3>
+<p>Ghi <strong>nguyên văn</strong> câu tài trợ lấy được từ bản ghi PubMed. Không suy đoán tài trợ từ tên thuốc
+hay tên tác giả. Tài trợ công nghiệp <strong>không</strong> tự động hạ mức chứng cứ — ghi lại để người đọc tự cân.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Nguồn</th>
+<th>Tài trợ (nguyên văn)</th>
+<th>Vai trò nhà tài trợ · COI nhóm tác giả</th>
+<th>Lấy từ đâu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>evoke &amp; evoke+, <em>Lancet</em> 2026 (<span class="pmid">PMID 41865758</span>)</td>
+<td>"Novo Nordisk."</td>
+<td>Nhà tài trợ là <strong>nhà sản xuất semaglutide</strong>. Vai trò trong thiết kế/phân tích: <strong><span class="flag">[CẦN KIỂM CHỨNG]</span></strong> — cần mở toàn văn. <em>Lưu ý đọc:</em> thử nghiệm cho kết quả <strong>âm tính</strong> với chính sản phẩm của nhà tài trợ, nên chiều thiên lệch nếu có sẽ ngược với kết luận đang dùng.</td>
+<td>Câu FUNDING cuối tóm tắt PubMed</td>
+</tr>
+<tr>
+<td>Lecanemab CLARITY-AD, <em>NEJM</em> 2023 (<span class="pmid">PMID 36449413</span>)</td>
+<td>"Funded by Eisai and Biogen"</td>
+<td>Hai nhà tài trợ là <strong>nhà sản xuất lecanemab</strong>. Vai trò trong thiết kế/phân tích: <strong><span class="flag">[CẦN KIỂM CHỨNG]</span></strong>. <em>Lưu ý đọc:</em> kết quả <strong>dương tính</strong> với sản phẩm của chính nhà tài trợ → phải đọc hiệu số tuyệt đối và tác hại (ARIA) cẩn trọng, đúng như mục 6 và mục 8 đã làm.</td>
+<td>Câu "(Funded by …)" cuối tóm tắt PubMed</td>
+</tr>
+<tr>
+<td>ACHIEVE, <em>Lancet</em> 2023 (<span class="pmid">PMID 37478886</span>)</td>
+<td>"US National Institutes of Health."</td>
+<td>Tài trợ <strong>công</strong>. COI nhóm tác giả: <strong><span class="flag">[CẦN KIỂM CHỨNG]</span></strong>.</td>
+<td>Câu FUNDING cuối tóm tắt PubMed</td>
+</tr>
+<tr>
+<td>14 nguồn còn lại của mục 11 (DETeCD-ADRD ×2 · tiêu chuẩn Jack 2024 · CPG dấu ấn sinh học máu 2025 · SR/MA dấu ấn sinh học 2025 · Palmqvist <em>JAMA</em> 2024 · Cochrane donepezil · Cochrane memantine · Mok <em>BMJ</em> 2024 · brexpiprazole <em>JAMA Neurol</em> 2023 · donanemab TRAILBLAZER-ALZ 2 · EMA assessment 2026 · Lancet Commission 2024 · US POINTER 2025)</td>
+<td><strong>CHƯA LẤY ĐƯỢC</strong></td>
+<td><strong><span class="flag">[CẦN KIỂM CHỨNG]</span></strong></td>
+<td>Tạp chí <strong>không</strong> đặt câu tài trợ trong tóm tắt; PubMed và Amass BiomedCore <strong>không trả</strong> trường funding/COI; egress tới toàn văn bị chặn</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Việc phải làm để đóng ô <span class="flag">[CẦN KIỂM CHỨNG]</span>:</strong> mở toàn văn 14 nguồn còn lại (mục <em>Funding</em> /
+<em>Conflicts of interest</em> / <em>Disclosures</em>) trên máy có mạng bình thường, dán nguyên văn vào bảng này.
+Ưu tiên trước ba nguồn đang trực tiếp đổi thực hành: <strong>CPG dấu ấn sinh học máu 2025</strong>,
+<strong>donanemab TRAILBLAZER-ALZ 2</strong>, <strong>brexpiprazole</strong>.</p>
+<p><strong>Đo được trong phiên này (ghi để lần sau khỏi thử lại):</strong> trong môi trường cloud hiện tại,
+câu tài trợ chỉ lấy được bằng máy khi <strong>tạp chí đặt nó trong tóm tắt</strong> (kiểu <em>Lancet</em> / <em>NEJM</em>).
+Với <em>JAMA</em>, <em>BMJ</em>, <em>Alzheimer's &amp; Dementia</em>, <em>Cochrane</em> thì <strong>không có đường máy nào</strong> —
+PubMed <code>get_article_metadata</code> không có trường funding, Amass BiomedCore cũng không.</p>
+<hr />
+<h2 id="m11" class="s-ref"><span class="num">11</span>Tài liệu tham khảo (Vancouver/NLM)</h2>
+<ol>
+<li>Atri A, Dickerson BC, Clevenger C, et al. Alzheimer's Association clinical practice guideline for the Diagnostic Evaluation, Testing, Counseling, and Disclosure of Suspected Alzheimer's Disease and Related Disorders (DETeCD-ADRD): Executive summary of recommendations for primary care. Alzheimers Dement. 2025;21(6):e14333. <span class="pmid">PMID: 39713942</span>. doi:10.1002/alz.14333</li>
+<li>Dickerson BC, Atri A, Clevenger C, et al. DETeCD-ADRD: Executive summary of recommendations for specialty care. Alzheimers Dement. 2025;21(1):e14337. <span class="pmid">PMID: 39713957</span>. doi:10.1002/alz.14337</li>
+<li>Jack CR Jr, Andrews JS, Beach TG, et al. Revised criteria for diagnosis and staging of Alzheimer's disease: Alzheimer's Association Workgroup. Alzheimers Dement. 2024;20(8):5143-5169. <span class="pmid">PMID: 38934362</span>. doi:10.1002/alz.13859</li>
+<li>Palmqvist S, Whitson HE, Allen LA, et al. Alzheimer's Association Clinical Practice Guideline on the use of blood-based biomarkers in the diagnostic workup of suspected Alzheimer's disease within specialized care settings. Alzheimers Dement. 2025;21(7):e70535. <span class="pmid">PMID: 40729527</span>. doi:10.1002/alz.70535</li>
+<li>Pahlke S, Kahale LA, Mahinrad S, et al. Blood-based biomarkers for detecting Alzheimer's disease pathology in cognitively impaired individuals within specialized care settings: a systematic review and meta-analysis. Alzheimers Dement. 2025;21(11):e70828. <span class="pmid">PMID: 41193403</span>. doi:10.1002/alz.70828</li>
+<li>Palmqvist S, Tideman P, Mattsson-Carlgren N, et al. Blood Biomarkers to Detect Alzheimer Disease in Primary Care and Secondary Care. JAMA. 2024;332(15):1245-1257. <span class="pmid">PMID: 39068545</span>. doi:10.1001/jama.2024.13855</li>
+<li>Birks JS, Harvey RJ. Donepezil for dementia due to Alzheimer's disease. Cochrane Database Syst Rev. 2018;6(6):CD001190. <span class="pmid">PMID: 29923184</span>. doi:10.1002/14651858.CD001190.pub3</li>
+<li>McShane R, Westby MJ, Roberts E, et al. Memantine for dementia. Cochrane Database Syst Rev. 2019;3(3):CD003154. <span class="pmid">PMID: 30891742</span>. doi:10.1002/14651858.CD003154.pub6</li>
+<li>Mok PLH, Carr MJ, Guthrie B, et al. Multiple adverse outcomes associated with antipsychotic use in people with dementia: population based matched cohort study. BMJ. 2024;385:e076268. <span class="pmid">PMID: 38631737</span>. doi:10.1136/bmj-2023-076268</li>
+<li>Lee D, Slomkowski M, Hefting N, et al. Brexpiprazole for the Treatment of Agitation in Alzheimer Dementia: A Randomized Clinical Trial. JAMA Neurol. 2023;80(12):1307-1316. <span class="pmid">PMID: 37930669</span>. doi:10.1001/jamaneurol.2023.3810</li>
+<li>van Dyck CH, Swanson CJ, Aisen P, et al. Lecanemab in Early Alzheimer's Disease. N Engl J Med. 2023;388(1):9-21. <span class="pmid">PMID: 36449413</span>. doi:10.1056/NEJMoa2212948</li>
+<li>Sims JR, Zimmer JA, Evans CD, et al. Donanemab in Early Symptomatic Alzheimer Disease: The TRAILBLAZER-ALZ 2 Randomized Clinical Trial. JAMA. 2023;330(6):512-527. <span class="pmid">PMID: 37459141</span>. doi:10.1001/jama.2023.13239</li>
+<li>Guizzaro L, Bałkowiec-Iskra E, Haberkamp M, et al. Balancing benefit and risk in early Alzheimer's disease: the European Medicines Agency (EMA) assessment of lecanemab and donanemab. Lancet Reg Health Eur. 2026;63:101644. <span class="pmid">PMID: 41852829</span>. doi:10.1016/j.lanepe.2026.101644</li>
+<li>Cummings JL, Atri A, Sano M, et al. Efficacy and safety of oral semaglutide 14 mg (flexible dose) in early-stage symptomatic Alzheimer's disease (evoke and evoke+): two phase 3, randomised, placebo-controlled trials. Lancet. 2026;407(10544):2167-2179. <span class="pmid">PMID: 41865758</span>. doi:10.1016/S0140-6736(26)00459-9</li>
+<li>Livingston G, Huntley J, Liu KY, et al. Dementia prevention, intervention, and care: 2024 report of the Lancet standing Commission. Lancet. 2024;404(10452):572-628. <span class="pmid">PMID: 39096926</span>. doi:10.1016/S0140-6736(24)01296-0</li>
+<li>Baker LD, Espeland MA, Whitmer RA, et al. Structured vs Self-Guided Multidomain Lifestyle Interventions for Global Cognitive Function: The US POINTER Randomized Clinical Trial. JAMA. 2025;334(8):681-691. <span class="pmid">PMID: 40720610</span>. doi:10.1001/jama.2025.12923</li>
+<li>Lin FR, Pike JR, Albert MS, et al. Hearing intervention versus health education control to reduce cognitive decline in older adults with hearing loss in the USA (ACHIEVE): a multicentre, randomised controlled trial. Lancet. 2023;402(10404):786-797. <span class="pmid">PMID: 37478886</span>. doi:10.1016/S0140-6736(23)01406-X</li>
+</ol>
+<hr />
+<p><em>Soạn theo mẫu <code>templates/mau-cap-nhat-chuyen-sau.md</code> của skill <code>cap-nhat-chung-cu-y-khoa</code>. Không chứa thông tin định danh người bệnh.</em></p>
+</main>
+</div>

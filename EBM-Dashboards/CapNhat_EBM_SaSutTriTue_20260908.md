@@ -5,6 +5,16 @@
 **Dashboard đi kèm:** `WebDashboard_EBM_VanDeCuThe_SaSutTriTue_20260908.html` (17 điểm chứng cứ)
 **Cổng liêm chính:** `verify_dashboard.py --online` → `PASS CÓ ĐIỀU KIỆN` (0 lỗi cứng; **ghi vết**: 17 PMID chưa xác minh được qua NCBI E-utilities vì môi trường chặn egress — đã phân giải bằng kết nối PubMed, cần chạy lại khi có mạng)
 
+**GHI VẾT TRA CỨU**
+
+| Trường | Nội dung |
+|---|---|
+| Ngày tra cứu | 2026-09-08 (mọi nguồn của bản này được truy xuất và đối chiếu trong ngày này) |
+| CSDL/nguồn đã tra | PubMed qua connector (`search_articles`, `get_article_metadata`, `convert_article_ids`) · Scite (`search_literature` → `editorialNotices`) · Amass BiomedCore (đối chiếu bản ghi). Truy cập TRỰC TIẾP `eutils.ncbi.nlm.nih.gov`, `api.crossref.org`, Europe PMC **bị chặn egress** trong môi trường này — không dùng được. |
+| Chiến lược tìm | Tra có chủ đích theo từng câu hỏi lâm sàng (chẩn đoán · dấu ấn sinh học máu · ức chế cholinesterase/memantine · BPSD và chống loạn thần · kháng thể kháng amyloid · GLP-1 · dự phòng đa lĩnh vực · can thiệp thính lực), ưu tiên guideline hội chuyên ngành → tổng quan hệ thống Cochrane → RCT pha 3 → đoàn hệ lớn; sau đó phân giải và đối chiếu tiêu đề/tạp chí/năm cho **từng** trong 17 định danh. **Chuỗi truy vấn nguyên văn và số kết quả từng bước KHÔNG được ghi lại tại thời điểm tra** — `[CẦN BỔ SUNG]`. Đây chính là lỗ hổng mà khối GHI VẾT này được thêm vào để bịt: từ bản cập nhật sau, chuỗi truy vấn phải ghi ngay khi chạy, không tái dựng về sau. |
+| Ngày kiểm bài rút | 2026-09-08 — 17/17 DOI sạch (không rút, không đính chính, không nêu quan ngại) qua Scite `editorialNotices`; giới hạn: chỉ mục Scite không phủ 100%, xem mục 10.4 |
+| Ngày rà lại kế tiếp | 2027-03-08 (6 tháng). Lý do chọn mốc: chủ đề đang có **hai trục động** — cấp phép và điều kiện sử dụng kháng thể kháng amyloid, và thị trường dấu ấn sinh học máu vừa có guideline đầu tiên năm 2025; phần lõi (ức chế cholinesterase, memantine, BPSD, 14 yếu tố nguy cơ) thì ổn định. Rà **sớm hơn** nếu: có quyết định mới của FDA/EMA hoặc văn bản Bộ Y tế về thuốc kháng amyloid · có guideline mới của Alzheimer's Association/AAN · có safety communication về ARIA hoặc về thuốc chống loạn thần ở sa sút trí tuệ · có thông báo rút/đính chính bất kỳ nguồn nào trong mục 11 · có kết quả pha 3 mới của một thuốc đang nằm trong bảng mục 6. |
+
 > ⚠ **Cần bác sĩ kiểm chứng.** Tài liệu hỗ trợ ra quyết định; không thay thế khám trực tiếp, phác đồ của đơn vị hay xử trí cấp cứu.
 > Đây **không phải** bản ghi đã được duyệt vào Dashboard Master.
 
@@ -276,6 +286,28 @@ không đồng nghĩa tuyệt đối với "chắc chắn không bị rút". Mu�
 
 Cần kiểm lại khi: bản cập nhật được dùng lại sau **6 tháng**, hoặc trước khi đưa vào bài giảng,
 hồ sơ chuyên môn, hay bản thảo công bố.
+
+### 10.5 Xung đột lợi ích và tài trợ của nguồn chính
+
+Ghi **nguyên văn** câu tài trợ lấy được từ bản ghi PubMed. Không suy đoán tài trợ từ tên thuốc
+hay tên tác giả. Tài trợ công nghiệp **không** tự động hạ mức chứng cứ — ghi lại để người đọc tự cân.
+
+| Nguồn | Tài trợ (nguyên văn) | Vai trò nhà tài trợ · COI nhóm tác giả | Lấy từ đâu |
+|---|---|---|---|
+| evoke & evoke+, *Lancet* 2026 (PMID 41865758) | "Novo Nordisk." | Nhà tài trợ là **nhà sản xuất semaglutide**. Vai trò trong thiết kế/phân tích: **[CẦN KIỂM CHỨNG]** — cần mở toàn văn. *Lưu ý đọc:* thử nghiệm cho kết quả **âm tính** với chính sản phẩm của nhà tài trợ, nên chiều thiên lệch nếu có sẽ ngược với kết luận đang dùng. | Câu FUNDING cuối tóm tắt PubMed |
+| Lecanemab CLARITY-AD, *NEJM* 2023 (PMID 36449413) | "Funded by Eisai and Biogen" | Hai nhà tài trợ là **nhà sản xuất lecanemab**. Vai trò trong thiết kế/phân tích: **[CẦN KIỂM CHỨNG]**. *Lưu ý đọc:* kết quả **dương tính** với sản phẩm của chính nhà tài trợ → phải đọc hiệu số tuyệt đối và tác hại (ARIA) cẩn trọng, đúng như mục 6 và mục 8 đã làm. | Câu "(Funded by …)" cuối tóm tắt PubMed |
+| ACHIEVE, *Lancet* 2023 (PMID 37478886) | "US National Institutes of Health." | Tài trợ **công**. COI nhóm tác giả: **[CẦN KIỂM CHỨNG]**. | Câu FUNDING cuối tóm tắt PubMed |
+| 14 nguồn còn lại của mục 11 (DETeCD-ADRD ×2 · tiêu chuẩn Jack 2024 · CPG dấu ấn sinh học máu 2025 · SR/MA dấu ấn sinh học 2025 · Palmqvist *JAMA* 2024 · Cochrane donepezil · Cochrane memantine · Mok *BMJ* 2024 · brexpiprazole *JAMA Neurol* 2023 · donanemab TRAILBLAZER-ALZ 2 · EMA assessment 2026 · Lancet Commission 2024 · US POINTER 2025) | **CHƯA LẤY ĐƯỢC** | **[CẦN KIỂM CHỨNG]** | Tạp chí **không** đặt câu tài trợ trong tóm tắt; PubMed và Amass BiomedCore **không trả** trường funding/COI; egress tới toàn văn bị chặn |
+
+**Việc phải làm để đóng ô [CẦN KIỂM CHỨNG]:** mở toàn văn 14 nguồn còn lại (mục *Funding* /
+*Conflicts of interest* / *Disclosures*) trên máy có mạng bình thường, dán nguyên văn vào bảng này.
+Ưu tiên trước ba nguồn đang trực tiếp đổi thực hành: **CPG dấu ấn sinh học máu 2025**,
+**donanemab TRAILBLAZER-ALZ 2**, **brexpiprazole**.
+
+**Đo được trong phiên này (ghi để lần sau khỏi thử lại):** trong môi trường cloud hiện tại,
+câu tài trợ chỉ lấy được bằng máy khi **tạp chí đặt nó trong tóm tắt** (kiểu *Lancet* / *NEJM*).
+Với *JAMA*, *BMJ*, *Alzheimer's & Dementia*, *Cochrane* thì **không có đường máy nào** —
+PubMed `get_article_metadata` không có trường funding, Amass BiomedCore cũng không.
 
 ---
 

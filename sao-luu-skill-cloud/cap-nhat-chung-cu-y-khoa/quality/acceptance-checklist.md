@@ -6,6 +6,12 @@ Trước khi bàn giao, kiểm tra:
 - [ ] Xác định đúng vấn đề cụ thể, bối cảnh và quần thể.
 - [ ] Không tự mở rộng sang Dashboard/tác vụ định kỳ khi chưa được yêu cầu.
 
+## Ghi vết tra cứu (5D-quater)
+- [ ] Bản `.md` có đủ 5 dòng GHI VẾT: ngày tra · CSDL/nguồn (kể cả nguồn bị chặn) · chiến lược tìm · ngày kiểm bài rút · ngày rà lại kế tiếp **kèm lý do + sự kiện rà sớm**.
+- [ ] `DATA.meta` của dashboard có `searchDate` · `searchSources` · `searchStrategy` · `nextReview` (`retractionCheck`, `reviewTriggers` khi có).
+- [ ] Mục COI/tài trợ: mỗi nguồn chính ghi **nguyên văn** câu tài trợ, hoặc nói rõ **"chưa lấy được" + nơi cần mở để lấy**. Không suy đoán từ tên thuốc/tác giả.
+- [ ] Đã nêu **chiều** thiên lệch có thể có khi nguồn do nhà sản xuất tài trợ.
+
 ## Nguồn và tính hiện hành
 - [ ] Các kết luận có thể đổi thực hành đều có nguồn gốc chính thức hoặc nguồn nghiên cứu phù hợp.
 - [ ] Đã xác minh tiêu đề, tổ chức, ngày/phiên bản, quần thể và nội dung liên quan.

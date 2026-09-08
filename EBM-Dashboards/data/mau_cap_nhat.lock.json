@@ -1,9 +1,9 @@
 {
  "_muc_dich": "KHOÁ MẪU cập nhật chứng cứ. Mọi bản cập nhật phải theo đúng bộ mục này. Mẫu chỉ được đổi CÓ CHỦ Ý qua `kiem_mau_cap_nhat.py --khoa-lai`, kèm tăng phien_ban.",
- "phien_ban": "1.0",
+ "phien_ban": "1.1",
  "ngay_khoa": "2026-09-08",
  "tep_mau": "templates/mau-cap-nhat-chuyen-sau.md",
- "sha256_mau": "e738c567ed980dd37721aadd293ea14b4177bfc7387588c38e5ea73312e8e574",
+ "sha256_mau": "3556abd70157fbf8348e14dd9e312c6f9e4e6eed3b95e6f02c6e63cab7c67c65",
  "so_muc": 11,
  "muc": [
   "1. Tóm tắt thực hành nhanh",
@@ -17,5 +17,19 @@
   "9. Áp dụng tại Việt Nam",
   "10. Thẩm định nguồn chính, khi cần",
   "11. Tài liệu tham khảo Vancouver/NLM"
- ]
+ ],
+ "truong_ghi_vet": [
+  "Ngày tra cứu",
+  "CSDL/nguồn đã tra",
+  "Chiến lược tìm",
+  "Ngày kiểm bài rút",
+  "Ngày rà lại kế tiếp"
+ ],
+ "cho_trong_ghi_vet": {
+  "Ngày tra cứu": "[YYYY-MM-DD — ngày THỰC SỰ chạy truy vấn, không phải ngày viết bài]",
+  "CSDL/nguồn đã tra": "[liệt kê từng nguồn: PubMed · Scite · Amass BiomedCore · ClinicalTrials.gov · trang hội chuyên ngành…]",
+  "Chiến lược tìm": "[từ khoá/MeSH · giới hạn năm · giới hạn thiết kế · số kết quả trả về → số đưa vào]",
+  "Ngày kiểm bài rút": "[YYYY-MM-DD] — [n/n sạch, hoặc nêu rõ số DOI CHƯA kiểm được]",
+  "Ngày rà lại kế tiếp": "[YYYY-MM-DD] — lý do chọn mốc: [...] · rà sớm hơn nếu: [sự kiện kích hoạt]"
+ }
 }

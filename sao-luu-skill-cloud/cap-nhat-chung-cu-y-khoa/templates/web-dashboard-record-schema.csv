@@ -19,3 +19,11 @@ monitoring,no,Theo dõi nếu liên quan,Không
 vietnam_application,yes,Áp dụng Việt Nam hoặc cần xác nhận đơn vị,Không
 reference_vancouver_nlm,yes,Tham khảo đã xác minh,Không
 verification_status,yes,Đã xác minh|Chưa đủ thay đổi,Không
+search_date,yes,Ngày THỰC SỰ chạy truy vấn YYYY-MM-DD,Không
+search_sources,yes,Từng CSDL/nguồn đã tra kể cả nguồn bị chặn,Không
+search_strategy,yes,Từ khoá MeSH giới hạn số trả về số chọn,Không
+retraction_check,no,Ngày kiểm bài rút và kết quả,Không
+next_review,yes,Ngày rà lại kế tiếp kèm lý do chọn mốc,Không
+review_triggers,no,Sự kiện buộc rà sớm hơn,Không
+funding,no,Nguyên văn câu tài trợ của nguồn hoặc CHƯA LẤY ĐƯỢC,Không
+coi,no,COI và vai trò nhà tài trợ nguyên văn không suy đoán,Không

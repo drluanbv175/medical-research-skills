@@ -10,7 +10,10 @@
   KPI, verdict, Quick View) TỰ SINH từ DATA.
 
   SCHEMA (DÙNG CHUNG với evidence-workbench-template.html — 1 DATA chạy được cả hai):
-    meta:    { eyebrow, question, pico:{P,I,C,O}, updated }
+    meta:    { eyebrow, question, pico:{P,I,C,O}, updated,
+               searchDate, searchSources:[…], searchStrategy,
+               retractionCheck, nextReview, reviewTriggers:[…] }   // GHI VẾT TRA CỨU — bắt buộc
+             // item: funding? · coi?  — nguyên văn của nguồn, hoặc CHƯA LẤY ĐƯỢC. KHÔNG suy đoán.
     summary: { conclusion, doNow:[…], dontDo:[…], redFlags:[…] }     // Clinical Quick View
     items:   [ {
       id:'ITEM-01', title, source, org, dateVersion, pmid?, doi?, url?,
@@ -195,6 +198,15 @@
   .reflist .r{padding-left:13px;text-indent:-13px}
   .empty{padding:34px;text-align:center;color:var(--muted)}
 
+  .prov{background:rgba(148,163,184,.06);border-top:1px solid var(--line);font-size:11px;color:var(--ink-2)}
+  .prov>summary{cursor:pointer;padding:7px 16px;list-style:none;display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+  .prov>summary::-webkit-details-marker{display:none}
+  .prov>summary::before{content:'▸'}
+  .prov[open]>summary::before{content:'▾'}
+  .prov .pbody{padding:2px 16px 12px;display:grid;grid-template-columns:auto 1fr;gap:5px 14px;align-items:start}
+  .prov .pk{color:var(--muted);white-space:nowrap;font-size:10.5px}
+  .prov .pv{line-height:1.5;word-break:break-word}
+  .prov .miss{color:var(--amber);font-weight:700}
   .disclaimer{display:flex;align-items:center;gap:10px;padding:8px 16px;background:rgba(251,191,36,.08);border-top:1px solid rgba(251,191,36,.25);font-size:11px;color:var(--g-mod)}
   .disclaimer b{font-weight:800;color:#fcd34d}
   .disclaimer .upd{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--amber)}
@@ -253,6 +265,8 @@
       <tbody id="rows"></tbody>
     </table>
   </div>
+
+  <details class="prov" id="prov"></details>
 
   <footer class="disclaimer">
     <span>⚠</span><b>Cần bác sĩ kiểm chứng.</b> Đối chiếu toàn văn &amp; bối cảnh bệnh nhân. Không lưu PII.
@@ -482,7 +496,9 @@ function expandRow(e){
         <div class="c"><div class="l">Hiệu số (nguồn)</div><div class="n ${(f&&f.favors)?'gr':''}">${(f&&f.hr!=null)?f.hr.toFixed(2)+' ('+(f.ci||'')+')':(e.effectText||'—')}</div></div>
         <div class="c"><div class="l">Quần thể</div><div class="n" style="font-size:11px">${e.population||'—'}</div></div>
       </div>
-      <div class="kvline"><div class="r"><span class="k">Grading nguồn</span><span class="v">${e.gradeSource||'Nguồn không cung cấp phân hạng'}</span></div></div>
+      <div class="kvline"><div class="r"><span class="k">Grading nguồn</span><span class="v">${e.gradeSource||'Nguồn không cung cấp phân hạng'}</span></div>
+        <div class="r"><span class="k">Tài trợ</span><span class="v">${e.funding||'chưa lấy được'}</span></div>
+        ${e.coi?`<div class="r"><span class="k">COI / vai trò nhà tài trợ</span><span class="v">${e.coi}</span></div>`:''}</div>
       <h5>◉ Nguy cơ sai lệch (RoB 2)</h5>
       <div class="robfull">${robFull}</div>
     </div>
@@ -506,7 +522,24 @@ function expandRow(e){
 }
 function toggle(id){state.open=state.open===id?null:id;render();}
 
-renderStatic();render();
+function renderProv(){
+  const m=DATA.meta||{}, el=document.getElementById('prov');
+  if(!el) return;
+  const miss='<span class="miss">CHƯA GHI — bắt buộc</span>';
+  const v=x=>(x==null||x==='')?miss:x;
+  const list=a=>(Array.isArray(a)&&a.length)?a.join(' · '):miss;
+  const dau=x=>{const t=String(x==null?'':x);const i=t.indexOf(' — ');return i>0?t.slice(0,i):t;};  // bỏ phần lý do ở dòng tóm tắt
+  el.innerHTML=`<summary>🔎 <b>Ghi vết tra cứu</b> · Ngày tra: ${v(m.searchDate)} · Rà lại: ${m.nextReview?dau(m.nextReview):miss}</summary>
+    <div class="pbody">
+      <div class="pk">Ngày tra cứu</div><div class="pv">${v(m.searchDate)}</div>
+      <div class="pk">CSDL/nguồn đã tra</div><div class="pv">${list(m.searchSources)}</div>
+      <div class="pk">Chiến lược tìm</div><div class="pv">${v(m.searchStrategy)}</div>
+      <div class="pk">Kiểm bài rút</div><div class="pv">${v(m.retractionCheck)}</div>
+      <div class="pk">Rà lại kế tiếp</div><div class="pv">${v(m.nextReview)}</div>
+      ${(m.reviewTriggers&&m.reviewTriggers.length)?`<div class="pk">Rà sớm hơn nếu</div><div class="pv">${m.reviewTriggers.map(t=>'• '+t).join('<br>')}</div>`:''}
+    </div>`;
+}
+renderStatic();renderProv();render();
 </script>
 </body>
 </html>
