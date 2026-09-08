@@ -331,10 +331,13 @@ Cả hai mẫu hỗ trợ field tùy chọn `effectText` (hiệu số phi-tỷ-s
 2. `tools/kiem_mau_cap_nhat.py <file>.md` → phải **ĐÚNG MẪU** (đủ mục, đúng thứ tự).
 3. Dựng **Dashboard** (Evidence Workbench mặc định) từ cùng nội dung đã xác minh.
 4. `tools/verify_dashboard.py --online` → **PASS thật**; nếu `⊘ KHÔNG KẾT LUẬN` thì xử lý theo mục 5D(a).
-5. `tools/drug_safety_scan.py` (nếu có thuốc + cao tuổi/đa thuốc).
-6. `tools/build_library.py add` → thư viện chỉ mục.
-7. `tools/make_derivatives.py` → 3 phái sinh.
-8. `tools/render_ban_cap_nhat.py <file>.md` → **trang đọc/in được**; bác sĩ thường KHÔNG mở được `.md` hay `.html` gửi kèm trong khung chát, nên phải đăng thành trang có link.
+5. **`tools/retraction_check.py`** — KIỂM BÀI RÚT, ba bước:
+   `extract <file>` → gọi `mcp__Scite__search_literature` với danh sách DOI đó →
+   `report <json> --dois-from <file>`. **Bài bị rút = dừng, sửa bản cập nhật.**
+6. `tools/drug_safety_scan.py` (nếu có thuốc + cao tuổi/đa thuốc).
+7. `tools/build_library.py add` → thư viện chỉ mục.
+8. `tools/make_derivatives.py` → 3 phái sinh.
+9. `tools/render_ban_cap_nhat.py <file>.md` → **trang đọc/in được**; bác sĩ thường KHÔNG mở được `.md` hay `.html` gửi kèm trong khung chát, nên phải đăng thành trang có link.
 
 Dùng mẫu Dark Analyst CHỈ khi bác sĩ yêu cầu.
 
@@ -449,6 +452,30 @@ Ba quy tắc bất biến:
 - Cấu trúc 8 phần ở mục 5 của tài liệu này là bố cục **câu trả lời trong hội thoại**. **Tệp bàn
   giao luôn theo mẫu 11 mục** — hai thứ không thay thế nhau.
 
+## 5D-ter. KIỂM BÀI RÚT — bắt buộc trước khi giao
+
+Một bài **đã bị rút** làm nền cho khuyến cáo đổi thực hành là kiểu hỏng nặng nhất của cả hệ
+thống này. Skill `citation-management` đã bắt buộc kiểm; skill cập nhật chứng cứ trước đây
+thì không — nghịch lý, vì đây mới là skill trực tiếp đổi thực hành lâm sàng.
+
+Ba bước (mạng trực tiếp tới Crossref bị chặn, nên đi qua connector Scite):
+
+```bash
+python3 tools/retraction_check.py extract CapNhat_EBM_<...>.md --json   # 1. rút DOI
+#    2. gọi mcp__Scite__search_literature với dois=[...] rồi lưu kết quả ra tệp
+python3 tools/retraction_check.py report <scite>.json --dois-from CapNhat_EBM_<...>.md
+```
+
+| Mã thoát | Nghĩa | Việc phải làm |
+|:--:|---|---|
+| 0 | Tất cả đã kiểm và sạch | Ghi kết quả + ngày kiểm vào mục 10 của bản cập nhật |
+| 1 | **CÓ bài bị rút** | **DỪNG** — bỏ bài đó, viết lại phần khuyến cáo dựa trên nó |
+| 2 | Có đính chính/quan ngại | Đọc thông báo, cân nhắc còn dùng được không, ghi rõ trong bản cập nhật |
+| 3 | Có DOI **chưa kiểm được** | **KHÔNG được coi là sạch.** Nêu rõ trong bản giao là chưa xác minh được |
+
+Luôn dùng `--dois-from` để công cụ phát hiện DOI mà Scite bỏ sót. *"Không tra được"* khác
+*"không bị rút"* — cùng nguyên tắc fail-closed như cổng liêm chính ở mục 5D(a).
+
 ## 5E. Lớp phủ an toàn thuốc · Giám sát định kỳ · Bản địa hóa BYT
 
 **(a) An toàn thuốc (người cao tuổi/đa thuốc):** khi cập nhật có thuốc và liên quan nhóm `cao-tuoi`/`da-thuoc`, chạy `tools/drug_safety_scan.py <dashboard>.html` (đối chiếu bảng cờ **Beers 2023/STOPP-START v3** trong `data/drug_flags.json`) → cảnh báo + sinh prompt rà soát ĐẦY ĐỦ bằng skill `nguoi-cao-tuoi-da-benh-da-thuoc`. Bảng cờ KHÔNG đầy đủ, chỉ để nhắc. Chi tiết: `references/09-an-toan-thuoc-overlay.md`.
@@ -529,6 +556,7 @@ Không mặc định coi Web Dashboard theo vấn đề cụ thể là bản ghi
 - Đã phân tích nhóm đặc biệt liên quan chưa?
 - Đã ghi rõ nội dung chưa đủ để thay đổi chưa?
 - Đã viết **bản cập nhật `CapNhat_EBM_*.md` theo mẫu 11 mục** và chạy `tools/kiem_mau_cap_nhat.py` ra **ĐÚNG MẪU** chưa? (xem 5D-bis) — Web Dashboard KHÔNG thay thế bản cập nhật văn bản.
+- Đã chạy `tools/retraction_check.py` (qua Scite) và **không có bài bị rút** chưa? Có DOI `CHƯA KIỂM` thì đã nêu rõ trong bản giao chưa? (xem 5D-ter)
 - Đã dựng **trang đọc được** bằng `tools/render_ban_cap_nhat.py` và giao link cho bác sĩ chưa? (file `.md`/`.html` gửi kèm thường không mở được trong khung chát)
 - Đã tạo Web Dashboard độc lập từ template MẶC ĐỊNH `web-dashboard-evidence-workbench.html` (Evidence Workbench; hoặc `web-dashboard-dark-analyst.html` khi bác sĩ yêu cầu — CÙNG schema `DATA`) và chạy TRỌN dây chuyền tự động (cổng liêm chính → thư viện → phái sinh) chưa?
 - Đã tránh tạo ID quản trị hoặc cập nhật Dashboard Master khi người dùng không yêu cầu chưa?
@@ -559,6 +587,7 @@ Không mặc định coi Web Dashboard theo vấn đề cụ thể là bản ghi
 - `references/08-xuat-san-pham-phai-sinh.md`
 - `templates/phai-sinh-to-dan-nguoi-benh.md`
 - `templates/phai-sinh-kich-ban-tiktok.md`
+- `tools/retraction_check.py` (kiểm bài RÚT qua Scite — extract → gọi Scite → report)
 - `tools/kiem_mau_cap_nhat.py` + `data/mau_cap_nhat.lock.json` (KHOÁ MẪU 11 mục · kiểm bản cập nhật đúng mẫu)
 - `tools/render_ban_cap_nhat.py` + `templates/trang-doc-ban-cap-nhat.css` (dựng trang đọc/in được)
 - `tools/verify_dashboard.py` (cổng kiểm liêm chính + xác minh PMID/DOI)

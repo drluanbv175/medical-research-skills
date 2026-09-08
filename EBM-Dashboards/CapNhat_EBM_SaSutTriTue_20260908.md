@@ -261,6 +261,22 @@ Trong nghiên cứu tiến cứu tại Thuỵ Điển (Palmqvist và cs., *JAMA*
 
 Toàn bộ **17 PMID** đã được phân giải và đối chiếu tiêu đề, tạp chí, năm qua kết nối PubMed. Bước `verify_dashboard.py --online` **không chạy được** do môi trường chặn truy cập trực tiếp `eutils.ncbi.nlm.nih.gov` (HTTP 403) — kết quả là 17 cảnh báo mạng, **không phải lỗi cứng**. Nên chạy lại `--online` trên máy có mạng bình thường để có bản ghi kiểm toán đầy đủ.
 
+### 10.4 Kiểm bài rút (retraction screening) — 08/9/2026
+
+| | |
+|---|---|
+| Phạm vi | **17/17 DOI** của bản cập nhật này |
+| Cách kiểm | `retraction_check.py extract` → connector **Scite** (`editorialNotices`) → `report` |
+| Vì sao không dùng Retraction Watch đầy đủ | Bộ dữ liệu đầy đủ nằm ở Crossref; `api.crossref.org` bị chặn egress trong môi trường này |
+| **Kết quả** | **Không bài nào bị rút, bị đính chính, hay bị nêu quan ngại** |
+
+**Giới hạn của phép kiểm này:** chỉ mục của Scite **không phủ 100%**. "Không tìm thấy thông báo"
+không đồng nghĩa tuyệt đối với "chắc chắn không bị rút". Muốn kết luận chắc hơn thì chạy
+`tools/tai_retraction_watch.py` trên máy có mạng tới Crossref rồi tra lại bằng chế độ `local`.
+
+Cần kiểm lại khi: bản cập nhật được dùng lại sau **6 tháng**, hoặc trước khi đưa vào bài giảng,
+hồ sơ chuyên môn, hay bản thảo công bố.
+
 ---
 
 ## 11. Tài liệu tham khảo (Vancouver/NLM)

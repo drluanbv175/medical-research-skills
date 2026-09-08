@@ -52,4 +52,5 @@ Mỗi mục dưới đây tương ứng một lỗi ĐÃ XẢY RA THẬT, không
 | 6 | Chuỗi trong khối `DATA` dùng dấu nháy cong `“ ”`, không dùng `"` thẳng | Dấu `"` thẳng làm vỡ bộ đọc mảng → tờ dặn có gạch đầu dòng cụt |
 | 7 | Đã dựng **trang đọc được** bằng `render_ban_cap_nhat.py` và giao link | Bác sĩ không mở được `.md`/`.html` gửi kèm trong khung chát |
 | 8 | Trang đọc: bảng **vừa khung**, không cuộn ngang; chữ không rơi về Times New Roman | `white-space:nowrap` ở `th` và ở nhãn `[CẦN …]` đẩy bảng tràn; Poppins không có bộ ký tự tiếng Việt |
-| 9 | Dòng trạng thái cổng trong bản cập nhật khớp kết quả cổng thực tế | Tài liệu từng ghi "PASS" trong khi cổng trả PASS CÓ ĐIỀU KIỆN |
+| 9 | **Đã chạy kiểm bài RÚT** và ghi kết quả + ngày vào mục 10 của bản cập nhật | Bài đã bị rút làm nền cho khuyến cáo — kiểu hỏng nặng nhất của cả hệ thống |
+| 10 | Dòng trạng thái cổng trong bản cập nhật khớp kết quả cổng thực tế | Tài liệu từng ghi "PASS" trong khi cổng trả PASS CÓ ĐIỀU KIỆN |
