@@ -33,15 +33,34 @@ python3 tools/build_library.py add <dashboard>.html           # 3. cập nhật 
 python3 tools/make_derivatives.py <dashboard>.html            # 4. sinh 3 sản phẩm phái sinh
 ```
 
-**Lưu ý khi chạy `--online`:** bước xác minh PMID gọi trực tiếp NCBI E-utilities
-(`eutils.ncbi.nlm.nih.gov`). Ở môi trường có chặn egress, bước này trả về cảnh báo
-"chưa xác minh được (lỗi mạng)" — **không phải lỗi cứng**. Khi đó phải xác minh PMID bằng
-đường khác (ví dụ trình duyệt, hoặc kết nối PubMed sẵn có) và **ghi lại cách đã xác minh**.
+**Cổng FAIL CLOSED (từ 08/9/2026).** Bước xác minh PMID gọi trực tiếp NCBI E-utilities
+(`eutils.ncbi.nlm.nih.gov`). Ở môi trường chặn egress, cổng **không in PASS** mà trả:
+
+| Kết quả | Mã thoát | Nghĩa là |
+|---|:--:|---|
+| `✓ PASS` | 0 | Không lỗi cứng; nếu chạy `--online` thì **mọi PMID đã phân giải** |
+| `✗ FAIL` | 1 | Có lỗi cứng (thiếu định danh, PMID không phân giải, thiếu disclaimer…) |
+| `⊘ KHÔNG KẾT LUẬN` | 2 | Không lỗi cứng nhưng **chưa xác minh được PMID** (mạng chặn) |
+| `✓ PASS CÓ ĐIỀU KIỆN` | 0 | Đã dùng `--offline-ok`; báo cáo kèm dòng **GHI VẾT** số PMID chưa xác minh |
+
+Lý do: *chưa xác minh* khác *đã xác minh*. Trước bản sửa này, mạng chặn vẫn ra PASS —
+nghĩa là một PMID bịa sẽ lọt cổng ở mọi môi trường không có mạng.
+
+Khi buộc phải giao trong hoàn cảnh mạng chặn: dùng `--offline-ok`, xác minh PMID bằng
+đường khác (kết nối PubMed, trình duyệt) và **nói rõ cách đã xác minh trong bản giao**.
 
 **Lưu ý về nhãn `gradeLevel`:** trường này chỉ dùng để tô màu/lọc trên dashboard.
 Phân hạng NGUYÊN BẢN của nguồn nằm ở trường `gradeSource`. Khi nguồn không cung cấp phân hạng,
 `gradeSource` phải ghi rõ điều đó và nói rõ mức hiển thị là **đánh giá vận hành**.
-Các sản phẩm phái sinh sinh tự động có thể rút gọn thành "GRADE …" — cần đính chính khi dùng để giảng dạy.
+Từ 08/9/2026, dàn ý slide in **nguyên văn `gradeSource`** — không còn tự dựng chuỗi
+"GRADE <mức>" từ `gradeLevel`, nên không cần đính chính thủ công nữa.
+
+**Hiệu số phi-tỷ-số:** dùng `effectText` (chênh lệch trung bình, %, SMD…), KHÔNG nhét vào
+`effect` — forest plot lấy mốc vô hiệu là 1,0 nên sẽ vẽ sai cho hiệu số hiệu. `rob` (RoB 2)
+chỉ dành cho RCT và được gắn nhãn **đánh giá vận hành**; để trống tốt hơn là đoán.
+
+**Kiểm đồng bộ toàn hệ thống:** `python3 ../tools/kiem_dong_bo_skill_ebm.py` — bắt trôi lệch
+giữa bundle tài khoản, bản sao lưu git và bản chạy tại chỗ trong `tools/` này.
 
 ## Danh mục hiện có
 

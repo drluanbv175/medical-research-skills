@@ -3,7 +3,7 @@
 **Bối cảnh áp dụng:** phòng khám ngoại trú, Việt Nam · **Ngày tổng hợp:** 08/9/2026
 **Khung câu hỏi đã dùng:** PICO (điều trị, dự phòng) · **PIRT** (độ chính xác chẩn đoán) · **PECO** (tác hại)
 **Dashboard đi kèm:** `WebDashboard_EBM_VanDeCuThe_SaSutTriTue_20260908.html` (17 điểm chứng cứ)
-**Cổng liêm chính:** `verify_dashboard.py` → PASS (0 lỗi cứng)
+**Cổng liêm chính:** `verify_dashboard.py --online` → `PASS CÓ ĐIỀU KIỆN` (0 lỗi cứng; **ghi vết**: 17 PMID chưa xác minh được qua NCBI E-utilities vì môi trường chặn egress — đã phân giải bằng kết nối PubMed, cần chạy lại khi có mạng)
 
 > ⚠ **Cần bác sĩ kiểm chứng.** Tài liệu hỗ trợ ra quyết định; không thay thế khám trực tiếp, phác đồ của đơn vị hay xử trí cấp cứu.
 > Đây **không phải** bản ghi đã được duyệt vào Dashboard Master.

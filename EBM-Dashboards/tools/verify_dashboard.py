@@ -12,12 +12,24 @@ Kiểm TRƯỚC KHI GIAO cho bác sĩ:
     (miễn phí, không cần key) → chống trích dẫn ảo. DOI kiểm định dạng.
 
 Cách dùng:
-    python3 verify_dashboard.py <dashboard.html>            # chỉ kiểm cấu trúc (offline)
-    python3 verify_dashboard.py <dashboard.html> --online   # + xác minh PMID/DOI trên mạng
+    python3 verify_dashboard.py <dashboard.html>                     # chỉ kiểm cấu trúc
+    python3 verify_dashboard.py <dashboard.html> --online            # + xác minh PMID trên PubMed
+    python3 verify_dashboard.py <dashboard.html> --online --offline-ok
+                                        # chấp nhận có ghi vết khi mạng chặn PubMed
 
-Mã thoát: 0 = PASS (không lỗi cứng), 1 = FAIL.
-Lỗi cứng: item thiếu cả pmid lẫn doi; thiếu disclaimer; item thiếu gradeLevel/decision.
-Cảnh báo (không chặn): nghi PII; PMID/DOI không xác minh được khi --online.
+NGUYÊN TẮC "FAIL CLOSED" (từ 2026-09-08):
+    Khi đã yêu cầu --online mà KHÔNG xác minh được PMID (mạng lỗi/bị chặn), công cụ
+    KHÔNG in PASS. Không xác minh được ≠ đã xác minh. Muốn giao vẫn phải nêu rõ điều
+    đó bằng cờ --offline-ok, và dòng ghi vết sẽ nằm trong báo cáo để người rà thấy.
+
+Mã thoát:
+    0 = PASS            — không lỗi cứng; nếu chạy --online thì mọi PMID đã phân giải
+    1 = FAIL            — có lỗi cứng, phải sửa trước khi giao
+    2 = KHÔNG KẾT LUẬN  — không có lỗi cứng nhưng chưa xác minh được PMID (chỉ khi --online)
+
+Lỗi cứng: item thiếu cả pmid lẫn doi; thiếu disclaimer; item thiếu gradeLevel/decision;
+          PMID không phân giải được trên PubMed.
+Cảnh báo (không chặn): nghi PII; PMID chưa xác minh khi đã bật --offline-ok.
 """
 import sys, re, json, argparse
 
@@ -71,7 +83,11 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("file")
     ap.add_argument("--online", action="store_true", help="xác minh PMID/DOI trên mạng")
+    ap.add_argument("--offline-ok", dest="offline_ok", action="store_true",
+                    help="chấp nhận giao khi mạng chặn PubMed — hạ PMID chưa xác minh "
+                         "từ LỖI xuống cảnh báo, có ghi vết trong báo cáo")
     a = ap.parse_args()
+    unresolved = []
 
     html = open(a.file, encoding="utf-8").read()
     errors, warns, oks = [], [], []
@@ -85,7 +101,7 @@ def main():
     data = extract_data_block(html)
     if not data:
         errors.append("Không tìm thấy khối const DATA.")
-        return report(errors, warns, oks)
+        return report(errors, warns, oks, [], a.offline_ok)
 
     items = split_items(data)
     if not items:
@@ -137,14 +153,21 @@ def main():
             elif ok is False:
                 errors.append("[%s] PMID %s KHÔNG phân giải: %s" % (iid, p, info))
             else:
-                warns.append("[%s] PMID %s chưa xác minh được (%s)." % (iid, p, info))
+                unresolved.append((iid, p, info))
+        n_ok = sum(1 for _, p in pmids if seen.get(p, (None, ""))[0] is True)
+        n_all = len(set(p for _, p in pmids))
+        oks.append("ĐÃ XÁC MINH %d/%d PMID trên PubMed." % (n_ok, n_all))
+        for iid, p, info in unresolved:
+            msg = "[%s] PMID %s CHƯA xác minh được (%s)." % (iid, p, info)
+            (warns if a.offline_ok else errors).append(msg)
     elif pmids:
-        oks.append("Có %d PMID (chạy --online để xác minh phân giải)." % len(set(p for _, p in pmids)))
+        warns.append("CHƯA xác minh phân giải %d PMID — mới kiểm cấu trúc. "
+                     "Chạy --online trước khi giao." % len(set(p for _, p in pmids)))
 
-    return report(errors, warns, oks)
+    return report(errors, warns, oks, unresolved, a.offline_ok)
 
 
-def report(errors, warns, oks):
+def report(errors, warns, oks, unresolved=(), offline_ok=False):
     print("=" * 64)
     print("CỔNG KIỂM LIÊM CHÍNH — Web Dashboard EBM")
     print("=" * 64)
@@ -155,9 +178,27 @@ def report(errors, warns, oks):
     for e in errors:
         print("  ✗ " + e)
     print("-" * 64)
-    if errors:
-        print("KẾT QUẢ: ✗ FAIL — %d lỗi cứng, %d cảnh báo. Sửa trước khi giao." % (len(errors), len(warns)))
+    # PMID chưa xác minh được đã nằm trong `errors` khi không bật --offline-ok;
+    # tách ra để LỖI THẬT luôn được ưu tiên báo trước.
+    n_unres_as_err = len(unresolved) if not offline_ok else 0
+    n_hard = len(errors) - n_unres_as_err
+    if n_hard > 0:
+        print("KẾT QUẢ: ✗ FAIL — %d lỗi cứng, %d cảnh báo. Sửa trước khi giao." % (n_hard, len(warns)))
+        if n_unres_as_err:
+            print("         (kèm %d PMID chưa xác minh được — xem bên trên)" % n_unres_as_err)
         return 1
+    if unresolved and not offline_ok:
+        print("KẾT QUẢ: ⊘ KHÔNG KẾT LUẬN — %d PMID chưa xác minh được (mạng chặn PubMed)."
+              % len(unresolved))
+        print("         KHÔNG in PASS: CHƯA xác minh KHÁC với ĐÃ xác minh.")
+        print("         → Chạy lại trên máy có mạng, HOẶC dùng --offline-ok để giao có ghi vết.")
+        return 2
+    if unresolved and offline_ok:
+        print("KẾT QUẢ: ✓ PASS CÓ ĐIỀU KIỆN — 0 lỗi cứng, %d cảnh báo." % len(warns))
+        print("         ⚑ GHI VẾT: %d PMID CHƯA được xác minh trên PubMed; người giao chủ động"
+              % len(unresolved))
+        print("           chấp nhận bằng --offline-ok. PHẢI xác minh lại khi có mạng.")
+        return 0
     print("KẾT QUẢ: ✓ PASS — 0 lỗi cứng, %d cảnh báo (rà tay nếu có)." % len(warns))
     return 0
 

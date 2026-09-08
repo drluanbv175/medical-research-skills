@@ -15,8 +15,45 @@ LƯU Ý LIÊM CHÍNH: tờ dặn & TikTok là BẢN NHÁP — rà lại để b�
 """
 import sys, os, re, argparse
 
-GRADE = {"high": "Cao", "mod": "Trung bình", "low": "Thấp", "vlow": "Rất thấp", "na": "Không phân hạng"}
 DEC = {"apply": "Áp dụng ngay", "consider": "Cân nhắc", "notyet": "Chưa đủ"}
+
+# Chuỗi JS: chỉ dấu GIỐNG dấu mở mới kết thúc chuỗi. Regex cũ dùng ['\"] ở cả hai đầu nên
+# một dấu " bên trong chuỗi 'nháy đơn' làm cắt nhầm — đã gây gạch đầu dòng cụt trong tờ dặn.
+STR_RE = re.compile(r"'((?:\\.|[^'\\])*)'|\"((?:\\.|[^\"\\])*)\"", re.S)
+
+
+def _first_string(text):
+    """Lấy giá trị chuỗi JS đầu tiên trong `text` (đã tôn trọng dấu mở)."""
+    m = STR_RE.search(text)
+    if not m:
+        return ""
+    return m.group(1) if m.group(1) is not None else m.group(2)
+
+
+def _all_strings(text):
+    out = []
+    for m in STR_RE.finditer(text):
+        out.append(m.group(1) if m.group(1) is not None else m.group(2))
+    return out
+
+
+def _slice_bracket(text, start):
+    """Cắt đúng nội dung trong [...] bắt đầu tại `start`, bỏ qua ngoặc nằm trong chuỗi."""
+    i, depth, n = start, 0, len(text)
+    while i < n:
+        c = text[i]
+        if c in "'\"":
+            m = STR_RE.match(text, i)
+            i = m.end() if m else i + 1
+            continue
+        if c == "[":
+            depth += 1
+        elif c == "]":
+            depth -= 1
+            if depth == 0:
+                return text[start + 1:i]
+        i += 1
+    return ""
 
 
 def block(html):
@@ -25,15 +62,15 @@ def block(html):
 
 
 def meta(b, name):
-    m = re.search(name + r"\s*:\s*['\"]([^'\"]*)['\"]", b)
-    return m.group(1) if m else ""
+    m = re.search(name + r"\s*:\s*(?=['\"])", b)
+    return _first_string(b[m.end():]) if m else ""
 
 
 def arr(b, name):
-    m = re.search(name + r"\s*:\s*\[(.*?)\]", b, re.S)
+    m = re.search(name + r"\s*:\s*\[", b, re.S)
     if not m:
         return []
-    return [x.group(1) for x in re.finditer(r"['\"]((?:[^'\"\\]|\\.)*)['\"]", m.group(1))]
+    return _all_strings(_slice_bracket(b, m.end() - 1))
 
 
 def items(b):
@@ -44,10 +81,13 @@ def items(b):
     for k, s in enumerate(starts):
         e = starts[k + 1] if k + 1 < len(starts) else len(seg)
         ch = seg[s:e]
-        f = lambda n: (re.search(n + r"\s*:\s*['\"]([^'\"]*)['\"]", ch) or [None, ""])[1] if re.search(n + r"\s*:\s*['\"]([^'\"]*)['\"]", ch) else ""
+        def f(n, _ch=ch):
+            m = re.search(n + r"\s*:\s*(?=['\"])", _ch)
+            return _first_string(_ch[m.end():]) if m else ""
         out.append({
             "title": f("title"), "source": f("source"), "pmid": f("pmid"),
-            "effectText": f("effectText"), "grade": f("gradeLevel"), "decision": f("decision"),
+            "effectText": f("effectText"), "gradeSource": f("gradeSource"),
+            "rob": f("rob"), "decision": f("decision"),
         })
     return out
 
@@ -105,13 +145,16 @@ def main():
     rows = []
     for i, it in enumerate(its, 1):
         eff = (" — " + it["effectText"]) if it["effectText"] else ""
-        gr = GRADE.get(it["grade"], it["grade"] or "")
+        # Phân hạng in NGUYÊN VĂN của nguồn. TUYỆT ĐỐI không tự dựng nhãn "GRADE <mức>"
+        # từ gradeLevel — gradeLevel chỉ để tô màu/lọc trên dashboard, không phải GRADE.
+        gr = it["gradeSource"] or "Nguồn không cung cấp phân hạng"
         dc = DEC.get(it["decision"], it["decision"] or "")
+        rb = (" · RoB: " + it["rob"]) if it["rob"] else ""
         pm = (" · PMID " + it["pmid"]) if it["pmid"] else ""
-        rows.append("{i}. **{t}**{eff} — *GRADE {gr} · {dc}*{pm} ({src})".format(
-            i=i + 2, t=it["title"], eff=eff, gr=gr, dc=dc, pm=pm, src=it["source"]))
+        rows.append("{i}. **{t}**{eff} — *{gr}* · *{dc}*{rb}{pm} ({src})".format(
+            i=i + 2, t=it["title"], eff=eff, gr=gr, dc=dc, rb=rb, pm=pm, src=it["source"]))
     slide = """# DÀN Ý SLIDE — {q}
-*Nạp vào skill dao-tao-slide-tai-lieu-y-khoa để xuất .pptx. Giữ số liệu + PMID.*
+*Nạp vào skill dao-tao-slide-tai-lieu-y-khoa để xuất .pptx. Giữ số liệu + PMID.*\n*Phân hạng dưới đây in NGUYÊN VĂN của nguồn (trường `gradeSource`) — không quy đổi, không tự gán GRADE.*
 
 1. **Tiêu đề:** Cập nhật chứng cứ — {q} ({upd})
 2. **Tóm tắt thực hành:** {conclusion}

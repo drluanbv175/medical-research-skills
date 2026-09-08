@@ -1,5 +1,74 @@
 # Changelog
 
+## 2026-09-08 (b) — Khoá mẫu cập nhật + đưa bản cập nhật văn bản vào dây chuyền bắt buộc
+
+Hai vấn đề hệ thống, không phải lỗi lẻ.
+
+### Bản cập nhật văn bản trước đây KHÔNG nằm trong dây chuyền
+Dây chuyền tự động ở mục 5D chỉ có: dựng Dashboard → cổng → thư viện → phái sinh.
+Không bước nào sinh ra `CapNhat_EBM_*.md`. Hậu quả thật: lần chạy đầu cho ca sa sút trí
+tuệ chỉ giao Web Dashboard, bác sĩ phải hỏi mới có bản cập nhật văn bản.
+Nay dây chuyền có 8 bước, **bước 1 là viết bản cập nhật theo mẫu 11 mục**, và bước 8 là
+dựng trang đọc được — vì `.md`/`.html` gửi kèm thường không mở được trong khung chát.
+
+### Mẫu cập nhật nay được KHOÁ
+`templates/mau-cap-nhat-chuyen-sau.md` khoá bằng SHA-256 trong
+`data/mau_cap_nhat.lock.json` (phiên bản 1.0, 11 mục, khoá 2026-09-08).
+Công cụ mới `tools/kiem_mau_cap_nhat.py`:
+- kiểm **mẫu** có bị đổi lén không (so SHA-256);
+- kiểm **bản cập nhật** có đủ 11 mục, đúng thứ tự không;
+- đổi mẫu phải CÓ CHỦ Ý: `--khoa-lai --phien-ban <mới>` kèm ghi CHANGELOG.
+Đổi chữ tiêu đề mục = cảnh báo (chấp nhận). Đổi số mục hoặc thứ tự = lỗi cứng, chặn giao.
+Quy tắc kèm theo: chủ đề không có nội dung cho một mục thì ghi "không áp dụng" hoặc
+`[CẦN BỔ SUNG]` — **không xoá mục**.
+
+### Kèm theo
+- `tools/render_ban_cap_nhat.py` + `templates/trang-doc-ban-cap-nhat.css`: dựng bản cập
+  nhật thành trang đọc/in được. Bảng xuống dòng cho vừa khung (đo được 9/9 bảng vừa,
+  kể cả bảng 7 cột); chuỗi font tránh Times New Roman và thêm Be Vietnam Pro vì
+  **Poppins không có bộ ký tự tiếng Việt**.
+- `quality/acceptance-checklist.md`: thêm 9 mục kiểm, mỗi mục tương ứng một lỗi ĐÃ XẢY RA.
+- Công cụ đồng bộ ở repo có thêm phép kiểm [5]: mẫu còn khớp khoá không.
+
+
+## 2026-09-08 — Sửa 3 lỗi liêm chính + đồng bộ tài liệu với code
+
+Phát hiện khi dùng skill cho ca sa sút trí tuệ. Cả ba đều ảnh hưởng đến độ tin cậy
+của đầu ra, không phải lỗi hình thức.
+
+### 1. Cổng liêm chính nay FAIL CLOSED (`tools/verify_dashboard.py`)
+Trước: `--online` mà mạng chặn PubMed → chỉ ghi cảnh báo, vẫn in **PASS**. Một PMID
+bịa sẽ lọt cổng ở mọi môi trường không có mạng.
+Nay: trả `⊘ KHÔNG KẾT LUẬN` (mã thoát 2). Muốn giao phải nêu rõ bằng `--offline-ok`,
+khi đó in `PASS CÓ ĐIỀU KIỆN` kèm dòng GHI VẾT. Lỗi cứng thật vẫn được ưu tiên báo
+trước (FAIL, mã 1). Chạy không `--online` nay có cảnh báo "mới kiểm cấu trúc".
+
+### 2. Mẫu MẶC ĐỊNH đã cài đặt `effectText` và `rob`
+Trước: SKILL.md ghi "cả hai mẫu hỗ trợ", nhưng `web-dashboard-evidence-workbench.html`
+KHÔNG cài đặt field nào trong hai field đó — chỉ `dark-analyst` có. Hậu quả: hiệu số
+phi-tỷ-số (chênh lệch trung bình, %, SMD) không có chỗ chứa có cấu trúc, phải viết
+lẫn vào văn xuôi.
+Nay: mẫu mặc định hiển thị `effectText` ở bảng và ở panel thẩm định (kèm ghi chú vì
+sao không vẽ forest cho hiệu số phi-tỷ-số), và có khối RoB 2 cho `rob`.
+Khối RoB 2 được gắn nhãn **"đánh giá vận hành"** — đây là chấm của người tổng hợp,
+KHÔNG phải phân hạng của nguồn; để trống vẫn tốt hơn là đoán.
+
+### 3. Phái sinh không còn tự gán nhãn GRADE (`tools/make_derivatives.py`)
+Trước: dàn ý slide in `gradeLevel` thành "*GRADE Cao*" kể cả với RCT và guideline mà
+nguồn KHÔNG hề cung cấp GRADE — trái đúng quy tắc liêm chính của chính skill, và sai
+lệch đi thẳng vào bài giảng.
+Nay: in nguyên văn `gradeSource`; thêm `rob` khi có.
+Sửa kèm: bộ đọc chuỗi JS trước đây dùng `['\"]` ở cả hai đầu nên một dấu `"` bên
+trong chuỗi nháy đơn làm cắt nhầm mảng (đã gây một gạch đầu dòng cụt trong tờ dặn
+người bệnh). Nay tôn trọng dấu mở và bỏ qua ngoặc nằm trong chuỗi.
+
+### Đồng bộ tài liệu
+`SKILL.md` cập nhật ở mục 5D và ô checklist để mô tả đúng hành vi mới của cổng và
+của phái sinh. Kèm công cụ mới ở repo: `tools/kiem_dong_bo_skill_ebm.py` — bắt trôi
+lệch giữa bundle tài khoản, bản sao lưu git và bản chạy tại chỗ; bắt "tài liệu hứa
+mà code không có"; bắt hai skill trùng mô tả kích hoạt.
+
+
 ## v1.12.0 — 2026-06-10
 
 - **Sửa mất cân đối bố cục dọc** (bác sĩ báo: dashboard hiện tại vẫn chưa cân đối). Nguyên nhân thật: khối **GRADE Evidence-to-Decision là băng LUÔN hiển thị, rất cao ở đầu trang** → ép bảng chứng cứ (nội dung chính) thành dải mỏng ở đáy. (grep markers PASS nhưng mắt thấy lệch → đã kiểm chứng bằng ảnh chụp thực tế.)

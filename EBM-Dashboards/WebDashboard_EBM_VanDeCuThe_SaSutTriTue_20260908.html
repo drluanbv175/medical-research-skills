@@ -190,6 +190,15 @@
   .vn-col h5{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:700;margin-bottom:8px}
   .needconf{display:inline-block;font-size:9.5px;font-weight:700;color:#b45309;background:#fef3c7;border:1px solid #fcd34d;border-radius:5px;padding:1px 6px}
 
+  /* RoB 2 — chỉ dùng cho RCT */
+  .robmini{display:flex;gap:3px}
+  .robmini i{width:11px;height:11px;border-radius:50%;display:inline-block}
+  .robfull{display:flex;flex-direction:column;gap:6px}
+  .robfull .r{display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:var(--ink-2)}
+  .robfull .r i{width:15px;height:15px;border-radius:50%;display:inline-grid;place-items:center;font-size:9px;font-weight:800;color:#fff}
+  .rl{background:var(--g-high)}.rs{background:var(--g-mod)}.rh{background:var(--g-vlow)}
+  .efftext{font-size:10.5px;color:var(--ink-2);line-height:1.35;display:block;max-width:230px}
+
   /* verify tasks */
   .vtask{display:flex;gap:11px;align-items:flex-start;padding:11px 13px;border:1px solid var(--line);border-radius:11px;background:var(--surface)}
   .vtask .n{width:24px;height:24px;border-radius:7px;background:var(--primary);color:#fff;display:grid;place-items:center;font-weight:800;flex-shrink:0;font-family:var(--mono)}
@@ -346,7 +355,14 @@
      population,
      pico:{ P:[txt,'match'|'mis'], I:[…], C:[…], O:[…] },
      effect?:{ measure:'HR', hr:0.74, lo:0.65, hi:0.85, ci:'0.65–0.85', favors:true },
-                                         // chỉ điền nếu nguồn báo cáo; số trích ĐÚNG nguồn
+                                         // CHỈ khi hiệu số là TỶ SỐ (HR/RR/OR) → vẽ forest
+     effectText?:'CDR-SB −0,45 (95% CI −0,67 đến −0,23)',
+                                         // hiệu số PHI-TỶ-SỐ (chênh lệch trung bình, %, SMD…)
+                                         // trích ĐÚNG nguồn. KHÔNG nhét số này vào `effect`
+                                         // vì forest lấy mốc vô hiệu = 1,0, sai với hiệu số hiệu.
+     rob?:{'Ngẫu nhiên hóa':'l','Sai lệch can thiệp':'l','Dữ liệu thiếu':'s',
+           'Đo kết cục':'l','Báo cáo chọn lọc':'l'},   // RoB 2 — CHỈ cho RCT
+                                         // 'l' thấp · 's' có lo ngại · 'h' cao
      gradeSource,                        // nguyên văn của nguồn, vd 'GRADE Cao' / 'Khuyến cáo I·A'
      gradeLevel:'high'|'mod'|'low'|'vlow'|'na',  // để tô màu; 'na' nếu nguồn không cung cấp
      decision:'apply'|'consider'|'notyet',
@@ -458,6 +474,7 @@ const DATA = {
      population:'Người có suy giảm nhận thức KHÁCH QUAN (MCI hoặc sa sút trí tuệ) được đánh giá tại cơ sở chuyên khoa rối loạn trí nhớ',
      frame:'Chẩn đoán (PIRT)', frameLabels:{P:'P',I:'Index test',C:'Chuẩn tham chiếu',O:'Độ chính xác'},
      pico:{P:['MCI hoặc sa sút trí tuệ tại chuyên khoa trí nhớ','match'],I:['Xét nghiệm máu p-tau217, %p-tau217, p-tau181, p-tau231, tỷ số Aβ42/Aβ40','match'],C:['Dấu ấn dịch não tuỷ, PET amyloid hoặc giải phẫu bệnh','match'],O:['Độ nhạy, độ đặc hiệu, xác suất hậu nghiệm của bệnh học Alzheimer','match']},
+     effectText:'Ngưỡng khuyến cáo: dùng làm test phân loại khi Sn ≥90% và Sp ≥75%; thay PET/dịch não tuỷ khi Sn VÀ Sp đều ≥90%',
      gradeSource:'Hội đồng áp dụng GRADE và khung Evidence-to-Decision; khuyến cáo dựa trên NGƯỠNG HIỆU NĂNG, không gắn với thương hiệu. Độ chắc chắn chứng cứ của các test dao động từ trung bình đến rất thấp',
      gradeLevel:'na', decision:'consider', groups:['cao-tuoi'],
      action:'Hai khuyến cáo cốt lõi: (1) test máu có độ nhạy ≥90% và độ đặc hiệu ≥75% có thể dùng làm test PHÂN LOẠI ban đầu (triaging); (2) test có độ nhạy VÀ độ đặc hiệu đều ≥90% có thể THAY THẾ PET amyloid hoặc xét nghiệm dịch não tuỷ. Hội đồng cảnh báo nhiều test thương mại KHÔNG đạt các ngưỡng này, nhất là khi dùng một điểm cắt duy nhất; test không thay thế đánh giá lâm sàng toàn diện và phải cân nhắc xác suất tiền nghiệm.',
@@ -472,6 +489,7 @@ const DATA = {
      population:'49 nghiên cứu quan sát, 31 loại test dấu ấn máu, ở người có suy giảm nhận thức tại cơ sở chuyên khoa',
      frame:'Chẩn đoán (PIRT)', frameLabels:{P:'P',I:'Index test',C:'Chuẩn tham chiếu',O:'Độ chính xác'},
      pico:{P:['Người có suy giảm nhận thức tại chuyên khoa','match'],I:['31 test dấu ấn máu khác nhau (p-tau, Aβ)','match'],C:['Dịch não tuỷ, PET amyloid, giải phẫu bệnh','match'],O:['Độ nhạy gộp 49,3%–91,4%; độ đặc hiệu gộp 61,5%–96,7%','match']},
+     effectText:'Độ nhạy gộp 49,3%–91,4% · độ đặc hiệu gộp 61,5%–96,7% (khi dùng một điểm cắt)',
      gradeSource:'Độ chắc chắn chứng cứ theo GRADE: TRUNG BÌNH đến RẤT THẤP; phần lớn nghiên cứu có nguy cơ sai lệch cao (chọn bệnh nhân, thực hiện index test, chuẩn tham chiếu) theo QUADAS-2',
      gradeLevel:'low', decision:'consider', groups:['cao-tuoi'], flag:'Hiệu năng phụ thuộc test và nền tảng xét nghiệm',
      action:'Hiệu số nguồn: độ nhạy gộp dao động 49,3% (95% CI 41,2–57,4) đến 91,4% (86,6–94,6); độ đặc hiệu gộp 61,5% (45,6–75,3) đến 96,7% (87,8–99,2) khi dùng MỘT điểm cắt. Hệ quả thực hành: không thể nói chung chung “xét nghiệm máu chẩn đoán Alzheimer”; phải hỏi rõ đó là test nào, nền tảng nào, hiệu năng công bố ra sao.',
@@ -485,6 +503,7 @@ const DATA = {
      population:'1213 bệnh nhân có triệu chứng nhận thức tại tuyến ban đầu và tuyến chuyên khoa, Thuỵ Điển, 2020–2024',
      frame:'Chẩn đoán (PIRT)', frameLabels:{P:'P',I:'Index test',C:'Chuẩn tham chiếu',O:'Độ chính xác'},
      pico:{P:['Người có triệu chứng nhận thức tại tuyến ban đầu và chuyên khoa','match'],I:['%p-tau217 đơn thuần và điểm APS2 (kết hợp Aβ42/Aβ40), điểm cắt định trước','match'],C:['Bệnh học Alzheimer theo dịch não tuỷ (Aβ42/Aβ40 và p-tau217)','match'],O:['AUC 0,96–0,97; PPV và NPV 87–92%; độ chính xác 88–92%','match']},
+     effectText:'Độ chính xác chẩn đoán: tuyến ban đầu 61% (53–69) → 91% (86–96) với APS2; chuyên khoa 73% (68–79) → 91% (88–95)',
      gradeSource:'Nghiên cứu độ chính xác chẩn đoán tiến cứu, điểm cắt xác định trước ở đoàn hệ độc lập; nguồn KHÔNG cung cấp phân hạng GRADE. Mức hiển thị = đánh giá vận hành',
      gradeLevel:'mod', decision:'consider', groups:['cao-tuoi'],
      action:'Hiệu số nguồn: bác sĩ tuyến ban đầu chẩn đoán đúng Alzheimer 61% (95% CI 53–69) sau khám lâm sàng, test nhận thức và CT sọ não, so với 91% (86–96) khi dùng APS2; bác sĩ chuyên khoa trí nhớ 73% (68–79) so với 91% (88–95). Thông điệp thực hành: khi CHƯA có dấu ấn sinh học, phải ý thức rõ giới hạn độ chính xác của chẩn đoán lâm sàng và thận trọng khi khẳng định nguyên nhân.',
@@ -510,6 +529,7 @@ const DATA = {
      pmid:'30891742', doi:'10.1002/14651858.CD003154.pub6', design:'Meta',
      population:'44 thử nghiệm, gần 10.000 người tham gia (29 thử nghiệm, 7885 người ở Alzheimer); phân tích ở liều được cấp phép, theo dõi 6–7 tháng',
      pico:{P:['Alzheimer trung bình–nặng (và riêng: Alzheimer nhẹ, sa sút trí tuệ mạch máu)','match'],I:['Memantine 20 mg/ngày hoặc 28 mg phóng thích kéo dài','match'],C:['Giả dược, có hoặc không kèm ức chế cholinesterase','match'],O:['Ấn tượng lâm sàng, nhận thức, hoạt động sống hằng ngày, hành vi–khí sắc','match']},
+     effectText:'AD trung bình–nặng: SIB +3,11 (2,42–3,92) · ADL19 +1,09 (0,62–1,64). AD nhẹ: ADAS-Cog 0,21 (−0,95–1,38) → KHÔNG lợi ích',
      gradeSource:'Chứng cứ độ chắc chắn CAO cho Alzheimer trung bình–nặng; chủ yếu mức TRUNG BÌNH (phân nhóm hậu kiểm) cho Alzheimer nhẹ — nguyên văn phân hạng của tổng quan',
      gradeLevel:'high', decision:'apply', groups:['cao-tuoi','ckd','da-thuoc'],
      action:'Hiệu số nguồn — Alzheimer TRUNG BÌNH–NẶNG: ấn tượng lâm sàng CIBIC+ 0,21 (95% CI 0,14–0,30); nhận thức SIB +3,11 (2,42–3,92); ADL19 +1,09 (0,62–1,64); hành vi–khí sắc NPI 1,84 (1,05–2,76); lợi ích không đổi dù có hay không dùng kèm ức chế cholinesterase. Alzheimer NHẸ: ADAS-Cog 0,21 (−0,95 đến 1,38), ADL −0,07 (−1,80 đến 1,66) — KHÔNG có lợi, và tăng ngưng thuốc do tác dụng ngoại ý RR 2,12 (1,03–4,39). Memantine KHÔNG hiệu quả để điều trị kích động (CMAI 0,50; −3,71 đến 4,71). Sa sút trí tuệ mạch máu nhẹ–trung bình: ADAS-Cog 2,15 (1,05–3,25).',
@@ -538,6 +558,7 @@ const DATA = {
      pmid:'37930669', doi:'10.1001/jamaneurol.2023.3810', design:'RCT',
      population:'345 bệnh nhân có kích động trong sa sút trí tuệ Alzheimer, tại cơ sở chăm sóc hoặc cộng đồng; 12 tuần',
      pico:{P:['Kích động trong sa sút trí tuệ Alzheimer','match'],I:['Brexpiprazole 2 mg hoặc 3 mg/ngày','match'],C:['Giả dược','match'],O:['Thay đổi tổng điểm Cohen-Mansfield Agitation Inventory sau 12 tuần','match']},
+     effectText:'CMAI −5,32 (95% CI −8,77 đến −1,87); P=0,003; Cohen d = 0,35',
      gradeSource:'RCT pha 3, mù đôi, liều cố định; nguồn KHÔNG cung cấp phân hạng GRADE. Mức hiển thị = đánh giá vận hành (thời gian ngắn, hiệu quả nhỏ)',
      gradeLevel:'mod', decision:'consider', groups:['cao-tuoi','da-thuoc'], flag:'Hiệu quả nhỏ (d = 0,35), theo dõi chỉ 12 tuần',
      action:'Hiệu số nguồn: chênh lệch trung bình bình phương tối thiểu trên CMAI −5,32 (95% CI −8,77 đến −1,87); P = 0,003; cỡ hiệu ứng Cohen d = 0,35. Chỉ cân nhắc SAU khi đã loại trừ và xử lý yếu tố thúc đẩy (đau, nhiễm trùng, táo bón, bí tiểu, môi trường, thuốc) và sau khi can thiệp không dùng thuốc thất bại.',
@@ -551,6 +572,7 @@ const DATA = {
      pmid:'36449413', doi:'10.1056/NEJMoa2212948', design:'RCT',
      population:'1795 người 50–90 tuổi, Alzheimer giai đoạn sớm (MCI hoặc sa sút trí tuệ nhẹ) có bằng chứng amyloid bằng PET hoặc dịch não tuỷ; 18 tháng',
      pico:{P:['Alzheimer giai đoạn sớm có xác nhận amyloid','match'],I:['Lecanemab 10 mg/kg truyền tĩnh mạch mỗi 2 tuần','match'],C:['Giả dược','match'],O:['Thay đổi CDR-SB sau 18 tháng (thang 0–18)','match']},
+     effectText:'CDR-SB −0,45 (95% CI −0,67 đến −0,23) sau 18 tháng, thang 0–18',
      gradeSource:'RCT pha 3 đa trung tâm, mù đôi; nguồn KHÔNG cung cấp phân hạng GRADE. Mức hiển thị = đánh giá vận hành (nguy cơ sai lệch thấp, nhưng hiệu quả tuyệt đối nhỏ và thời gian ngắn)',
      gradeLevel:'high', decision:'consider', groups:['cao-tuoi','tim-mach'], flag:'Chưa sẵn có tại Việt Nam · cần hạ tầng PET/dịch não tuỷ và MRI',
      action:'Hiệu số nguồn: thay đổi CDR-SB sau 18 tháng là 1,21 với lecanemab so với 1,66 với giả dược — chênh lệch −0,45 (95% CI −0,67 đến −0,23; P < 0,001). ADAS-cog14 −1,44 (−2,27 đến −0,61); ADCS-MCI-ADL +2,0 (1,2–2,8); giảm gánh nặng amyloid −59,1 centiloid (−62,6 đến −55,6). Thông điệp: làm CHẬM chứ không dừng hay đảo ngược bệnh; mức chênh lệch nhỏ so với thang điểm 0–18.',
@@ -564,6 +586,7 @@ const DATA = {
      pmid:'37459141', doi:'10.1001/jama.2023.13239', design:'RCT',
      population:'1736 người Alzheimer có triệu chứng giai đoạn sớm, có amyloid và tau mức thấp/trung bình hoặc cao trên PET; 277 trung tâm, 8 quốc gia; 76 tuần',
      pico:{P:['Alzheimer sớm có amyloid và tau xác nhận bằng PET','match'],I:['Donanemab truyền tĩnh mạch mỗi 4 tuần, ngưng khi đạt tiêu chí sạch amyloid','match'],C:['Giả dược','match'],O:['Thay đổi iADRS sau 76 tuần (chính); CDR-SB (phụ)','match']},
+     effectText:'iADRS +2,92 (1,51–4,33) quần thể gộp · CDR-SB −0,70 (−0,95 đến −0,45)',
      gradeSource:'RCT pha 3 đa trung tâm, mù đôi; nguồn KHÔNG cung cấp phân hạng GRADE. Mức hiển thị = đánh giá vận hành',
      gradeLevel:'high', decision:'consider', groups:['cao-tuoi','tim-mach'], flag:'ARIA-E 24% · 3 ca tử vong được xem là liên quan điều trị',
      action:'Hiệu số nguồn: iADRS ở nhóm tau thấp/trung bình chênh lệch 3,25 (95% CI 1,88–4,62); ở quần thể gộp 2,92 (1,51–4,33); CDR-SB chênh lệch −0,67 (−0,95 đến −0,40) ở nhóm tau thấp/trung bình và −0,70 (−0,95 đến −0,45) ở quần thể gộp; tất cả P < 0,001. Cùng thông điệp như lecanemab: làm chậm ở mức khiêm tốn.',
@@ -590,6 +613,7 @@ const DATA = {
      pmid:'41865758', doi:'10.1016/S0140-6736(26)00459-9', design:'RCT',
      population:'3808 người 55–85 tuổi, Alzheimer sớm có xác nhận amyloid (MCI hoặc sa sút trí tuệ nhẹ); 566 trung tâm, 40 quốc gia; tới 156 tuần',
      pico:{P:['Alzheimer giai đoạn sớm có xác nhận amyloid','match'],I:['Semaglutide uống tới 14 mg/ngày','match'],C:['Giả dược','match'],O:['Thay đổi CDR-SB từ nền đến tuần 104','match']},
+     effectText:'CDR-SB −0,08 (−0,35 đến 0,20) P=0,57 · +0,10 (−0,17 đến 0,38) P=0,46 → ÂM TÍNH',
      gradeSource:'Hai RCT pha 3 lớn, mù đôi, có đối chứng giả dược; nguồn KHÔNG cung cấp phân hạng GRADE. Mức hiển thị = đánh giá vận hành (chứng cứ ÂM TÍNH chắc chắn)',
      gradeLevel:'high', decision:'notyet', groups:['cao-tuoi','dtd','tim-mach'], flag:'Kết cục chính ÂM TÍNH · cả hai thử nghiệm đã dừng',
      action:'Hiệu số nguồn: chênh lệch CDR-SB ở tuần 104 là −0,08 (95% CI −0,35 đến 0,20; P = 0,57) trong evoke và 0,10 (−0,17 đến 0,38; P = 0,46) trong evoke+ — KHÔNG có lợi ích. Cả hai thử nghiệm đã dừng do kết quả lâm sàng âm tính. Hành động: KHÔNG kê semaglutide với mục đích điều trị hay làm chậm Alzheimer, và chủ động cải chính kỳ vọng này cho bệnh nhân, người nhà.',
@@ -603,6 +627,7 @@ const DATA = {
      pmid:'39096926', doi:'10.1016/S0140-6736(24)01296-0', design:'Guideline',
      population:'Dân số chung, tiếp cận theo suốt vòng đời (tuổi trẻ, trung niên, cao tuổi)',
      pico:{P:['Dân số chung theo vòng đời','match'],I:['Can thiệp 14 yếu tố nguy cơ có thể thay đổi','match'],C:['Không can thiệp yếu tố nguy cơ','match'],O:['Tỷ lệ ca sa sút trí tuệ có thể phòng ngừa hoặc trì hoãn (phân suất quy thuộc quần thể)','match']},
+     effectText:'14 yếu tố nguy cơ · ~45% ca có thể phòng hoặc trì hoãn (PAF ước tính từ mô hình)',
      gradeSource:'Báo cáo Ủy ban thường trực tổng hợp chứng cứ; ước tính phân suất quy thuộc quần thể từ mô hình — nguồn KHÔNG cung cấp phân hạng GRADE cho từng khuyến cáo',
      gradeLevel:'na', decision:'apply', groups:['cao-tuoi','dtd','tim-mach','da-thuoc'],
      action:'Báo cáo 2024 bổ sung 2 yếu tố mới — LDL-cholesterol cao ở tuổi trung niên và MẤT THỊ LỰC KHÔNG ĐƯỢC ĐIỀU TRỊ — nâng tổng số lên 14 yếu tố (cùng với: học vấn thấp, giảm thính lực, tăng huyết áp, hút thuốc, béo phì, trầm cảm, ít vận động thể lực, đái tháo đường, uống nhiều rượu, chấn thương sọ não, cô lập xã hội, ô nhiễm không khí), và ước tính khoảng 45% số ca sa sút trí tuệ trên thế giới có thể phòng ngừa hoặc trì hoãn nếu xử lý được các yếu tố này. Hành động: biến mỗi lần khám bệnh mạn thành một cơ hội giảm nguy cơ sa sút trí tuệ.',
@@ -615,6 +640,7 @@ const DATA = {
      pmid:'40720610', doi:'10.1001/jama.2025.12923', design:'RCT',
      population:'2111 người 60–79 tuổi, ít vận động, chế độ ăn chưa tối ưu và có thêm yếu tố nguy cơ; 5 trung tâm tại Hoa Kỳ; 2 năm',
      pico:{P:['Người cao tuổi có nguy cơ suy giảm nhận thức','match'],I:['Can thiệp đa lĩnh vực CÓ CẤU TRÚC (vận động, dinh dưỡng, hoạt động trí tuệ, giao tiếp xã hội, theo dõi tim mạch)','match'],C:['Can thiệp tự hướng dẫn (cùng nội dung, ít cấu trúc hơn) — KHÔNG phải nhóm chứng thụ động','mis'],O:['Tốc độ thay đổi điểm nhận thức tổng hợp mỗi năm trong 2 năm','match']},
+     effectText:'+0,029 SD/năm (95% CI 0,008–0,050); P=0,008 (có cấu trúc so với tự hướng dẫn)',
      gradeSource:'RCT đa trung tâm, mù đơn; nguồn KHÔNG cung cấp phân hạng GRADE. Mức hiển thị = đánh giá vận hành',
      gradeLevel:'mod', decision:'apply', groups:['cao-tuoi','dtd','tim-mach'], flag:'So sánh 2 can thiệp chủ động — không có nhóm chứng thụ động',
      action:'Hiệu số nguồn: điểm nhận thức tổng hợp TĂNG ở cả hai nhóm; tốc độ tăng 0,243 SD/năm (95% CI 0,227–0,258) ở nhóm có cấu trúc so với 0,213 SD/năm (0,198–0,229) ở nhóm tự hướng dẫn — chênh lệch 0,029 SD/năm (0,008–0,050; P = 0,008). Lợi ích nhất quán ở người mang và không mang ApoE ε4, và có vẻ LỚN HƠN ở người có nhận thức nền thấp hơn (P tương tác = 0,02).',
@@ -627,6 +653,7 @@ const DATA = {
      pmid:'37478886', doi:'10.1016/S0140-6736(23)01406-X', design:'RCT',
      population:'977 người 70–84 tuổi, giảm thính lực chưa điều trị, chưa suy giảm nhận thức đáng kể; gồm 2 quần thể: đoàn hệ ARIC nguy cơ cao và người tình nguyện cộng đồng khoẻ mạnh; 3 năm',
      pico:{P:['Người cao tuổi giảm thính lực chưa điều trị','match'],I:['Tư vấn thính học và cấp máy trợ thính','match'],C:['Giáo dục sức khoẻ','match'],O:['Thay đổi điểm nhận thức tổng hợp sau 3 năm','match']},
+     effectText:'Chênh lệch 3 năm 0,002 SD (−0,077 đến 0,081); P=0,96 → kết cục chính ÂM TÍNH',
      gradeSource:'RCT đa trung tâm, không mù; nguồn KHÔNG cung cấp phân hạng GRADE. Mức hiển thị = đánh giá vận hành (kết cục chính âm tính, phân tích độ nhạy định trước)',
      gradeLevel:'mod', decision:'consider', groups:['cao-tuoi'], flag:'Kết cục chính âm tính · tín hiệu ở phân nhóm nguy cơ cao',
      action:'Hiệu số nguồn: thay đổi nhận thức 3 năm là −0,200 (95% CI −0,256 đến −0,144) ở nhóm can thiệp thính lực so với −0,202 (−0,258 đến −0,145) ở nhóm chứng — chênh lệch 0,002 (−0,077 đến 0,081; P = 0,96), tức KHÔNG khác biệt. Tuy nhiên phân tích độ nhạy ĐỊNH TRƯỚC cho thấy hiệu quả khác nhau giữa hai quần thể (P = 0,010), gợi ý lợi ích ở nhóm nguy cơ cao. Hành động: vẫn điều trị giảm thính lực vì lợi ích giao tiếp, chất lượng sống và vì giảm thính lực là 1 trong 14 yếu tố nguy cơ — nhưng KHÔNG hứa hẹn với bệnh nhân rằng máy trợ thính ngăn được sa sút trí tuệ.',
@@ -642,6 +669,7 @@ const DESIGN_META={Guideline:['b-guideline','Guideline'],Meta:['b-meta','Meta-an
 const GRADE_META={high:['g-high','Cao',4],mod:['g-mod','Trung bình',3],low:['g-low','Thấp',2],vlow:['g-vlow','Rất thấp',1],na:['g-na','Nguồn không phân hạng',0]};
 const DEC_META={apply:['d-apply','Áp dụng ngay','--apply'],consider:['d-consider','Cân nhắc chọn lọc','--consider'],notyet:['d-notyet','Chưa đủ thay đổi','--notyet']};
 const GROUP_META={'cao-tuoi':'Người cao tuổi','ckd':'CKD','gan':'Bệnh gan','dtd':'Đái tháo đường','tim-mach':'Tim mạch','da-thuoc':'Đa thuốc'};
+const ROB_META={l:['rl','✓','Nguy cơ thấp'],s:['rs','!','Có lo ngại'],h:['rh','✕','Nguy cơ cao']};
 
 let state={selected:null, tab:'cqv', q:'', filters:{decision:new Set(),group:new Set(),design:new Set(),grade:new Set()}};
 
@@ -774,7 +802,9 @@ function renderCenter(){
 function tableView(arr){
   const rows=arr.map(e=>{
     const dm=DESIGN_META[e.design]||['',''], gm=GRADE_META[e.gradeLevel]||GRADE_META.na, dec=DEC_META[e.decision]||DEC_META.consider;
-    const eff=e.effect?`<span class="effect ${e.effect.favors?'fav':(e.effect.favors===false?'harm':'ns')}">${e.effect.hr!=null?e.effect.hr.toFixed(2):(e.effect.measure||'')}</span> <span class="ci">${e.effect.ci?'('+e.effect.ci+')':''}</span>`:'<span class="effect ns">—</span>';
+    const eff=e.effect
+      ?`<span class="effect ${e.effect.favors?'fav':(e.effect.favors===false?'harm':'ns')}">${e.effect.hr!=null?e.effect.hr.toFixed(2):(e.effect.measure||'')}</span> <span class="ci">${e.effect.ci?'('+e.effect.ci+')':''}</span>`
+      :(e.effectText?`<span class="efftext">${e.effectText}</span>`:'<span class="effect ns">—</span>');
     const pips=Array.from({length:4},(_,i)=>`<span class="pip ${i<gm[2]?'on':''}"></span>`).join('');
     return `<tr class="${e.id===state.selected?'sel':''}" onclick="select('${e.id}')">
       <td><span class="ttl">${e.title}<span class="auth">${e.source} · <span class="idtag">${e.id}</span>${e.pmid?` · PMID <span class="pmid">${e.pmid}</span>`:''}</span>${e.flag?`<span class="flag-mini">⚑ ${e.flag}</span>`:''}</span></td>
@@ -834,6 +864,14 @@ function renderDetail(){
   const statsHtml=eff?`<div class="dsec"><h3>∑ Hiệu số (đúng như nguồn báo cáo)</h3><div class="stats">
       <div class="stat"><div class="l">${eff.measure||'Hiệu số'}</div><div class="n" style="color:${eff.favors?'var(--g-high)':'var(--ink)'}">${eff.hr!=null?eff.hr.toFixed(2):'—'}</div><div class="x">95% CI ${eff.ci||'—'}</div></div>
       <div class="stat"><div class="l">Forest</div><div style="margin-top:6px">${miniForest(eff)}</div><div class="x">ngưỡng 1.0</div></div>
+    </div></div>`
+    :(e.effectText?`<div class="dsec"><h3>∑ Hiệu số (đúng như nguồn báo cáo)</h3>
+      <p style="font-size:12px;color:var(--ink);line-height:1.5">${e.effectText}</p>
+      <p style="font-size:10px;color:var(--muted);margin-top:5px">Hiệu số phi-tỷ-số — không vẽ forest vì mốc vô hiệu là 0, không phải 1,0.</p>
+    </div>`:'');
+  const robHtml=e.rob?`<div class="dsec"><h3>◔ Nguy cơ sai lệch (RoB 2)<span class="needconf" style="margin-left:6px">đánh giá vận hành</span></h3>
+    <p style="font-size:10px;color:var(--muted);margin:-4px 0 8px">Chấm theo RoB 2 bởi người tổng hợp, KHÔNG phải phân hạng của nguồn. Chỉ điền khi đã đọc đủ phương pháp; để trống thì tốt hơn là đoán.</p><div class="robfull">
+      ${Object.keys(e.rob).map(d=>{const r=ROB_META[e.rob[d]]||ROB_META.s;return `<div class="r"><span>${d}</span><i class="${r[0]}" title="${r[2]}">${r[1]}</i></div>`;}).join('')}
     </div></div>`:'';
   el.innerHTML=`
     <div class="dhead">
@@ -855,6 +893,7 @@ function renderDetail(){
     </div></div>
     <div class="dsec"><h3>◧ Đối chiếu ${e.frame||'PICO'}</h3><div class="picogrid">${picoRows}</div></div>
     ${statsHtml}
+    ${robHtml}
     <div class="dsec"><h3>➤ Hành động & theo dõi</h3><div class="kvline">
       <div class="r"><span class="k">Hành động</span><span class="v">${e.action||'—'}</span></div>
       <div class="r"><span class="k">Monitoring</span><span class="v">${e.monitoring||'—'}</span></div>

@@ -35,3 +35,21 @@ Trước khi bàn giao, kiểm tra:
 - [ ] Tài liệu tham khảo chỉ gồm nguồn đã kiểm tra.
 - [ ] Nguồn ghi dạng văn bản thường (tác giả/tổ chức + năm + tạp chí) và Vancouver/NLM.
 - [ ] Đã rà soát: KHÔNG còn thẻ markup trích dẫn thô hay mã kỹ thuật lẫn trong câu trả lời.
+
+---
+
+## Bổ sung 08/9/2026 — chống lặp lại lỗi đã xảy ra
+
+Mỗi mục dưới đây tương ứng một lỗi ĐÃ XẢY RA THẬT, không phải giả định.
+
+| # | Phải kiểm | Lỗi đã xảy ra nếu bỏ qua |
+|---|---|---|
+| 1 | Có tệp `CapNhat_EBM_*.md` theo mẫu 11 mục **và** `kiem_mau_cap_nhat.py` báo ĐÚNG MẪU | Lần đầu chỉ giao Web Dashboard, không có bản cập nhật văn bản nào |
+| 2 | `verify_dashboard.py --online` ra **PASS thật**; nếu `⊘ KHÔNG KẾT LUẬN` thì phải nêu ghi vết trong bản giao | Cổng từng in PASS với 17 PMID chưa xác minh dòng nào |
+| 3 | Hiệu số phi-tỷ-số đặt ở `effectText`, KHÔNG nhét vào `effect` | Forest plot lấy mốc vô hiệu 1,0 — vẽ sai cho chênh lệch trung bình |
+| 4 | `rob` để trống nếu chưa đọc đủ phương pháp | Chấm RoB 2 theo cảm tính là bịa phân hạng |
+| 5 | Phái sinh in **nguyên văn `gradeSource`**, không có chuỗi "GRADE &lt;mức&gt;" tự dựng | Dàn ý slide từng ghi "GRADE Cao" cho nguồn không hề cung cấp GRADE |
+| 6 | Chuỗi trong khối `DATA` dùng dấu nháy cong `“ ”`, không dùng `"` thẳng | Dấu `"` thẳng làm vỡ bộ đọc mảng → tờ dặn có gạch đầu dòng cụt |
+| 7 | Đã dựng **trang đọc được** bằng `render_ban_cap_nhat.py` và giao link | Bác sĩ không mở được `.md`/`.html` gửi kèm trong khung chát |
+| 8 | Trang đọc: bảng **vừa khung**, không cuộn ngang; chữ không rơi về Times New Roman | `white-space:nowrap` ở `th` và ở nhãn `[CẦN …]` đẩy bảng tràn; Poppins không có bộ ký tự tiếng Việt |
+| 9 | Dòng trạng thái cổng trong bản cập nhật khớp kết quả cổng thực tế | Tài liệu từng ghi "PASS" trong khi cổng trả PASS CÓ ĐIỀU KIỆN |

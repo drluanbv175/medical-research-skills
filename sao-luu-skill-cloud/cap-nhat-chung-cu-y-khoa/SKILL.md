@@ -325,7 +325,27 @@ Chỉ cần thay khối hằng số `DATA = {…}` ở cuối file; KHÔNG sửa
 **Mẫu KHI BÁC SĨ YÊU CẦU (nền tối, dày dữ liệu):** `templates/web-dashboard-dark-analyst.html` — **CÙNG schema `DATA`** (một khối dữ liệu chạy được cả hai). Template một-cột cũ `web-dashboard-van-de-cu-the-clinical-quick-view.html` chỉ dùng khi yêu cầu riêng.
 Cả hai mẫu hỗ trợ field tùy chọn `effectText` (hiệu số phi-tỷ-số), `rob` (RoB 2, chỉ RCT), `frame`/`frameLabels` (khung không-PICO) và `etd` (GRADE Evidence-to-Decision).
 
-**TỰ ĐỘNG khi gọi skill:** mỗi lần skill được gọi cho một vấn đề → tự chạy TRỌN dây chuyền (không cần yêu cầu từng bước): dựng Dashboard (EW mặc định) → `tools/verify_dashboard.py --online` (PASS) → `tools/drug_safety_scan.py` (nếu có thuốc + cao tuổi/đa thuốc) → `tools/build_library.py add` → `tools/make_derivatives.py` (3 phái sinh). Dùng mẫu Dark Analyst CHỈ khi bác sĩ yêu cầu.
+**TỰ ĐỘNG khi gọi skill:** mỗi lần skill được gọi cho một vấn đề → tự chạy TRỌN dây chuyền (không cần yêu cầu từng bước):
+
+1. **Viết BẢN CẬP NHẬT `CapNhat_EBM_<ChuDe>_YYYYMMDD.md`** theo `templates/mau-cap-nhat-chuyen-sau.md` — **BẮT BUỘC, không được bỏ**. Web Dashboard là công cụ tra cứu, KHÔNG thay thế bản cập nhật văn bản.
+2. `tools/kiem_mau_cap_nhat.py <file>.md` → phải **ĐÚNG MẪU** (đủ mục, đúng thứ tự).
+3. Dựng **Dashboard** (Evidence Workbench mặc định) từ cùng nội dung đã xác minh.
+4. `tools/verify_dashboard.py --online` → **PASS thật**; nếu `⊘ KHÔNG KẾT LUẬN` thì xử lý theo mục 5D(a).
+5. `tools/drug_safety_scan.py` (nếu có thuốc + cao tuổi/đa thuốc).
+6. `tools/build_library.py add` → thư viện chỉ mục.
+7. `tools/make_derivatives.py` → 3 phái sinh.
+8. `tools/render_ban_cap_nhat.py <file>.md` → **trang đọc/in được**; bác sĩ thường KHÔNG mở được `.md` hay `.html` gửi kèm trong khung chát, nên phải đăng thành trang có link.
+
+Dùng mẫu Dark Analyst CHỈ khi bác sĩ yêu cầu.
+
+> **“Dark Analyst” là một CHẾ ĐỘ HIỂN THỊ của skill này, KHÔNG phải skill riêng** (gộp ngày 08/9/2026).
+> Trước đó tồn tại một skill tên `dark-analyst` với **mô tả kích hoạt giống hệt** skill này nhưng
+> **thiếu toàn bộ `tools/`** — nghĩa là nếu hệ thống chọn nhầm nó thì **không cổng liêm chính nào chạy**.
+> Đối chiếu cho thấy nó không có nội dung riêng: cả 5 template trùng byte, không có file nào ngoài,
+> 8 dòng khác nhau chỉ đảo vai trò mẫu nào là mặc định.
+> Cách gọi chế độ nền tối: nói rõ **“dùng mẫu Dark Analyst”** hoặc **“bản nền tối”** — khi đó dựng
+> dashboard từ `templates/web-dashboard-dark-analyst.html`, **cùng schema `DATA`**, cùng dây chuyền,
+> cùng cổng liêm chính.
 
 
 ## 5B. Trình bày theo PICO và ghi nguồn sạch
@@ -395,17 +415,39 @@ Sau khi dựng dashboard, dùng bộ công cụ trong `tools/` để bảo đả
 
 **(a) Cổng kiểm liêm chính — `tools/verify_dashboard.py`** (chạy TRƯỚC khi giao):
 `python3 tools/verify_dashboard.py <dashboard>.html --online`
-Kiểm: mỗi item có PMID/DOI · `gradeLevel` & `decision` hợp lệ · có disclaimer · quét PII · và **tự xác minh mỗi PMID phân giải đúng trên PubMed** (chống trích dẫn ảo). FAIL → sửa trước khi giao.
+Kiểm: mỗi item có PMID/DOI · `gradeLevel` & `decision` hợp lệ · có disclaimer · quét PII · và **tự xác minh mỗi PMID phân giải đúng trên PubMed** (chống trích dẫn ảo).
+**Cổng FAIL CLOSED (từ 2026-09-08):** khi đã yêu cầu `--online` mà KHÔNG xác minh được PMID (mạng lỗi/bị chặn), cổng **KHÔNG in PASS** mà trả `⊘ KHÔNG KẾT LUẬN` (mã thoát 2) — vì *chưa xác minh* khác *đã xác minh*. Muốn giao trong hoàn cảnh đó thì phải nêu rõ bằng `--offline-ok`, khi đó cổng in `PASS CÓ ĐIỀU KIỆN` kèm dòng **GHI VẾT** số PMID chưa xác minh. Mã thoát: `0` PASS · `1` FAIL (có lỗi cứng) · `2` KHÔNG KẾT LUẬN.
 
 **(b) Thư viện cập nhật — `tools/build_library.py`** (tích lũy thành tài sản tra cứu):
 `python3 tools/build_library.py add <dashboard>.html` → cập nhật `library.json` + sinh `evidence-library.html` (chỉ mục mọi bản cập nhật, có tìm/lọc, mở thẳng từng dashboard).
 
-**(c) Sản phẩm phái sinh — TỰ ĐỘNG mỗi lần chạy:** sau khi cổng liêm chính PASS, tự sinh 3 sản phẩm vào `EBM-Dashboards/derivatives/` (`tools/make_derivatives.py <dashboard>.html`): **tờ dặn người bệnh** (ngôn ngữ phổ thông, BỎ liều) · **dàn ý slide** (giữ hiệu số + GRADE + PMID) · **kịch bản TikTok**. Slide = faithful; tờ dặn & TikTok do model rà ngôn ngữ phổ thông trước khi giao. **Video TikTok thật: theo yêu cầu qua skill `tao-video-tiktok`.** Playbook: `references/08-xuat-san-pham-phai-sinh.md`. Người bệnh & TikTok **KHÔNG nêu liều**; kèm disclaimer; không PII; bác sĩ duyệt trước khi phát/đăng.
+**(c) Sản phẩm phái sinh — TỰ ĐỘNG mỗi lần chạy:** sau khi cổng liêm chính PASS, tự sinh 3 sản phẩm vào `EBM-Dashboards/derivatives/` (`tools/make_derivatives.py <dashboard>.html`): **tờ dặn người bệnh** (ngôn ngữ phổ thông, BỎ liều) · **dàn ý slide** (giữ hiệu số + **phân hạng NGUYÊN VĂN của nguồn** + PMID) · **kịch bản TikTok**.
+**Không tự gán nhãn GRADE trong phái sinh:** dàn ý slide in nguyên văn trường `gradeSource`, KHÔNG dựng chuỗi "GRADE <mức>" từ `gradeLevel` — `gradeLevel` chỉ để tô màu và lọc trên dashboard. Slide = faithful; tờ dặn & TikTok do model rà ngôn ngữ phổ thông trước khi giao. **Video TikTok thật: theo yêu cầu qua skill `tao-video-tiktok`.** Playbook: `references/08-xuat-san-pham-phai-sinh.md`. Người bệnh & TikTok **KHÔNG nêu liều**; kèm disclaimer; không PII; bác sĩ duyệt trước khi phát/đăng.
 
 **GRADE Evidence-to-Decision (EtD):** Dashboard Dark Analyst tự hiển thị khối EtD khi `DATA` có field `etd` (vấn đề · lợi ích · tác hại · độ chắc chắn · giá trị · cân bằng · nguồn lực · công bằng · chấp nhận · khả thi → khuyến cáo + độ mạnh). **Hàng lợi ích/tác hại/độ chắc chắn lấy TỪ chứng cứ; các hàng còn lại + khuyến cáo = "đánh giá vận hành"** (ghi rõ trên dashboard). Điền `etd` cho mỗi cập nhật có khuyến cáo đổi thực hành.
 
 **(d) Thư mục chung tích lũy:** xuất MỌI dashboard vào `EBM-Dashboards/` (trong OneDrive → tự đồng bộ Mac↔Windows). Sau khi PASS cổng (a), chạy `EBM-Dashboards/tools/build_library.py add <file>.html` để tích lũy vào chỉ mục `EBM-Dashboards/evidence-library.html`. Hướng dẫn: `EBM-Dashboards/README.md`.
 
+
+## 5D-bis. KHOÁ MẪU — mẫu cập nhật không được đổi theo từng lần
+
+`templates/mau-cap-nhat-chuyen-sau.md` là **mẫu chuẩn 11 mục** của mọi bản cập nhật. Nó được
+khoá bằng SHA-256 trong `data/mau_cap_nhat.lock.json` (phiên bản · ngày khoá · danh sách 11 mục).
+
+| Tình huống | Việc phải làm |
+|---|---|
+| Viết bản cập nhật mới | Theo đúng 11 mục, đúng thứ tự. Chạy `tools/kiem_mau_cap_nhat.py <file>.md` trước khi giao. |
+| Mẫu bị đổi **không chủ ý** | Công cụ báo `MẪU ĐÃ BỊ ĐỔI` → **khôi phục mẫu**, không làm bản cập nhật nào cho tới khi khớp lại. |
+| Muốn đổi mẫu **có chủ ý** | `tools/kiem_mau_cap_nhat.py --khoa-lai --phien-ban <mới>` **và** ghi lý do vào `CHANGELOG.md`. |
+
+Ba quy tắc bất biến:
+
+- **Không tự ý thêm, bớt, đổi thứ tự mục** cho vừa một chủ đề cụ thể. Chủ đề nào không có nội
+  dung cho một mục thì ghi rõ *"không áp dụng"* hoặc `[CẦN BỔ SUNG]` — **không xoá mục**.
+- **Đổi chữ tiêu đề mục** (vd bỏ đuôi *", khi cần"*) chỉ là cảnh báo, chấp nhận được; **đổi số
+  mục hoặc thứ tự** là lỗi cứng, chặn giao.
+- Cấu trúc 8 phần ở mục 5 của tài liệu này là bố cục **câu trả lời trong hội thoại**. **Tệp bàn
+  giao luôn theo mẫu 11 mục** — hai thứ không thay thế nhau.
 
 ## 5E. Lớp phủ an toàn thuốc · Giám sát định kỳ · Bản địa hóa BYT
 
@@ -486,12 +528,14 @@ Không mặc định coi Web Dashboard theo vấn đề cụ thể là bản ghi
 - Đã nêu hành động, monitoring, cờ đỏ/chuyển tuyến khi cần chưa?
 - Đã phân tích nhóm đặc biệt liên quan chưa?
 - Đã ghi rõ nội dung chưa đủ để thay đổi chưa?
+- Đã viết **bản cập nhật `CapNhat_EBM_*.md` theo mẫu 11 mục** và chạy `tools/kiem_mau_cap_nhat.py` ra **ĐÚNG MẪU** chưa? (xem 5D-bis) — Web Dashboard KHÔNG thay thế bản cập nhật văn bản.
+- Đã dựng **trang đọc được** bằng `tools/render_ban_cap_nhat.py` và giao link cho bác sĩ chưa? (file `.md`/`.html` gửi kèm thường không mở được trong khung chát)
 - Đã tạo Web Dashboard độc lập từ template MẶC ĐỊNH `web-dashboard-evidence-workbench.html` (Evidence Workbench; hoặc `web-dashboard-dark-analyst.html` khi bác sĩ yêu cầu — CÙNG schema `DATA`) và chạy TRỌN dây chuyền tự động (cổng liêm chính → thư viện → phái sinh) chưa?
 - Đã tránh tạo ID quản trị hoặc cập nhật Dashboard Master khi người dùng không yêu cầu chưa?
 - Đã dùng tài liệu tham khảo có thể truy nguyên chưa?
 - Nếu câu hỏi về hiệu quả can thiệp: đã trình bày khối PICO đủ 5 dòng và trích hiệu số đúng như nguồn (point estimate + CI/p) chưa?
 - Đã tự nhận diện loại câu hỏi và chọn đúng khung (PICO/PECO/chẩn đoán/tiên lượng/tần suất/định tính/dịch vụ) và nêu rõ khung đã dùng chưa? (xem 5C)
-- Đã chạy `tools/verify_dashboard.py --online` và PASS (mọi item có PMID/DOI, PMID phân giải đúng, có disclaimer, không PII) trước khi giao chưa? (xem 5D)
+- Đã chạy `tools/verify_dashboard.py --online` và đạt **PASS thật** (mọi item có PMID/DOI, **PMID đã phân giải đúng**, có disclaimer, không PII) trước khi giao chưa? Nếu cổng trả `⊘ KHÔNG KẾT LUẬN` thì **KHÔNG được nói là đã xác minh**; chỉ giao khi đã dùng `--offline-ok` và **nêu rõ ghi vết đó trong câu trả lời**. (xem 5D)
 - Nếu cập nhật có thuốc cho người cao tuổi/đa thuốc: đã chạy `tools/drug_safety_scan.py` + đối chiếu Beers/STOPP qua skill người cao tuổi chưa? (xem 5E)
 - Đã tự sinh 3 sản phẩm phái sinh (tờ dặn/slide/TikTok) vào `derivatives/` và (khi có khuyến cáo đổi thực hành) điền khối `etd` cho Dashboard chưa? (xem 5D)
 - Đã nêu cả hai chiều khi chứng cứ không đồng nhất, và đánh dấu `[CẦN BỔ SUNG]` khi chỉ có đồng thuận/nguyên lý chưa?
@@ -515,6 +559,8 @@ Không mặc định coi Web Dashboard theo vấn đề cụ thể là bản ghi
 - `references/08-xuat-san-pham-phai-sinh.md`
 - `templates/phai-sinh-to-dan-nguoi-benh.md`
 - `templates/phai-sinh-kich-ban-tiktok.md`
+- `tools/kiem_mau_cap_nhat.py` + `data/mau_cap_nhat.lock.json` (KHOÁ MẪU 11 mục · kiểm bản cập nhật đúng mẫu)
+- `tools/render_ban_cap_nhat.py` + `templates/trang-doc-ban-cap-nhat.css` (dựng trang đọc/in được)
 - `tools/verify_dashboard.py` (cổng kiểm liêm chính + xác minh PMID/DOI)
 - `tools/build_library.py` (thư viện chỉ mục cập nhật → evidence-library.html)
 - `tools/make_derivatives.py` (tự sinh tờ dặn người bệnh / dàn ý slide / kịch bản TikTok → derivatives/)
