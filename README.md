@@ -182,6 +182,12 @@ python3 tools/kiem_tra_plugin.py   # 0 = up to date, 1 = cache stale
   `retraction_check.py local <file>` gives a complete verdict with no network and no
   index gaps. Source: gitlab.com/crossref/retraction-watch-data (daily updates,
   no API key). Verified: 63.2 MB, 69,453 records indexed.
+- **Regression tests for the integrity gates:** [`tests/test_cong_liem_chinh.py`](tests/test_cong_liem_chinh.py) —
+  36 network-free assertions that lock in every fail-open bug this repo has actually hit: a
+  verification receipt that verified nothing must never print PASS; a network error must never
+  read as "no results"; a swallowed query error must never read as "nothing new"; and the
+  derivative generator must never overwrite a hand-reviewed patient handout. Run it together
+  with `tests/test_evidence_stack.py` before trusting any gate.
 - **Verification receipt (network-blocked sessions):** [`tools/lap_bien_ban_xac_minh.py`](tools/lap_bien_ban_xac_minh.py) —
   run once on a machine with open egress; it resolves every PMID on PubMed, runs the full
   Retraction Watch check and pulls funding/COI, then writes a committable receipt. In a

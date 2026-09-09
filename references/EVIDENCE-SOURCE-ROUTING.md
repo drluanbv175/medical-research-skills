@@ -210,7 +210,8 @@ Tài liệu môi trường: <https://code.claude.com/docs/en/claude-code-on-the-
 ```bash
 python3 scripts/check_evidence_sources.py   # bảng trạng thái toàn bộ nguồn
 python3 scripts/doctor.py                   # kiểm tra sức khoẻ đầy đủ
-python3 tests/test_evidence_stack.py        # 22 ca kiểm thử, không cần mạng
+python3 tests/test_evidence_stack.py        # hạ tầng nguồn, không cần mạng
+python3 tests/test_cong_liem_chinh.py       # CỔNG liêm chính — khoá các lỗi fail-open
 bash    scripts/setup-local.sh              # dựng + kiểm tra trên máy cá nhân
 ```
 
