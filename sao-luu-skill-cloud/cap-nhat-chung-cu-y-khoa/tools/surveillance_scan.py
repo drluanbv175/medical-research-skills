@@ -13,6 +13,13 @@ Cách dùng (chạy trong EBM-Dashboards/):
     python3 tools/surveillance_scan.py --report surveillance_2026-06-07.md
 
 CẦN MẠNG. Kết quả là ỨNG VIÊN để thẩm định, không phải khuyến cáo.
+
+MÃ THOÁT — "không tra được" KHÁC "không có gì mới":
+    0 = mọi chủ đề đã truy vấn xong (kể cả khi 0 ứng viên — đó là câu trả lời hợp lệ)
+    2 = KHÔNG KẾT LUẬN: có chủ đề không truy vấn được (mạng chặn/lỗi). Với việc chạy
+        định kỳ không người trông, đây là lỗi nguy hiểm nhất: báo cáo "0 ứng viên" khi
+        thực ra chưa hỏi được câu nào sẽ ru ngủ người đọc.
+    1 = dùng sai (không thấy watchlist).
 """
 import sys, os, re, json, argparse, urllib.request, urllib.parse
 
@@ -53,19 +60,27 @@ def main():
     ap.add_argument("--report", default=None)
     a = ap.parse_args()
 
+    if not os.path.isfile(a.watchlist):
+        print("✗ Không thấy %s — tạo watchlist trước (xem tools/chay_giam_sat_dinh_ky.py)."
+              % a.watchlist, file=sys.stderr)
+        return 1
     wl = json.load(open(a.watchlist, encoding="utf-8"))
     topics = [t for t in wl.get("topics", []) if t.get("active", True)]
 
     lines = ["# Giám sát định kỳ — chứng cứ mới (%d ngày gần đây)" % a.days,
              "_Nguồn: PubMed E-utilities. ỨNG VIÊN để thẩm định — KHÔNG phải khuyến cáo. Cần bác sĩ kiểm chứng._", ""]
-    total = 0
+    total, hong = 0, []
     for t in topics:
         lines.append("## %s" % t["topic"])
         try:
             ids = search(t["query"], a.days, a.max)
             rows = summarize(ids)
         except Exception as e:
-            lines.append("- (lỗi truy vấn: %s)" % e); lines.append(""); continue
+            hong.append(t["topic"])
+            lines.append("- ⊘ **CHƯA TRA ĐƯỢC** — %s" % e)
+            lines.append("  - Đây KHÔNG phải \"không có gì mới\": chưa hỏi được câu nào.")
+            lines.append("")
+            continue
         if not rows:
             lines.append("- Không có tài liệu chất lượng cao mới.")
         for pid, date, title in rows:
@@ -75,12 +90,23 @@ def main():
         lines.append("")
     lines.append("---")
     lines.append("Tổng %d ứng viên trên %d chủ đề. Bước tiếp: chọn mục liên quan → chạy skill cập nhật chứng cứ để thẩm định đầy đủ." % (total, len(topics)))
+    if hong:
+        lines.insert(2, "> ⊘ **KHÔNG KẾT LUẬN cho %d/%d chủ đề** — không truy vấn được: %s.\n"
+                        "> Con số ứng viên bên dưới KHÔNG phủ các chủ đề đó."
+                     % (len(hong), len(topics), ", ".join(hong)))
+        lines.append("")
+        lines.append("⊘ **%d chủ đề chưa tra được**: %s. Chạy lại khi mạng ổn."
+                     % (len(hong), ", ".join(hong)))
 
     report = "\n".join(lines)
     print(report)
     if a.report:
         open(a.report, "w", encoding="utf-8").write(report)
         print("\n[Đã lưu báo cáo: %s]" % a.report)
+    if hong:
+        print("\n⊘ KHÔNG KẾT LUẬN — %d/%d chủ đề chưa tra được." % (len(hong), len(topics)),
+              file=sys.stderr)
+        return 2
     return 0
 
 

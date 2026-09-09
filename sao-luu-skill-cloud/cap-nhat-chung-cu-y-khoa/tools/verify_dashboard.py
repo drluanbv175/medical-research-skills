@@ -14,8 +14,17 @@ Kiểm TRƯỚC KHI GIAO cho bác sĩ:
 Cách dùng:
     python3 verify_dashboard.py <dashboard.html>                     # chỉ kiểm cấu trúc
     python3 verify_dashboard.py <dashboard.html> --online            # + xác minh PMID trên PubMed
+    python3 verify_dashboard.py <dashboard.html> --bien-ban <bb>.json
+                                        # xác minh THEO BIÊN BẢN đã lập ở máy có mạng
     python3 verify_dashboard.py <dashboard.html> --online --offline-ok
                                         # chấp nhận có ghi vết khi mạng chặn PubMed
+
+BIÊN BẢN XÁC MINH (từ 2026-09-09)
+    Nơi bị chặn egress thì không tự xác minh được, nhưng vẫn có thể ĐỌC LẠI bằng chứng
+    do máy có mạng lập ra: `tools/lap_bien_ban_xac_minh.py`. Biên bản ràng buộc theo
+    TẬP ĐỊNH DANH, không theo byte tệp — sửa lỗi chính tả trong dashboard không làm mất
+    hiệu lực, nhưng THÊM item mới thì PMID của nó không có trong biên bản → vẫn báo chưa
+    xác minh. Đây là PASS thật, có truy nguyên, khác hẳn `--offline-ok` (tự nhận là chưa kiểm).
 
 NGUYÊN TẮC "FAIL CLOSED" (từ 2026-09-08):
     Khi đã yêu cầu --online mà KHÔNG xác minh được PMID (mạng lỗi/bị chặn), công cụ
@@ -35,7 +44,7 @@ Cảnh báo (không chặn): nghi PII; PMID chưa xác minh khi đã bật --off
           item không có `funding`/`coi` (thường không lấy được bằng máy — phải ghi trong
           mục COI của bản cập nhật .md, xem 5D-quater của SKILL.md).
 """
-import sys, re, json, argparse
+import sys, re, json, hashlib, argparse
 
 DISCLAIMER = "Cần bác sĩ kiểm chứng"
 VALID_GRADE = {"high", "mod", "low", "vlow", "na"}
@@ -111,6 +120,9 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("file")
     ap.add_argument("--online", action="store_true", help="xác minh PMID/DOI trên mạng")
+    ap.add_argument("--bien-ban", dest="bien_ban", metavar="TỆP.json",
+                    help="biên bản xác minh do tools/lap_bien_ban_xac_minh.py lập "
+                         "trên máy có mạng")
     ap.add_argument("--offline-ok", dest="offline_ok", action="store_true",
                     help="chấp nhận giao khi mạng chặn PubMed — hạ PMID chưa xác minh "
                          "từ LỖI xuống cảnh báo, có ghi vết trong báo cáo")
@@ -198,36 +210,78 @@ def main():
     else:
         oks.append("Không thấy mẫu PII rõ ràng.")
 
-    # 3) Xác minh PMID/DOI online
-    if a.online and pmids:
-        oks.append("Đang xác minh %d PMID trên PubMed…" % len(set(p for _, p in pmids)))
-        seen = {}
-        for iid, p in pmids:
-            if p in seen:
-                ok, info = seen[p]
-            else:
+    # 3) Xác minh PMID — trực tiếp (--online) và/hoặc theo BIÊN BẢN (--bien-ban)
+    bb, bb_note = None, None
+    if a.bien_ban:
+        try:
+            bb = json.load(open(a.bien_ban, encoding="utf-8"))
+        except Exception as e:
+            errors.append("Không đọc được biên bản %s: %s" % (a.bien_ban, e))
+    if bb:
+        tep = (bb.get("tep") or {}).get("dashboard") or {}
+        sha_now = hashlib.sha256(open(a.file, "rb").read()).hexdigest()
+        if tep.get("sha256_luc_lap") and tep["sha256_luc_lap"] != sha_now:
+            warns.append("Dashboard ĐÃ ĐỔI kể từ lúc lập biên bản (%s… → %s…). Biên bản ràng "
+                         "buộc theo tập định danh nên vẫn dùng được cho PMID cũ, nhưng hãy rà "
+                         "lại phần đã sửa." % (tep["sha256_luc_lap"][:12], sha_now[:12]))
+        bb_note = "biên bản lập %s trên %s" % (bb.get("ngay_lap", "?"),
+                                               (bb.get("moi_truong") or {}).get("he_dieu_hanh", "?"))
+        oks.append("Có biên bản xác minh: %s." % bb_note)
+
+    if pmids:
+        rieng = sorted(set(p for _, p in pmids))
+        ket = {}                       # pmid -> (True/False/None, thông tin, nguồn)
+        if a.online:
+            oks.append("Đang xác minh %d PMID trên PubMed…" % len(rieng))
+            for p in rieng:
                 ok, info = verify_pmid_online(p)
-                seen[p] = (ok, info)
-            if ok is True:
-                oks.append("[%s] PMID %s ✓ %s" % (iid, p, info))
-            elif ok is False:
-                errors.append("[%s] PMID %s KHÔNG phân giải: %s" % (iid, p, info))
-            else:
-                unresolved.append((iid, p, info))
-        n_ok = sum(1 for _, p in pmids if seen.get(p, (None, ""))[0] is True)
-        n_all = len(set(p for _, p in pmids))
-        oks.append("ĐÃ XÁC MINH %d/%d PMID trên PubMed." % (n_ok, n_all))
-        for iid, p, info in unresolved:
-            msg = "[%s] PMID %s CHƯA xác minh được (%s)." % (iid, p, info)
-            (warns if a.offline_ok else errors).append(msg)
-    elif pmids:
-        warns.append("CHƯA xác minh phân giải %d PMID — mới kiểm cấu trúc. "
-                     "Chạy --online trước khi giao." % len(set(p for _, p in pmids)))
+                ket[p] = (ok, info, "PubMed trực tiếp")
+        if bb:
+            # MỌI pmid đều phải có phán định khi đã đưa biên bản vào. Bỏ sót một mã
+            # nghĩa là nó lọt qua cổng mà không ai xác minh — đúng lỗi fail-open.
+            ghi = bb.get("pmid") or {}
+            for p in rieng:
+                if ket.get(p, (None, "", ""))[0] is True:
+                    continue           # tự xác minh được rồi thì khỏi cần biên bản
+                v = ghi.get(p)
+                if not isinstance(v, dict):
+                    ket[p] = (None, "KHÔNG có trong biên bản", "BIÊN BẢN")
+                elif v.get("phan_giai") is True:
+                    ket[p] = (True, v.get("tieu_de", ""), "BIÊN BẢN")
+                elif v.get("phan_giai") is False:
+                    ket[p] = (False, v.get("ly_do", "biên bản ghi KHÔNG phân giải"), "BIÊN BẢN")
+                else:
+                    ket[p] = (None, "biên bản ghi CHƯA tra được (%s)"
+                              % (v.get("ly_do", "") or "không nêu lý do"), "BIÊN BẢN")
 
-    return report(errors, warns, oks, unresolved, a.offline_ok)
+        if not ket:
+            warns.append("CHƯA xác minh phân giải %d PMID — mới kiểm cấu trúc. "
+                         "Chạy --online, hoặc --bien-ban, trước khi giao." % len(rieng))
+            bb_note = None
+        else:
+            for iid, p in pmids:
+                ok, info, nguon = ket[p]
+                if ok is True:
+                    oks.append("[%s] PMID %s ✓ %s (%s)" % (iid, p, info[:70], nguon))
+                elif ok is False:
+                    errors.append("[%s] PMID %s KHÔNG phân giải: %s (%s)" % (iid, p, info, nguon))
+                else:
+                    unresolved.append((iid, p, info))
+            n_ok = sum(1 for p in rieng if ket[p][0] is True)
+            n_bb = sum(1 for p in rieng if ket[p][0] is True and ket[p][2] == "BIÊN BẢN")
+            oks.append("ĐÃ XÁC MINH %d/%d PMID." % (n_ok, len(rieng)))
+            # Chỉ được nói "theo biên bản" khi biên bản THỰC SỰ xác minh được cái gì đó.
+            bb_note = ("%d/%d PMID theo %s" % (n_bb, len(rieng), bb_note)) if (bb and n_bb) else None
+            for iid, p, info in unresolved:
+                msg = "[%s] PMID %s CHƯA xác minh được (%s)." % (iid, p, info)
+                (warns if a.offline_ok else errors).append(msg)
+    else:
+        bb_note = None
+
+    return report(errors, warns, oks, unresolved, a.offline_ok, bb_note)
 
 
-def report(errors, warns, oks, unresolved=(), offline_ok=False):
+def report(errors, warns, oks, unresolved=(), offline_ok=False, bb_note=None):
     print("=" * 64)
     print("CỔNG KIỂM LIÊM CHÍNH — Web Dashboard EBM")
     print("=" * 64)
@@ -248,7 +302,9 @@ def report(errors, warns, oks, unresolved=(), offline_ok=False):
             print("         (kèm %d PMID chưa xác minh được — xem bên trên)" % n_unres_as_err)
         return 1
     if unresolved and not offline_ok:
-        print("KẾT QUẢ: ⊘ KHÔNG KẾT LUẬN — %d PMID chưa xác minh được (mạng chặn PubMed)."
+        # Không nêu nguyên nhân ở đây: có thể do mạng chặn, mà cũng có thể do biên bản
+        # thiếu mã đó. Lý do cụ thể đã in ở từng dòng bên trên.
+        print("KẾT QUẢ: ⊘ KHÔNG KẾT LUẬN — %d PMID chưa xác minh được (lý do ở từng dòng trên)."
               % len(unresolved))
         print("         KHÔNG in PASS: CHƯA xác minh KHÁC với ĐÃ xác minh.")
         print("         → Chạy lại trên máy có mạng, HOẶC dùng --offline-ok để giao có ghi vết.")
@@ -260,6 +316,8 @@ def report(errors, warns, oks, unresolved=(), offline_ok=False):
         print("           chấp nhận bằng --offline-ok. PHẢI xác minh lại khi có mạng.")
         return 0
     print("KẾT QUẢ: ✓ PASS — 0 lỗi cứng, %d cảnh báo (rà tay nếu có)." % len(warns))
+    if bb_note:
+        print("         ⚑ GHI VẾT: %s — xác minh KHÔNG diễn ra trong phiên này." % bb_note)
     return 0
 
 
