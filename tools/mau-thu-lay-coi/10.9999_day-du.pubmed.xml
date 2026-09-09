@@ -1,0 +1,9 @@
+<PubmedArticleSet><PubmedArticle><MedlineCitation>
+ <PMID Version="1">99999901</PMID>
+ <Article><ArticleTitle>MẪU THỬ — bài giả để kiểm bộ bóc tách</ArticleTitle>
+  <GrantList CompleteYN="Y">
+   <Grant><GrantID>MAU-THU-0001</GrantID><Agency>MAU THU Agency A</Agency><Country>Testland</Country></Grant>
+   <Grant><Agency>MAU THU Agency B</Agency></Grant>
+  </GrantList></Article>
+ <CoiStatement>MẪU THỬ — câu COI giả: tác giả X khai báo không có xung đột lợi ích.</CoiStatement>
+</MedlineCitation></PubmedArticle></PubmedArticleSet>

@@ -61,6 +61,29 @@ vào repo để phiên đọc tại chỗ.
   cho bài có PMID; Scite hoặc Amass cho bài chỉ có DOI. DOI không phân giải được bằng đường
   nào → 🔴 NGHI NGỜ MA, **không** "sửa cho hợp lý".
 
+## 4-bis. COI và tài trợ — connector KHÔNG lấy được, phải đi đường XML thô
+
+Đo 2026-09-08: `mcp__PubMed__get_article_metadata` trả đúng 12 trường (abstract, article_types,
+authors, citation, doi, identifiers, journal, language, mesh_terms, publication_date, title)
+— **không có funding, không có COI**. Amass BiomedCore cũng không. Trên 17 nguồn của bản sa sút
+trí tuệ chỉ lấy được **3/17**, đúng 3 bài mà tạp chí đặt câu tài trợ ngay trong tóm tắt.
+
+Chỗ dữ liệu đó thật sự nằm là **XML thô**, mà connector không phơi ra:
+
+| Trường | Ở đâu | Loại |
+|---|---|---|
+| Câu COI của nhóm tác giả | PubMed efetch XML → `<CoiStatement>` | nguyên văn |
+| Danh mục tài trợ | PubMed efetch XML → `<GrantList>` (agency · mã · quốc gia) | có cấu trúc |
+| Câu tài trợ của chính bài | Europe PMC `fullTextXML` → `<funding-statement>` (chỉ bài OA) | nguyên văn |
+| Câu COI trong toàn văn | Europe PMC `fullTextXML` → chú thích `fn-type="COI-statement"` | nguyên văn |
+| Nhà tài trợ | Europe PMC core → `grantsList` · Crossref → `funder[]` | có cấu trúc |
+
+`tools/lay_coi_tai_tro.py` đi đủ bốn đường theo thứ tự đó (**câu nguyên văn luôn thắng dữ liệu
+có cấu trúc**), và tách **ba trạng thái không được gộp**: `LẤY ĐƯỢC` · `KHÔNG CÓ TRONG CHỈ MỤC`
+(chỉ mục trả lời nhưng không mang trường — **không** phải "bài không có tài trợ") · `CHƯA TRA
+ĐƯỢC` (lỗi mạng). Cả ba tên miền này đều **bị chặn trong phiên cloud** → công cụ chạy trên máy
+của bác sĩ, không chạy ở đây.
+
 ## 5. Khi nào đường API trực tiếp vẫn đúng
 
 Trên **máy của bác sĩ** hoặc môi trường có egress mở, `curl`/`urllib` tới E-utilities,
