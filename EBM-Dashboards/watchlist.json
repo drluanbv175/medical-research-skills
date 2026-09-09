@@ -1,0 +1,12 @@
+{
+ "_muc_dich": "Danh sách chủ đề lõi cần theo dõi chứng cứ mới (Track B). Mỗi mục cần `query` theo cú pháp PubMed và `active: true` mới được quét.",
+ "_huong_dan": "Thêm chủ đề: {\"topic\": \"tên ngắn\", \"query\": \"chuỗi PubMed\", \"active\": true}. Nên giới hạn 10–20 chủ đề lõi.",
+ "topics": [
+  {
+   "topic": "Sa sút trí tuệ: tiếp cận chẩn đoán và điều trị theo chứng cứ hiện hành (phòng khám ngoại t",
+   "query": "",
+   "active": false,
+   "_ghi_chu": "[DỰ THẢO] Điền `query` theo cú pháp PubMed rồi đổi active=true. Công cụ KHÔNG tự đặt chuỗi tìm thay bác sĩ."
+  }
+ ]
+}

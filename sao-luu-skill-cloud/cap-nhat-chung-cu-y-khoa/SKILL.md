@@ -2,7 +2,7 @@
 name: cap-nhat-chung-cu-y-khoa
 description: Sử dụng skill này khi bác sĩ yêu cầu cập nhật chứng cứ hoặc khuyến cáo hiện hành cho MỘT vấn đề lâm sàng cụ thể. Mỗi cập nhật phải kèm Web Dashboard độc lập theo mô hình MẶC ĐỊNH "Evidence Workbench" (bố cục 3 cột: bộ lọc · bảng điểm chứng cứ · panel thẩm định; lớp Clinical Quick View là màn hình tóm tắt mặc định) nếu môi trường hỗ trợ tạo file; đây không phải hệ thống giám sát định kỳ hoặc Dashboard Master mặc định.
 metadata:
-  version: 1.14.0
+  version: 1.15.0
 ---
 
 # Skill: Cập nhật chứng cứ y khoa theo vấn đề lâm sàng cụ thể
@@ -423,6 +423,17 @@ Sau khi dựng dashboard, dùng bộ công cụ trong `tools/` để bảo đả
 **(a) Cổng kiểm liêm chính — `tools/verify_dashboard.py`** (chạy TRƯỚC khi giao):
 `python3 tools/verify_dashboard.py <dashboard>.html --online`
 Kiểm: mỗi item có PMID/DOI · `gradeLevel` & `decision` hợp lệ · có disclaimer · quét PII · và **tự xác minh mỗi PMID phân giải đúng trên PubMed** (chống trích dẫn ảo).
+**BIÊN BẢN XÁC MINH (từ 2026-09-09) — cách ra PASS THẬT ở nơi bị chặn mạng:** nếu môi trường
+chặn egress, đừng dừng ở `PASS CÓ ĐIỀU KIỆN`. Trên **máy có mạng** chạy một lần
+`python3 tools/lap_bien_ban_xac_minh.py <dashboard>.html --ban-cap-nhat <file>.md` — nó gom ba
+việc cần mạng (phân giải PMID · kiểm bài rút bằng bộ Retraction Watch đầy đủ · lấy nguyên văn
+tài trợ/COI) thành một tệp commit được. Sau đó ở phiên bị chặn:
+`verify_dashboard.py <dashboard>.html --bien-ban <tệp>.bien-ban.json` → **PASS thật, có truy
+nguyên**. Biên bản ràng buộc theo **tập định danh**, không theo byte tệp: sửa lỗi chính tả
+không mất hiệu lực, nhưng **thêm item mới thì PMID của nó không có trong biên bản → vẫn báo
+chưa xác minh**. Biên bản không xác minh được gì thì cổng trả `KHÔNG KẾT LUẬN`, **không bao giờ
+PASS**. Hướng dẫn: `de-xuat/BON-VIEC-DONG-CUA-KHOANG-TRONG.md`.
+
 **Cổng FAIL CLOSED (từ 2026-09-08):** khi đã yêu cầu `--online` mà KHÔNG xác minh được PMID (mạng lỗi/bị chặn), cổng **KHÔNG in PASS** mà trả `⊘ KHÔNG KẾT LUẬN` (mã thoát 2) — vì *chưa xác minh* khác *đã xác minh*. Muốn giao trong hoàn cảnh đó thì phải nêu rõ bằng `--offline-ok`, khi đó cổng in `PASS CÓ ĐIỀU KIỆN` kèm dòng **GHI VẾT** số PMID chưa xác minh. Mã thoát: `0` PASS · `1` FAIL (có lỗi cứng) · `2` KHÔNG KẾT LUẬN.
 
 **(b) Thư viện cập nhật — `tools/build_library.py`** (tích lũy thành tài sản tra cứu):
@@ -530,7 +541,15 @@ trí tuệ, lấy được **3/17**. Phần còn lại phải mở toàn văn tr
 
 **(a) An toàn thuốc (người cao tuổi/đa thuốc):** khi cập nhật có thuốc và liên quan nhóm `cao-tuoi`/`da-thuoc`, chạy `tools/drug_safety_scan.py <dashboard>.html` (đối chiếu bảng cờ **Beers 2023/STOPP-START v3** trong `data/drug_flags.json`) → cảnh báo + sinh prompt rà soát ĐẦY ĐỦ bằng skill `nguoi-cao-tuoi-da-benh-da-thuoc`. Bảng cờ KHÔNG đầy đủ, chỉ để nhắc. Chi tiết: `references/09-an-toan-thuoc-overlay.md`.
 
-**(b) Giám sát định kỳ (Track B):** `tools/surveillance_scan.py` quét PubMed tìm guideline/SR/meta/RCT MỚI theo `EBM-Dashboards/watchlist.json` (10–20 chủ đề lõi) → báo cáo ỨNG VIÊN để thẩm định (KHÔNG tự đổi thực hành). Track A (theo yêu cầu) vẫn là trục chính. Tự động hóa qua skill `schedule` chỉ khi bác sĩ xác nhận nhịp. Chi tiết: `references/10-giam-sat-dinh-ky.md`.
+**(b) Giám sát định kỳ (Track B) — CHẠY TRÊN MÁY BÁC SĨ, không dùng Routine:** đã đo
+2026-09-05, phiên do Routine sinh ra có `"mcp_servers": []` và không có nguồn repo, nên Track B
+**không thể** chạy ở đó. Đường đúng: `tools/chay_giam_sat_dinh_ky.py` đặt lịch bằng
+launchd/cron/Task Scheduler trên máy (xem `de-xuat/GIAM-SAT-TREN-MAY.md`); nó ghi báo cáo vào
+`EBM-Dashboards/giam-sat/` và commit **đúng một tệp đó**. Quét không hỏi được thì báo cáo mở
+đầu bằng `⊘ KHÔNG KẾT LUẬN` và mã thoát 2 — việc chạy tự động **không được** im lặng báo
+"không có gì mới" khi thật ra chưa hỏi được câu nào.
+
+**(b-cũ) Chi tiết công cụ quét:** `tools/surveillance_scan.py` quét PubMed tìm guideline/SR/meta/RCT MỚI theo `EBM-Dashboards/watchlist.json` (10–20 chủ đề lõi) → báo cáo ỨNG VIÊN để thẩm định (KHÔNG tự đổi thực hành). Track A (theo yêu cầu) vẫn là trục chính. Tự động hóa qua skill `schedule` chỉ khi bác sĩ xác nhận nhịp. Chi tiết: `references/10-giam-sat-dinh-ky.md`.
 
 **(c) Bản địa hóa Bộ Y tế VN:** ở bước "Áp dụng tại VN", tra `EBM-Dashboards/vn-guidelines/registry.json` (bác sĩ điền từ tài liệu CHÍNH THỨC — **KHÔNG bịa số QĐ**) + RAG (`clinical-evidence-rag`) để đối chiếu quốc tế ↔ BYT (phác đồ, danh mục BHYT, phân tuyến). Chi tiết: `references/11-guideline-bo-y-te-vn.md`.
 
@@ -641,7 +660,7 @@ Không mặc định coi Web Dashboard theo vấn đề cụ thể là bản ghi
 - `tools/retraction_check.py` (kiểm bài RÚT qua Scite — extract → gọi Scite → report)
 - `tools/kiem_mau_cap_nhat.py` + `data/mau_cap_nhat.lock.json` (KHOÁ MẪU 11 mục · kiểm bản cập nhật đúng mẫu)
 - `tools/render_ban_cap_nhat.py` + `templates/trang-doc-ban-cap-nhat.css` (dựng trang đọc/in được)
-- `tools/verify_dashboard.py` (cổng kiểm liêm chính + xác minh PMID/DOI)
+- `tools/verify_dashboard.py` (cổng kiểm liêm chính + xác minh PMID/DOI; `--bien-ban` để đọc bằng chứng lập ở máy có mạng)
 - `tools/build_library.py` (thư viện chỉ mục cập nhật → evidence-library.html)
 - `tools/make_derivatives.py` (tự sinh tờ dặn người bệnh / dàn ý slide / kịch bản TikTok → derivatives/)
 - `references/09-an-toan-thuoc-overlay.md` · `tools/drug_safety_scan.py` · `data/drug_flags.json` (lớp phủ Beers/STOPP)

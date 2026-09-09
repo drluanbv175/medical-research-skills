@@ -182,6 +182,25 @@ python3 tools/kiem_tra_plugin.py   # 0 = up to date, 1 = cache stale
   `retraction_check.py local <file>` gives a complete verdict with no network and no
   index gaps. Source: gitlab.com/crossref/retraction-watch-data (daily updates,
   no API key). Verified: 63.2 MB, 69,453 records indexed.
+- **Regression tests for the integrity gates:** [`tests/test_cong_liem_chinh.py`](tests/test_cong_liem_chinh.py) —
+  36 network-free assertions that lock in every fail-open bug this repo has actually hit: a
+  verification receipt that verified nothing must never print PASS; a network error must never
+  read as "no results"; a swallowed query error must never read as "nothing new"; and the
+  derivative generator must never overwrite a hand-reviewed patient handout. Run it together
+  with `tests/test_evidence_stack.py` before trusting any gate.
+- **Verification receipt (network-blocked sessions):** [`tools/lap_bien_ban_xac_minh.py`](tools/lap_bien_ban_xac_minh.py) —
+  run once on a machine with open egress; it resolves every PMID on PubMed, runs the full
+  Retraction Watch check and pulls funding/COI, then writes a committable receipt. In a
+  blocked session, `verify_dashboard.py <dashboard>.html --bien-ban <receipt>.json` reads it
+  and issues a **real PASS with provenance** instead of `PASS CÓ ĐIỀU KIỆN`. Bound to the
+  **identifier set**, not to file bytes: fixing a typo keeps the receipt valid, adding a new
+  item does not. A receipt that verified nothing yields **KHÔNG KẾT LUẬN**, never PASS.
+- **Evidence surveillance on your own machine:** [`tools/chay_giam_sat_dinh_ky.py`](tools/chay_giam_sat_dinh_ky.py) —
+  Claude Routines run with `"mcp_servers": []` and no repo, so Track B cannot run there.
+  This runs the scan locally on a schedule, writes a dated report into `EBM-Dashboards/giam-sat/`
+  and commits **only that file**. A scan that could not query says so at the top of the report
+  and exits 2 — an unattended job must never report "nothing new" when it asked nothing.
+  Scheduler snippets (launchd / cron / Task Scheduler): [`de-xuat/GIAM-SAT-TREN-MAY.md`](de-xuat/GIAM-SAT-TREN-MAY.md).
 - **Funding & COI statements, verbatim:** [`tools/lay_coi_tai_tro.py`](tools/lay_coi_tai_tro.py) —
   pulls the funding sentence and the conflict-of-interest statement for each DOI from the
   raw XML that the MCP connectors do not expose: PubMed efetch `<CoiStatement>`/`<GrantList>`,

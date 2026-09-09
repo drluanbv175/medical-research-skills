@@ -209,6 +209,33 @@ def main():
         except Exception as e:
             problems.append("`%s`: không đọc được lock mẫu (%s)." % (name, e))
 
+    # ---------- [6] BẢN SAO CÔNG CỤ Ở HAI NƠI CÓ TRÙNG NHAU KHÔNG ----------
+    # Bộ công cụ tồn tại ở HAI chỗ: trong skill (để tải lên tài khoản) và trong
+    # EBM-Dashboards/tools/ (để chạy tại chỗ trên kho dashboard). Sửa một bên mà quên
+    # bên kia thì bác sĩ chạy nhầm bản cũ mà không hay — đã suýt xảy ra thật.
+    print()
+    print("[6] CÔNG CỤ TRONG SKILL VÀ TRONG EBM-Dashboards CÓ TRÙNG NHAU KHÔNG")
+    print("-" * 72)
+    a_dir = os.path.join(BACKUP, "cap-nhat-chung-cu-y-khoa", "tools")
+    b_dir = os.path.join(REPO, "EBM-Dashboards", "tools")
+    if not (os.path.isdir(a_dir) and os.path.isdir(b_dir)):
+        notes.append("Không thấy một trong hai thư mục công cụ — bỏ qua kiểm [6].")
+    else:
+        chung = sorted(set(os.listdir(a_dir)) & set(os.listdir(b_dir)))
+        lech = [f for f in chung
+                if f.endswith(".py") and sha(os.path.join(a_dir, f)) != sha(os.path.join(b_dir, f))]
+        for f in lech:
+            problems.append("LỆCH bản sao công cụ: `tools/%s` trong skill KHÁC "
+                            "`EBM-Dashboards/tools/%s`. Chép bản mới hơn sang bên kia "
+                            "(xem `diff` trước, đừng chép mù)." % (f, f))
+        chi_mot_ben = sorted((set(os.listdir(a_dir)) ^ set(os.listdir(b_dir))))
+        for f in chi_mot_ben:
+            if f.endswith(".py"):
+                o = "skill" if os.path.isfile(os.path.join(a_dir, f)) else "EBM-Dashboards"
+                notes.append("`%s` chỉ có ở %s — cố ý thì bỏ qua." % (f, o))
+        if not lech:
+            print("  ✓ %d công cụ dùng chung đều trùng byte." % len(chung))
+
     # ---------- BÁO CÁO ----------
     print("-" * 72)
     for f in fixed:
